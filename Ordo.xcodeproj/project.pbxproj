@@ -1,0 +1,573 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		021587C4EE4778EA33687C66 /* WebControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A4DC4EDF2B9333A912A0C87 /* WebControllers.swift */; };
+		0F4ABD53ED13E65DC2F53027 /* VaultAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = E280EC14107B95AFEBB19047 /* VaultAccess.swift */; };
+		173EBB935E2F8F7E58D11167 /* HostError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07D30447D2338BC59A341C2 /* HostError.swift */; };
+		1B228352B8DF8152621AC52F /* MarkdownParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B677B6C49092CB164F6E72 /* MarkdownParsing.swift */; };
+		24361FD84CE9BE1326614F50 /* FolderRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8916296DF2BCA68D1D6D0B8E /* FolderRules.swift */; };
+		367724F6EF04E69FF4B1CA04 /* ImageProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D5A9BA0180979CFA203A7E /* ImageProcessing.swift */; };
+		5BD3D22B4629630330AA8DE1 /* MarkdownParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B677B6C49092CB164F6E72 /* MarkdownParsing.swift */; };
+		60580B6FCF778840EBD1FDF2 /* ShellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42103208F49AEAF32308DF0B /* ShellController.swift */; };
+		6757DD794F18E9CBCEE3B525 /* VaultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EDD942D0D847832387D39 /* VaultStore.swift */; };
+		71BCA2111BB05975E6FC4831 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C74341FCE1F2DC3211AE7233 /* AppModel.swift */; };
+		7F65BEAB26425C59E2D2CE4A /* DebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE52032C282D1C04E5CA48A3 /* DebugSnapshot.swift */; };
+		8C1F174602B2EFC63C7FBC02 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D14055BE10C4CB0614DE810 /* Platform.swift */; };
+		934AF755E84475B8B18E89F0 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 892E1F7AC44F6E442AD6C63F /* PDFExporter.swift */; };
+		943CF01B0A56A50E83799A15 /* SchemeHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21508953C23EC669E2BA0CAC /* SchemeHandler.swift */; };
+		980F329B8DA161F59407A94D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A870112FC6895D06A754055 /* RootView.swift */; };
+		9886119AFA735B03934C6079 /* VaultSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7830E50B09790482ECC4C432 /* VaultSettings.swift */; };
+		9D38B4236566373A86F85848 /* Web in Resources */ = {isa = PBXBuildFile; fileRef = B1E13FF8916C700A408F7F71 /* Web */; };
+		A27F9AECCEB90C62E9F87110 /* VaultStore+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */; };
+		A2FF68899518ED8298E20AE2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35FF15D5FB22B8664A5A4D89 /* Assets.xcassets */; };
+		A34D38E50052C17AB5D79868 /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BF9024F1E0EFFB4619EAFBF /* CoreTests.swift */; };
+		B535704721851CAE0E67B16F /* DockIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A48EC24EE6E5CC167ED7B29 /* DockIcon.swift */; };
+		BF97E820972BCBEA536EA3EB /* GitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313737E0E5E4CE7DC7206BB /* GitSync.swift */; };
+		DF7F1126D4B205A93332F455 /* ImageProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D5A9BA0180979CFA203A7E /* ImageProcessing.swift */; };
+		F0B7C64288003D2D423D8B0E /* FolderRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8916296DF2BCA68D1D6D0B8E /* FolderRules.swift */; };
+		F8B0C3CF4A3700A01F53AC3A /* ObsidianImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAD25C4D6AD8EA74E605AB5 /* ObsidianImport.swift */; };
+		FA9F3DD68CB8D9B3CDB3D989 /* OrdoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B7DB06D89FC46DD7770ED9 /* OrdoApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1A4DC4EDF2B9333A912A0C87 /* WebControllers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebControllers.swift; sourceTree = "<group>"; };
+		21508953C23EC669E2BA0CAC /* SchemeHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemeHandler.swift; sourceTree = "<group>"; };
+		35FF15D5FB22B8664A5A4D89 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3D14055BE10C4CB0614DE810 /* Platform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Platform.swift; sourceTree = "<group>"; };
+		42103208F49AEAF32308DF0B /* ShellController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellController.swift; sourceTree = "<group>"; };
+		69B7DB06D89FC46DD7770ED9 /* OrdoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrdoApp.swift; sourceTree = "<group>"; };
+		6BF9024F1E0EFFB4619EAFBF /* CoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTests.swift; sourceTree = "<group>"; };
+		7830E50B09790482ECC4C432 /* VaultSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSettings.swift; sourceTree = "<group>"; };
+		7A870112FC6895D06A754055 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		8916296DF2BCA68D1D6D0B8E /* FolderRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderRules.swift; sourceTree = "<group>"; };
+		892E1F7AC44F6E442AD6C63F /* PDFExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExporter.swift; sourceTree = "<group>"; };
+		8A48EC24EE6E5CC167ED7B29 /* DockIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockIcon.swift; sourceTree = "<group>"; };
+		95D5A9BA0180979CFA203A7E /* ImageProcessing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessing.swift; sourceTree = "<group>"; };
+		A07D30447D2338BC59A341C2 /* HostError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostError.swift; sourceTree = "<group>"; };
+		B1E13FF8916C700A408F7F71 /* Web */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Web; path = Ordo/Resources/Web; sourceTree = SOURCE_ROOT; };
+		B313737E0E5E4CE7DC7206BB /* GitSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitSync.swift; sourceTree = "<group>"; };
+		C69570E34AF79B5D0B9F6630 /* Ordo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Ordo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C74341FCE1F2DC3211AE7233 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultStore+Bridge.swift"; sourceTree = "<group>"; };
+		D25F278E3F78F125EAC57060 /* OrdoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OrdoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E280EC14107B95AFEBB19047 /* VaultAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultAccess.swift; sourceTree = "<group>"; };
+		F4B677B6C49092CB164F6E72 /* MarkdownParsing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownParsing.swift; sourceTree = "<group>"; };
+		FBAD25C4D6AD8EA74E605AB5 /* ObsidianImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObsidianImport.swift; sourceTree = "<group>"; };
+		FE52032C282D1C04E5CA48A3 /* DebugSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugSnapshot.swift; sourceTree = "<group>"; };
+		FE9EDD942D0D847832387D39 /* VaultStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultStore.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0860CE81F30D2336BE2C5E4F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C69570E34AF79B5D0B9F6630 /* Ordo.app */,
+				D25F278E3F78F125EAC57060 /* OrdoTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1B341A56CB3FBB07BBB6C269 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				8916296DF2BCA68D1D6D0B8E /* FolderRules.swift */,
+				B313737E0E5E4CE7DC7206BB /* GitSync.swift */,
+				A07D30447D2338BC59A341C2 /* HostError.swift */,
+				95D5A9BA0180979CFA203A7E /* ImageProcessing.swift */,
+				F4B677B6C49092CB164F6E72 /* MarkdownParsing.swift */,
+				FBAD25C4D6AD8EA74E605AB5 /* ObsidianImport.swift */,
+				E280EC14107B95AFEBB19047 /* VaultAccess.swift */,
+				7830E50B09790482ECC4C432 /* VaultSettings.swift */,
+				FE9EDD942D0D847832387D39 /* VaultStore.swift */,
+				CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		2295AA7FF5D47358E542BB39 /* Ordo */ = {
+			isa = PBXGroup;
+			children = (
+				35FF15D5FB22B8664A5A4D89 /* Assets.xcassets */,
+				BBD682E51E3BE06B7FE53662 /* App */,
+				1B341A56CB3FBB07BBB6C269 /* Core */,
+				5318BDABEFABE6F6B110CB3E /* Export */,
+				BD4D367F00D8D3360A56FD23 /* Platform */,
+				EB2F46C0A60253F331C7004C /* Resources */,
+				73E7826D83C63E081EF0CEFB /* Views */,
+				EA9E8276DA4899E42BD503E7 /* Web */,
+			);
+			path = Ordo;
+			sourceTree = "<group>";
+		};
+		5318BDABEFABE6F6B110CB3E /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				892E1F7AC44F6E442AD6C63F /* PDFExporter.swift */,
+			);
+			path = Export;
+			sourceTree = "<group>";
+		};
+		5A4451C58281E79CECAB42D1 /* OrdoTests */ = {
+			isa = PBXGroup;
+			children = (
+				6BF9024F1E0EFFB4619EAFBF /* CoreTests.swift */,
+			);
+			path = OrdoTests;
+			sourceTree = "<group>";
+		};
+		73E7826D83C63E081EF0CEFB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7A870112FC6895D06A754055 /* RootView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		BBD682E51E3BE06B7FE53662 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				C74341FCE1F2DC3211AE7233 /* AppModel.swift */,
+				69B7DB06D89FC46DD7770ED9 /* OrdoApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		BD4D367F00D8D3360A56FD23 /* Platform */ = {
+			isa = PBXGroup;
+			children = (
+				FE52032C282D1C04E5CA48A3 /* DebugSnapshot.swift */,
+				8A48EC24EE6E5CC167ED7B29 /* DockIcon.swift */,
+				3D14055BE10C4CB0614DE810 /* Platform.swift */,
+			);
+			path = Platform;
+			sourceTree = "<group>";
+		};
+		EA9E8276DA4899E42BD503E7 /* Web */ = {
+			isa = PBXGroup;
+			children = (
+				21508953C23EC669E2BA0CAC /* SchemeHandler.swift */,
+				42103208F49AEAF32308DF0B /* ShellController.swift */,
+				1A4DC4EDF2B9333A912A0C87 /* WebControllers.swift */,
+			);
+			path = Web;
+			sourceTree = "<group>";
+		};
+		EB2F46C0A60253F331C7004C /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B1E13FF8916C700A408F7F71 /* Web */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F57B5F76CA04A422E9DAB939 = {
+			isa = PBXGroup;
+			children = (
+				2295AA7FF5D47358E542BB39 /* Ordo */,
+				5A4451C58281E79CECAB42D1 /* OrdoTests */,
+				0860CE81F30D2336BE2C5E4F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		236BD93CE955E3725AB6E668 /* OrdoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 495F2FD874ED7642CC4248E6 /* Build configuration list for PBXNativeTarget "OrdoTests" */;
+			buildPhases = (
+				330A819A1DF80345A7E6CAE3 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OrdoTests;
+			packageProductDependencies = (
+			);
+			productName = OrdoTests;
+			productReference = D25F278E3F78F125EAC57060 /* OrdoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		8C7C4D0C4C9CE833503FBBD7 /* Ordo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A189AEE64D2FDC6EA6EBFC3 /* Build configuration list for PBXNativeTarget "Ordo" */;
+			buildPhases = (
+				0398992C1ABD3A6BEF280F7B /* Sources */,
+				167475778425674C22E26722 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Ordo;
+			packageProductDependencies = (
+			);
+			productName = Ordo;
+			productReference = C69570E34AF79B5D0B9F6630 /* Ordo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C763CDD7361F93B191CA9F12 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					236BD93CE955E3725AB6E668 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					8C7C4D0C4C9CE833503FBBD7 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = E7ADDBD44237F7C6CF06C910 /* Build configuration list for PBXProject "Ordo" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = F57B5F76CA04A422E9DAB939;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 0860CE81F30D2336BE2C5E4F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8C7C4D0C4C9CE833503FBBD7 /* Ordo */,
+				236BD93CE955E3725AB6E668 /* OrdoTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		167475778425674C22E26722 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A2FF68899518ED8298E20AE2 /* Assets.xcassets in Resources */,
+				9D38B4236566373A86F85848 /* Web in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0398992C1ABD3A6BEF280F7B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				71BCA2111BB05975E6FC4831 /* AppModel.swift in Sources */,
+				7F65BEAB26425C59E2D2CE4A /* DebugSnapshot.swift in Sources */,
+				B535704721851CAE0E67B16F /* DockIcon.swift in Sources */,
+				24361FD84CE9BE1326614F50 /* FolderRules.swift in Sources */,
+				BF97E820972BCBEA536EA3EB /* GitSync.swift in Sources */,
+				173EBB935E2F8F7E58D11167 /* HostError.swift in Sources */,
+				DF7F1126D4B205A93332F455 /* ImageProcessing.swift in Sources */,
+				1B228352B8DF8152621AC52F /* MarkdownParsing.swift in Sources */,
+				F8B0C3CF4A3700A01F53AC3A /* ObsidianImport.swift in Sources */,
+				FA9F3DD68CB8D9B3CDB3D989 /* OrdoApp.swift in Sources */,
+				934AF755E84475B8B18E89F0 /* PDFExporter.swift in Sources */,
+				8C1F174602B2EFC63C7FBC02 /* Platform.swift in Sources */,
+				980F329B8DA161F59407A94D /* RootView.swift in Sources */,
+				943CF01B0A56A50E83799A15 /* SchemeHandler.swift in Sources */,
+				60580B6FCF778840EBD1FDF2 /* ShellController.swift in Sources */,
+				0F4ABD53ED13E65DC2F53027 /* VaultAccess.swift in Sources */,
+				9886119AFA735B03934C6079 /* VaultSettings.swift in Sources */,
+				A27F9AECCEB90C62E9F87110 /* VaultStore+Bridge.swift in Sources */,
+				6757DD794F18E9CBCEE3B525 /* VaultStore.swift in Sources */,
+				021587C4EE4778EA33687C66 /* WebControllers.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		330A819A1DF80345A7E6CAE3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A34D38E50052C17AB5D79868 /* CoreTests.swift in Sources */,
+				F0B7C64288003D2D423D8B0E /* FolderRules.swift in Sources */,
+				367724F6EF04E69FF4B1CA04 /* ImageProcessing.swift in Sources */,
+				5BD3D22B4629630330AA8DE1 /* MarkdownParsing.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0416E4F1F71611DE1083BC29 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3198E13E06EF498CEDD3AA8E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = at.ordo.notes.tests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		6D869F7AC6E80F27F19F30CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = at.ordo.notes.tests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C1C41E455FCB2F599FEEE5A2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Ordo;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Ordo fügt Fotos aus deiner Mediathek in Notizen ein.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIFileSharingEnabled = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = at.ordo.notes;
+				PRODUCT_NAME = Ordo;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C57F890B1E66EAF347439E52 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Ordo;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Ordo fügt Fotos aus deiner Mediathek in Notizen ein.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIFileSharingEnabled = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = at.ordo.notes;
+				PRODUCT_NAME = Ordo;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E236E3CB6075A786411BD5E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A189AEE64D2FDC6EA6EBFC3 /* Build configuration list for PBXNativeTarget "Ordo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1C41E455FCB2F599FEEE5A2 /* Debug */,
+				C57F890B1E66EAF347439E52 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		495F2FD874ED7642CC4248E6 /* Build configuration list for PBXNativeTarget "OrdoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3198E13E06EF498CEDD3AA8E /* Debug */,
+				6D869F7AC6E80F27F19F30CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E7ADDBD44237F7C6CF06C910 /* Build configuration list for PBXProject "Ordo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0416E4F1F71611DE1083BC29 /* Debug */,
+				E236E3CB6075A786411BD5E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C763CDD7361F93B191CA9F12 /* Project object */;
+}

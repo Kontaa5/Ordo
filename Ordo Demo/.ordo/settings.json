@@ -1,0 +1,62 @@
+{
+  "allTagsAreFolders": false,
+  "attachmentFolder": "Anhänge",
+  "attachmentLocation": "folder",
+  "attachmentSubfolderName": "Anhänge",
+  "autoSort": true,
+  "compressImages": true,
+  "convertHEIC": true,
+  "defaultMode": "edit",
+  "editorFontSize": 16,
+  "exportPresets": [],
+  "linkStyle": "wiki",
+  "maxImageDimension": 2400,
+  "newNoteFolder": "",
+  "page": {
+    "fontSize": 11,
+    "landscape": false,
+    "marginMM": 20,
+    "pageNumbers": true,
+    "paper": "a4"
+  },
+  "readableLineWidth": true,
+  "sortBaseFolder": "",
+  "tagRules": {
+    "serw": {
+      "mode": "folderOnly",
+      "folder": "Softwareentwicklung"
+    },
+    "insy": {
+      "mode": "folderOnly",
+      "folder": "INSY"
+    },
+    "wirtschaft-recht": {
+      "mode": "folderOnly",
+      "folder": "Wirtschaft und Recht"
+    },
+    "deutsch": {
+      "mode": "folderOnly",
+      "folder": "Deutsch"
+    },
+    "medienproduktion": {
+      "mode": "folderOnly",
+      "folder": "Medienproduktion"
+    },
+    "mathe": {
+      "mode": "folderAndSubfolder",
+      "folder": "Mathe"
+    },
+    "analysis": {
+      "mode": "folderAndSubfolder",
+      "folder": "Analysis"
+    },
+    "4klasse": {
+      "mode": "ignore",
+      "folder": ""
+    },
+    "5sem": {
+      "mode": "ignore",
+      "folder": ""
+    }
+  }
+}

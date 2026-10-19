@@ -1,0 +1,9 @@
+build/
+web/node_modules/
+*.xcuserstate
+xcuserdata/
+.DS_Store
+.claude/
+# Ordo state inside the demo vault (per device)
+Ordo Demo/.ordo/state.json
+Ordo Demo/.ordo/appearance.json

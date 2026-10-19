@@ -1,0 +1,71 @@
+name: Ordo
+options:
+  bundleIdPrefix: at.ordo
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  Ordo:
+    type: application
+    supportedDestinations: [iOS, macOS]
+    sources:
+      - path: Ordo
+        excludes: ["Resources/Web"]
+      - path: Ordo/Resources/Web
+        type: folder
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: at.ordo.notes
+        PRODUCT_NAME: Ordo
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Ordo
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_UISupportsDocumentBrowser: YES
+        INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
+        INFOPLIST_KEY_UIFileSharingEnabled: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Ordo fügt Fotos aus deiner Mediathek in Notizen ein."
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        "CODE_SIGN_IDENTITY[sdk=macosx*]": "-"
+        ENABLE_HARDENED_RUNTIME: NO
+  OrdoTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: OrdoTests
+      - path: Ordo/Core/MarkdownParsing.swift
+      - path: Ordo/Core/FolderRules.swift
+      - path: Ordo/Core/ImageProcessing.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: at.ordo.notes.tests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_IDENTITY: "-"
+schemes:
+  Ordo:
+    build:
+      targets:
+        Ordo: all
+    test:
+      targets: []
+  OrdoTests:
+    build:
+      targets:
+        OrdoTests: all
+    test:
+      targets: [OrdoTests]

@@ -1,0 +1,3 @@
+- App für den Stundenplan
+- Lerngruppe für Mathe organisieren
+- [[Lernplan Matura]] überarbeiten

@@ -1,0 +1,263 @@
+// English texts for the German UI strings (German is the source language).
+
+export const EN: Record<string, string> = {
+  // general
+  'Abbrechen': 'Cancel', 'Öffnen': 'Open', 'Schließen': 'Close', 'Sichern': 'Save', 'Löschen': 'Delete', 'Entfernen': 'Remove',
+  'Bearbeiten': 'Edit', 'Einfügen': 'Insert', 'Kopieren': 'Copy', 'Kopiert': 'Copied', 'Ausschneiden': 'Cut', 'Alles auswählen': 'Select all',
+  'Zurück': 'Back', 'Vor': 'Forward', 'Mehr': 'More', 'Fehler': 'Error', 'Fehler: ': 'Error: ', 'Vorschau': 'Preview', 'Standard': 'Default',
+  'Zurücksetzen': 'Reset', 'Neu laden': 'Reload', 'Alle': 'All', 'Keine': 'None', 'Name': 'Name', 'Ordner': 'Folder', 'Notizen': 'Notes',
+  'Datei': 'file', 'Dateien': 'Files', 'Unbenannt': 'Untitled', 'Unbenannter Ordner': 'Untitled folder', 'Neuer Tab': 'New tab',
+  'Hauptordner': 'Root folder', 'Hauptordner (/)': 'Root folder (/)', 'Vault': 'Vault', 'Ordo': 'Ordo', 'Version ': 'Version ',
+  'Keine Treffer.': 'No results.', 'Lade …': 'Loading …', 'Lade Liste …': 'Loading list …', 'Berechne …': 'Calculating …',
+  'Speichere …': 'Saving …', 'Installieren': 'Install', 'Verwenden': 'Use', 'Exportieren': 'Export', 'Durchsuchen …': 'Browse …',
+
+  // workspace & tabs
+  'Andere Tabs schließen': 'Close other tabs', 'Tabs rechts schließen': 'Close tabs to the right', 'Anheften': 'Pin', 'Lösen': 'Unpin',
+  'Alle Tabs': 'All tabs', 'Alle schließen': 'Close all', 'Tab schließen': 'Close tab', 'Im Finder zeigen': 'Reveal in Finder',
+  'Linke Seitenleiste schließen': 'Close left sidebar', 'Rechte Seitenleiste schließen': 'Close right sidebar',
+  'Linke Seitenleiste öffnen': 'Open left sidebar', 'Rechte Seitenleiste öffnen': 'Open right sidebar',
+  'Weitere Optionen': 'More options', 'Lesemodus': 'Reading view', 'Lesen / Bearbeiten': 'Reading / editing', 'Lesen/Bearbeiten': 'Reading/editing',
+  'Keine Datei geöffnet': 'No file is open', 'Neue Notiz erstellen': 'Create new note', 'Datei öffnen': 'Open file', 'Graph ansehen': 'Open graph view',
+  'Bild bearbeiten': 'Edit image', 'Umbenennen …': 'Rename …', 'Verschieben nach …': 'Move to …', 'Pfad kopieren': 'Copy path',
+  'Als PDF exportieren': 'Export as PDF', 'Als PDF exportieren …': 'Export as PDF …', 'PDF-Export …': 'PDF export …', 'PDF-Export': 'PDF export',
+  'Hell': 'Light', 'Dunkel': 'Dark', 'Wie System': 'Match system', 'Farbschema wechseln': 'Toggle light/dark mode',
+  'Farbschema: {mode}': 'Color scheme: {mode}',
+
+  // commands
+  'Neue Notiz': 'New note', 'Aktuellen Tab schließen': 'Close current tab', 'Nächster Tab': 'Next tab', 'Vorheriger Tab': 'Previous tab',
+  'Zu Tab {n} wechseln': 'Go to tab {n}',
+  'Schnellwechsler öffnen': 'Open quick switcher', 'Schnellwechsler': 'Quick switcher', 'Befehlspalette öffnen': 'Open command palette', 'Befehlspalette': 'Command palette',
+  'Graph öffnen': 'Open graph view', 'In allen Dateien suchen': 'Search in all files', 'In aktueller Datei suchen': 'Search current file',
+  'Lese-/Bearbeitungsmodus umschalten': 'Toggle reading/editing view', 'Einstellungen öffnen': 'Open settings', 'Einstellungen': 'Settings',
+  'Anderen Vault öffnen': 'Open another vault', 'Anderen Vault öffnen …': 'Open another vault …', 'Linke Seitenleiste ein/aus': 'Toggle left sidebar',
+  'Rechte Seitenleiste ein/aus': 'Toggle right sidebar', 'Datei umbenennen': 'Rename file', 'Aktive Datei im Dateibaum zeigen': 'Reveal active file in navigation',
+  'Datei verschieben nach …': 'Move file to …', 'Aktuelle Datei löschen': 'Delete current file', 'Rückverweise anzeigen': 'Show backlinks',
+  'Gliederung anzeigen': 'Show outline', 'Tags anzeigen': 'Show tags', 'Fett': 'Bold', 'Kursiv': 'Italic', 'Hervorheben': 'Highlight',
+  'Durchgestrichen': 'Strikethrough', 'Inline-Code': 'Inline code', 'Aufgabe umschalten': 'Toggle checkbox', 'Internen Link einfügen': 'Insert internal link',
+  'Aufzählung': 'Bullet list', 'Zitat': 'Quote', 'Überschrift-Ebene wechseln': 'Cycle heading level', 'Inline-Formel ($…$)': 'Inline math ($…$)',
+  'Formel einfügen …': 'Insert math …', 'Formel einfügen': 'Insert math', 'Bild oder Datei einfügen …': 'Insert image or file …',
+  'Seitenumbruch einfügen': 'Insert page break', 'Seitenumbrüche anzeigen/ausblenden': 'Show/hide page breaks',
+  'Seitenumbrüche sichtbar': 'Page breaks shown', 'Seitenumbrüche ausgeblendet': 'Page breaks hidden', 'Nach Hashtags als PDF exportieren …': 'Export by hashtags as PDF …',
+  'Alle Notizen nach Hashtags einsortieren …': 'Sort all notes by hashtags …', 'Notiz festpinnen / automatisch einsortieren': 'Pin note / sort automatically',
+  'Export-Vorlage: {name}': 'Export preset: {name}',
+
+  // ribbon / chrome
+  'Nach Hashtags einsortieren': 'Sort by hashtags', 'Nach Hashtags einsortieren …': 'Sort by hashtags …', 'Vaults verwalten …': 'Manage vaults …',
+  'Ordner als Vault öffnen …': 'Open folder as vault …', 'Ordner als Vault öffnen': 'Open folder as vault', 'Hilfe & Tastenkürzel': 'Help & hotkeys',
+  'Alle Tastenkürzel …': 'All hotkeys …', 'Neue Notiz ({key})': 'New note ({key})', 'Seitenumbrüche': 'Page breaks', 'Formel': 'Math',
+  'Rückverweis': 'backlink', 'Rückverweise': 'backlinks', 'Wort': 'word', 'Wörter': 'words', 'Zeichen': 'characters', ' markiert': ' selected',
+  'Seite': 'page', 'Seiten': 'pages', '📌 festgepinnt': '📌 pinned', 'Aus Liste entfernen': 'Remove from list',
+  'Tag': 'Tag', 'Link': 'Link', 'Aufgabe': 'Task', 'Liste': 'List', 'Überschrift': 'Heading', 'Markieren': 'Highlight', 'Foto': 'Photo',
+  'Rückgängig': 'Undo', 'Wiederholen': 'Redo', 'Tastatur ausblenden': 'Hide keyboard', 'Suchen': 'Search', 'Rückverweise & Gliederung': 'Backlinks & outline',
+  'Ein Vault ist ein normaler Ordner mit Markdown-Dateien. Liegt er in iCloud Drive, ist er auf allen Geräten gleich.': 'A vault is a regular folder of Markdown files. Kept in iCloud Drive, it is the same on all your devices.',
+  'Wähle in „Dateien“ einen Ordner in iCloud Drive – z. B. den Obsidian-Ordner. So siehst du dieselben Notizen am Mac und am iPhone.': 'In Files, choose a folder in iCloud Drive – e.g. the Obsidian folder – to see the same notes on Mac and iPhone.',
+  ' – parallel zu Obsidian nutzbar.': ' – works alongside Obsidian.', 'Obsidian-Vault „{name}“': 'Obsidian vault “{name}”',
+  'Obsidian-Vault erkannt: Einstellungen und Darstellung übernommen. Obsidian kann parallel weiterlaufen.': 'Obsidian vault detected: settings and appearance imported. You can keep using Obsidian alongside.',
+
+  // file explorer
+  'Sortierung ändern': 'Change sort order', 'Alle einklappen': 'Collapse all', 'Alle ausklappen': 'Expand all', 'Neuer Ordner': 'New folder',
+  'Dateiname (A bis Z)': 'File name (A to Z)', 'Dateiname (Z bis A)': 'File name (Z to A)', 'Bearbeitet (neu → alt)': 'Modified (new to old)',
+  'Bearbeitet (alt → neu)': 'Modified (old to new)', 'Erstellt (neu → alt)': 'Created (new to old)', 'Erstellt (alt → neu)': 'Created (old to new)',
+  'Festgepinnt': 'Pinned', 'Wird aus iCloud geladen …': 'Downloading from iCloud …', 'In neuem Tab öffnen': 'Open in new tab',
+  'Wieder nach Hashtags einsortieren': 'Sort by hashtags again', 'Hier festpinnen': 'Pin here', 'Ordner als PDF exportieren …': 'Export folder as PDF …',
+  'Ordner löschen': 'Delete folder', 'In den Papierkorb (.trash) verschoben.': 'Moved to the trash (.trash).',
+  'Löschen fehlgeschlagen: ': 'Delete failed: ', 'Verschieben fehlgeschlagen: ': 'Move failed: ', 'Umbenennen fehlgeschlagen: ': 'Rename failed: ',
+  'Umbenennen fehlgeschlagen': 'Rename failed', 'Name existiert bereits': 'A note with this name already exists',
+  '{files} {fl}, {folders} {fo}': '{files} {fl}, {folders} {fo}', 'Dateien_': 'files', 'Datei_': 'file', 'Ordner_': 'folders', 'Ordner1_': 'folder',
+  '„{name}“ nach {folder} verschoben – bleibt dort.': 'Moved “{name}” to {folder} – it stays there.',
+  '„{name}“ mit {n} Notizen in den Papierkorb (.trash) verschieben?': 'Move “{name}” with {n} notes to the trash (.trash)?',
+
+  // modals: switcher, palette, folders
+  'Datei suchen oder neu anlegen …': 'Find or create a note …', 'Keine Treffer. ⇧↵ legt die Notiz an.': 'No results. ⇧↵ creates the note.',
+  'navigieren': 'to navigate', 'öffnen': 'to open', 'in neuem Tab': 'in new tab', 'neu anlegen': 'to create', 'schließen': 'to dismiss',
+  'Befehl eingeben …': 'Type a command …', 'ausführen': 'to run', 'Ordner wählen …': 'Choose a folder …', 'verschieben': 'to move',
+  'neuen Ordner anlegen': 'to create folder', 'abbrechen': 'to cancel', '{name} (Hauptordner)': '{name} (root folder)',
+
+  // search / tags / panes
+  'Suche': 'Search', 'Suchen …': 'Search …', 'Groß-/Kleinschreibung beachten': 'Match case', 'Treffer einklappen': 'Collapse results',
+  'Tipps: tag:#4klasse  path:Schule  file:Mathe  "genauer Satz"': 'Tips: tag:#4klasse  path:School  file:Math  "exact phrase"',
+  '{n} Dateien · {m} Treffer': '{n} files · {m} matches', '{n} Dateien': '{n} files', '1 Datei': '1 file',
+  'Tags': 'Tags', 'Sortierung': 'Sort', 'Hashtags → Ordner einstellen': 'Set up hashtags → folders', 'Noch keine Tags.': 'No tags yet.',
+  'Notizen suchen': 'Search notes', 'Ordner-Einstellung …': 'Folder setting …', 'Ordner-Einstellung': 'Folder setting', 'Kein Ordner': 'No folder',
+  'Als Ordner verwenden': 'Use as folder', 'wird Ordner': 'becomes a folder', 'Ordner: ': 'Folder: ', 'Alle mit #{tag} exportieren …': 'Export all with #{tag} …',
+  'Keine Notiz aktiv.': 'No active note.', 'Verlinkte Erwähnungen': 'Linked mentions', 'Keine Rückverweise gefunden.': 'No backlinks found.',
+  'Ausgehende Links': 'Outgoing links', 'Links': 'Links', 'Nicht erstellt': 'Not created', 'Keine ausgehenden Links.': 'No outgoing links.',
+  'Gliederung': 'Outline', 'Keine Überschriften.': 'No headings.', 'Ordner-Automatik': 'Folder automation', 'Liegt in': 'Located in', 'Ziel': 'Target',
+  'Automatisches Einsortieren ist in den Einstellungen aus.': 'Automatic sorting is turned off in settings.',
+  'Von Hand abgelegt – Hashtags verschieben diese Notiz nicht.': 'Placed by hand – hashtags won’t move this note.',
+  'Wird beim Verlassen der Notiz dorthin verschoben.': 'Will be moved there when you leave the note.',
+  'Kein Ordner-Hashtag. Der 1. Ordner-Hashtag wird zum Ordner, der 2. zum Unterordner.': 'No folder hashtag. The 1st folder hashtag becomes the folder, the 2nd the subfolder.',
+  'Hashtags dieser Notiz': 'Hashtags in this note', 'kein Ordner': 'no folder',
+
+  // markdown view
+  'In Notiz suchen': 'Find in note', 'Notiz löschen': 'Delete note', 'Wieder automatisch einsortieren': 'Sort automatically again',
+  'Festgepinnt – Hashtags verschieben diese Notiz nicht mehr.': 'Pinned – hashtags won’t move this note anymore.',
+  'Wird wieder nach Hashtags einsortiert.': 'Will be sorted by hashtags again.', 'Hier lassen': 'Keep here',
+  '„{name}“ → {folder}': '“{name}” → {folder}', 'Bleibt in {folder} – Automatik für diese Notiz aus.': 'Stays in {folder} – automation off for this note.',
+  'Speichern fehlgeschlagen: ': 'Saving failed: ', 'Datei konnte nicht gespeichert werden: ': 'Could not save file: ',
+  'Formatierung': 'Format', 'Code': 'Code', 'Einfügen …': 'Insert …', 'Interner Link': 'Internal link', 'Bild / Datei …': 'Image / file …',
+  'Formel …': 'Math …', 'Tabelle': 'Table', 'Codeblock': 'Code block', 'Callout': 'Callout', 'Seitenumbruch': 'Page break',
+  'Spalte 1': 'Column 1', 'Spalte 2': 'Column 2', 'Titel': 'Title', 'Inhalt': 'Content',
+  'Notiz nicht gefunden': 'Note not found', '„{name}“ nicht gefunden': '“{name}” not found', 'Eigenschaften': 'Properties', 'Keine Eigenschaften': 'No properties',
+  'Ziehen zum Skalieren': 'Drag to resize', 'Originalgröße': 'Original size', 'Link zeigen': 'Show link', 'Klicken zum Bearbeiten': 'Click to edit',
+  'Nach oben ziehen, um die Seite früher umzubrechen': 'Drag up to break the page earlier', 'Seite {n}': 'Page {n}', 'Umbruch entfernen': 'Remove page break',
+
+  // graph
+  'Filter': 'Filters', 'Dateien filtern …': 'Search files …', 'Anhänge': 'Attachments', 'Nicht existierende Dateien': 'Existing files only', 'Waisen': 'Orphans',
+  'Lokal': 'Local', 'Nur aktive Notiz und Nachbarn': 'Only active note and neighbors', 'Tiefe': 'Depth', 'Darstellung': 'Appearance',
+  'Nach Ordner einfärben': 'Color by folder', 'Knotengröße': 'Node size', 'Text einblenden': 'Text fade', 'Kräfte': 'Forces', 'Abstoßung': 'Repel force',
+  'Linkdistanz': 'Link distance', 'Einpassen': 'Fit', 'Graph-Einstellungen': 'Graph settings',
+
+  // settings
+  'Optionen': 'Options', 'Allgemein': 'General', 'Editor': 'Editor', 'Dateien & Links': 'Files & links', 'Tastenkürzel': 'Hotkeys', 'Seite & PDF': 'Page & PDF',
+  'Sprache': 'Language', 'Sprache der Oberfläche (pro Gerät). Deine Notizen werden nie übersetzt.': 'Interface language (per device). Your notes are never translated.',
+  'Öffnet den Vault-Ordner.': 'Opens the vault folder.', 'Parallel mit Obsidian': 'Alongside Obsidian',
+  'Ordo liest dieselben Markdown-Dateien wie Obsidian und schreibt nie in den .obsidian-Ordner. Themes, Snippets und Darstellung werden von Obsidian übernommen.': 'Ordo reads the same Markdown files as Obsidian and never writes to the .obsidian folder. Themes, snippets and appearance are taken from Obsidian.',
+  'Notizen in Markdown, die sich nach Hashtags selbst einsortieren.': 'Markdown notes that sort themselves by hashtag.',
+  'Standardansicht für neue Tabs': 'Default view for new tabs', 'Neue Notizen öffnen sich immer im Bearbeiten-Modus.': 'New notes always open in editing view.',
+  'Bearbeiten (Live-Vorschau)': 'Editing (live preview)', 'Lesen': 'Reading', 'Lesbare Zeilenlänge': 'Readable line length',
+  'Begrenzt die Zeilenbreite für bessere Lesbarkeit.': 'Limits the line width for easier reading.', 'Rechtschreibprüfung': 'Spellcheck',
+  'Wirkt für neu geöffnete Notizen.': 'Applies to newly opened notes.', 'Seitenumbrüche anzeigen': 'Show page breaks',
+  'Zeigt, wo beim PDF-Export eine neue Seite beginnt. Die Linie lässt sich nach oben ziehen; \\pagebreak erzwingt einen Umbruch.': 'Shows where a new page starts when exporting to PDF. Drag the line up; \\pagebreak forces a break.',
+  'Speicherort für neue Notizen': 'Location for new notes', 'Wird eine Notiz mit Hashtags versehen, wandert sie automatisch in ihren Ordner.': 'Once a note gets hashtags it moves to its folder automatically.',
+  'Bilder & Anhänge': 'Images & attachments', 'Ablage für Anhänge': 'Attachment location', 'Wohin eingefügte Fotos und Dateien gespeichert werden.': 'Where pasted photos and files are saved.',
+  'In einem festen Ordner': 'In a fixed folder', 'Im Ordner der Notiz': 'In the note’s folder', 'In einem Unterordner neben der Notiz': 'In a subfolder next to the note',
+  'Anhang-Ordner': 'Attachment folder', 'Jedes Foto kommt in diesen Ordner.': 'Every photo goes into this folder.', 'Name des Unterordners': 'Subfolder name',
+  'Link-Format': 'Link format', 'Wie eingefügte Bilder verlinkt werden.': 'How pasted images are linked.', 'Wikilink  ![[bild.png]]': 'Wikilink  ![[image.png]]',
+  'Markdown  ![](bild.png)': 'Markdown  ![](image.png)', 'Fotos verkleinern': 'Shrink photos',
+  'Große Handyfotos werden beim Einfügen verkleinert (spart iCloud-Speicher).': 'Large phone photos are scaled down when inserted (saves iCloud storage).',
+  'HEIC in JPEG umwandeln': 'Convert HEIC to JPEG', 'iPhone-Fotos werden überall lesbar (auch in Obsidian unter Windows).': 'Makes iPhone photos readable everywhere (also in Obsidian on Windows).',
+  'Notizen nach Hashtags einsortieren': 'Sort notes by hashtags',
+  'Der 1. Ordner-Hashtag ist der Ordner, der 2. der Unterordner (#4klasse #medt → 4klasse/medt). Ohne Ordner-Hashtag wandert die Notiz beim Verlassen zurück in den Basisordner. Von Hand verschobene Notizen bleiben, wo sie sind.': 'The 1st folder hashtag in the text is the folder, the 2nd the subfolder (#4klasse #medt → 4klasse/medt). Without a folder hashtag the note moves back to the base folder when you leave it. Notes you moved by hand stay where they are.',
+  'Jeder Hashtag wird ein Ordner': 'Every hashtag becomes a folder',
+  'Aus: nur die unten eingetragenen Hashtags werden zu Ordnern – alle anderen (#4sem, #wichtig …) bleiben Schlagwörter.': 'Off: only the hashtags listed below become folders – all others (#4sem, #important …) stay plain tags.',
+  'Basisordner': 'Base folder', 'Alle Hashtag-Ordner entstehen darunter (leer = Hauptordner).': 'All hashtag folders are created below it (empty = root folder).',
+  'Jetzt einsortieren': 'Sort now', 'Zeigt vorher, welche Notizen wohin wandern.': 'Shows first which notes move where.', 'Alle Notizen einsortieren …': 'Sort all notes …',
+  'Hashtags → Ordner': 'Hashtags → folders', 'Hashtag-Regel hinzufügen …': 'Add hashtag rule …',
+  'Noch keine Regeln. Beispiel: #serw → Softwareentwicklung, #4sem → kein Ordner.': 'No rules yet. Example: #serw → Software engineering, #4sem → no folder.',
+  ' (ohne Unterordner)': ' (no subfolder)', 'Farbschema': 'Base color scheme', 'Hell, dunkel oder wie das System.': 'Light, dark or match the system.',
+  'Akzentfarbe': 'Accent color', 'Farbe für Links, Auswahl, Buttons.': 'Color for links, selection and buttons.', 'Themes': 'Themes', 'Theme': 'Theme',
+  'Aus deinem Obsidian-Vault (.obsidian/themes) und Ordo (.ordo/themes).': 'From your Obsidian vault (.obsidian/themes) and Ordo (.ordo/themes).',
+  'Keine Themes installiert – durchsuche die Community-Themes.': 'No themes installed – browse the community themes.',
+  'CSS-Snippets': 'CSS snippets', 'Snippets': 'Snippets', 'Eigene CSS-Dateien aus .obsidian/snippets und .ordo/snippets.': 'Your own CSS files from .obsidian/snippets and .ordo/snippets.',
+  'Snippet-Ordner öffnen': 'Open snippets folder', 'Schrift': 'Font', 'Oberflächenschrift': 'Interface font', 'Schrift der Oberfläche (leer = Theme-Standard).': 'Font of the interface (empty = theme default).',
+  'Textschrift': 'Text font', 'Schrift im Editor und im Lesemodus.': 'Font for editing and reading views.', 'Monospace-Schrift': 'Monospace font',
+  'Für Code und Eigenschaften.': 'For code and properties.', 'Schriftgröße': 'Font size', 'Zoom': 'Zoom', 'Größe der ganzen Oberfläche.': 'Size of the whole interface.',
+  'Befehl suchen …': 'Filter commands …', 'Tastenkürzel festlegen': 'Customize this command', 'Taste drücken …': 'Press hotkey …',
+  'Papierformat': 'Paper size', 'Bestimmt auch, wo die Seitenumbrüche im Editor angezeigt werden.': 'Also decides where the page breaks show in the editor.',
+  'Querformat': 'Landscape', 'Ränder (mm)': 'Margins (mm)', 'Schriftgröße (pt)': 'Font size (pt)', 'Seitenzahlen': 'Page numbers', 'Export-Vorlagen': 'Export presets',
+  'Im Export-Dialog „Als Vorlage sichern“ – dann hier verwalten.': 'Use “Save as preset” in the export dialog – manage them here.',
+  ' · eine PDF': ' · one PDF', ' · eine PDF pro Notiz': ' · one PDF per note', 'Community-Themes': 'Community themes', 'Theme suchen …': 'Search themes …',
+  'Konnte die Theme-Liste nicht laden (Internet?).': 'Couldn’t load the theme list (internet connection?).', 'Theme konnte nicht installiert werden: ': 'Couldn’t install theme: ',
+  'Theme „{name}“ aktiv.': 'Theme “{name}” active.', 'von {author}': 'by {author}', 'US Letter': 'US Letter',
+
+  // tag rule
+  'Hashtag-Regel': 'Hashtag rule', 'Ordner für #{tag}': 'Folder for #{tag}', 'Hashtag': 'Hashtag', 'Hashtag, z. B. serw': 'Hashtag, e.g. serw',
+  'Ist ein Ordner?': 'Is it a folder?', 'Ordner (2. Hashtag = Unterordner)': 'Folder (2nd hashtag = subfolder)', 'Ordner, aber kein Unterordner': 'Folder, but no subfolder',
+  'Kein Ordner (nur Schlagwort)': 'No folder (tag only)', 'Ordnername (leer = wie der Hashtag)': 'Folder name (empty = same as hashtag)',
+  'Semester-Tags wie #4sem auf „Kein Ordner“ stellen – dann landet „#4sem #serw“ direkt im Fach-Ordner.': 'Set semester tags like #4sem to “No folder” – then “#4sem #serw” goes straight into the subject folder.',
+  'Mehrere Hashtags dürfen in denselben Ordner zeigen.': 'Several hashtags may point to the same folder.', 'Regel entfernen': 'Remove rule',
+  'bleibt, wo sie ist': 'stays where it is', 'übung': 'exercise',
+  '{n} Notizen passen nicht mehr zu ihren Hashtags.': '{n} notes no longer match their hashtags.', 'Einsortieren …': 'Sort …',
+
+  // sort all
+  'Alles aufgeräumt – jede Notiz liegt im Ordner ihrer Hashtags (festgepinnte ausgenommen).': 'All tidy – every note is in its hashtag folder (pinned notes excluded).',
+  '{k} von {n} Notizen werden verschoben. Links bleiben gültig; Notizen ohne Ordner-Hashtag und festgepinnte bleiben, wo sie sind.': '{k} of {n} notes will be moved. Links stay valid; notes without a folder hashtag and pinned notes stay where they are.',
+  'Einsortieren': 'Sort', '{n} Notizen einsortiert.': '{n} notes sorted.',
+
+  // export
+  'Vorlagen': 'Presets', ' Als Vorlage sichern': ' Save as preset', 'Hashtags': 'Hashtags', 'Hashtag eingeben, z. B. 4klasse': 'Type a hashtag, e.g. 4klasse',
+  'weiteren Hashtag hinzufügen …': 'add another hashtag …', 'mit allen Hashtags': 'with all hashtags', 'mit mindestens einem': 'with at least one',
+  'Zuletzt bearbeitet': 'Last modified', 'Manuell (ziehen)': 'Manual (drag)', 'Notizen ({n})': 'Notes ({n})',
+  'Wähle Hashtags – oder exportiere aus einer Notiz / einem Ordner.': 'Choose hashtags – or export from a note / folder.',
+  '{k} von {n} Notizen werden exportiert.': '{k} of {n} notes will be exported.', 'Ausgabe': 'Output', 'Eine PDF': 'One PDF', 'Eine PDF pro Notiz': 'One PDF per note',
+  'Inhaltsverzeichnis': 'Table of contents', 'Notiztitel als Überschrift': 'Note title as heading', 'Papier': 'Paper', ' quer': ' landscape',
+  'Vorlage sichern': 'Save preset', 'Name, z. B. 4klasse MEDT – Handout': 'Name, e.g. 4klasse MEDT – handout', 'Vorlage „{name}“ gesichert.': 'Preset “{name}” saved.',
+  'Vorlage löschen': 'Delete preset', 'Vorlage „{name}“ löschen?': 'Delete preset “{name}”?', 'Keine Notizen ausgewählt.': 'No notes selected.',
+  'Erzeuge PDF …': 'Creating PDF …', 'PDF exportiert.': 'PDF exported.', 'Als PDF exportieren ({n})': 'Export as PDF ({n})',
+
+  // math palette
+  'Eigene Formel (LaTeX) – Vorschau erscheint oben': 'Your own formula (LaTeX) – preview appears above', 'Formel suchen … (z. B. Bruch, Integral, alpha)': 'Search formulas … (e.g. fraction, integral, alpha)',
+  ' Als eigener Block ($$)': ' As its own block ($$)', 'Grundlagen': 'Basics', 'Griechisch': 'Greek', 'Relationen': 'Relations', 'Analysis': 'Calculus',
+  'Pfeile': 'Arrows', 'Mengen & Logik': 'Sets & logic', 'Matrizen & Systeme': 'Matrices & systems', 'Akzente': 'Accents',
+  'Bruch': 'Fraction', 'Wurzel': 'Square root', 'n-te Wurzel': 'n-th root', 'Hochzahl': 'Exponent', 'Index': 'Subscript', 'Klammern': 'Parentheses', 'Betrag': 'Absolute value',
+  'Malpunkt': 'Dot product', 'Kreuz': 'Cross', 'Geteilt': 'Divided by', 'Plusminus': 'Plus-minus', 'Prozent': 'Percent', 'Grad': 'Degree', 'Text': 'Text',
+  'Einheit': 'Unit', 'Unendlich': 'Infinity', 'gleich': 'equals', 'ungleich': 'not equal', 'ungefähr': 'approximately', 'kleiner gleich': 'less or equal',
+  'größer gleich': 'greater or equal', 'viel kleiner': 'much less', 'viel größer': 'much greater', 'identisch': 'identical', 'proportional': 'proportional',
+  'ähnlich': 'similar', 'Element von': 'element of', 'kein Element': 'not an element', 'Teilmenge': 'subset', 'Teilmenge gleich': 'subset or equal',
+  'senkrecht': 'perpendicular', 'parallel': 'parallel', 'Summe': 'Sum', 'Produkt': 'Product', 'Integral': 'Integral', 'Doppelintegral': 'Double integral',
+  'Kurvenintegral': 'Contour integral', 'Grenzwert': 'Limit', 'Ableitung': 'Derivative', 'Partielle Ableitung': 'Partial derivative', 'Strich-Ableitung': 'Prime',
+  'Nabla': 'Nabla', 'Logarithmus': 'Logarithm', 'Fakultät': 'Factorial', 'Binomialkoeffizient': 'Binomial coefficient', 'nach': 'to', 'rechts': 'right', 'links': 'left',
+  'folgt': 'implies', 'äquivalent': 'equivalent', 'links-rechts': 'left-right', 'abbildung': 'maps to', 'hoch': 'up', 'runter': 'down', 'Gleichgewicht': 'Equilibrium',
+  'natürliche Zahlen': 'natural numbers', 'ganze Zahlen': 'integers', 'rationale Zahlen': 'rationals', 'reelle Zahlen': 'reals', 'komplexe Zahlen': 'complex numbers',
+  'Vereinigung': 'union', 'Schnitt': 'intersection', 'ohne': 'set minus', 'leere Menge': 'empty set', 'für alle': 'for all', 'es existiert': 'there exists',
+  'nicht': 'not', 'und': 'and', 'oder': 'or', 'Menge': 'set', 'Matrix ( )': 'Matrix ( )', 'Matrix [ ]': 'Matrix [ ]', 'Determinante': 'Determinant', 'Vektor': 'Vector',
+  'Fallunterscheidung': 'Cases', 'Gleichungssystem': 'System of equations', 'Vektorpfeil': 'Vector arrow', 'Strecke': 'Segment', 'Mittelwert': 'Mean',
+  'Dach': 'Hat', 'Punkt': 'Dot', 'Tilde': 'Tilde', 'Klammer unten': 'Underbrace', 'Kästchen': 'Box',
+
+  // image editor / lightbox
+  'Links drehen': 'Rotate left', 'Rechts drehen': 'Rotate right', 'Horizontal spiegeln': 'Flip horizontally', 'Vertikal spiegeln': 'Flip vertically',
+  'Zuschneiden': 'Crop', 'Frei': 'Free', 'Übernehmen': 'Apply', 'Breite': 'Width', 'Skalieren': 'Resize', 'Als Kopie': 'Save as copy', 'Speichern': 'Save',
+  'Bild konnte nicht geladen werden.': 'Couldn’t load the image.', 'Konnte Bild nicht erzeugen.': 'Couldn’t create the image.', 'Fehler beim Speichern: ': 'Error while saving: ',
+
+  'Bilder nebeneinander': 'Images side by side', 'Bilder untereinander': 'Images stacked',
+  'Markiere mehrere Zeilen mit Bildern bzw. eine Bilderzeile.': 'Select several image lines, or put the cursor on a row of images.',
+
+  'Nur Notizen ohne Verbindungen': 'Only notes without links', 'Notizen ohne Verbindungen anzeigen': 'Show notes without links',
+
+  'Zwei Spalten': 'Two columns', 'Linke Spalte': 'Left column', 'Rechte Spalte': 'Right column',
+
+  'Seitenverhältnis': 'Aspect ratio',
+
+  'Global': 'Global',
+
+  'Spalten auflösen': 'Split columns into blocks', 'Maximal {n} Spalten': 'At most {n} columns', 'Ziehen: verschieben oder neben einen Block legen (Spalten)': 'Drag: move, or drop next to a block (columns)',
+
+  'Große Bilder komprimieren': 'Compress large images', 'Bilder über 1 MB werden beim Einfügen platzsparend neu gespeichert (spart iCloud- und iPhone-Speicher).': 'Pictures over 1 MB are re-saved smaller when inserted (saves iCloud and iPhone storage).',
+
+  'Ohne Hashtag': 'Without hashtag', 'Notizen ohne Hashtag anzeigen': 'Show notes without hashtags',
+
+  'Große Bilder verkleinern': 'Shrink large images', 'Große Bilder verkleinern …': 'Shrink large images …', 'Suche Bilder über 1 MB …': 'Looking for pictures over 1 MB …',
+  'Keine großen Bilder gefunden, die sich verkleinern lassen.': 'No large pictures found that can be made smaller.', '{a} → {b}. Dateinamen und Links bleiben gleich.': '{a} → {b}. File names and links stay the same.', 'Bild': 'picture', 'Bilder': 'pictures', 'Bild verkleinert.': 'picture made smaller.', 'Bilder verkleinert.': 'pictures made smaller.',
+  'Verkleinern': 'Shrink', 'Vorhandene Bilder verkleinern': 'Shrink existing pictures',
+  'Bilder über 1 MB, die schon im Vault liegen. Dateinamen und Links bleiben gleich.': 'Pictures over 1 MB already in the vault. File names and links stay the same.', 'Prüfen …': 'Check …',
+
+  'Original überschreiben': 'Overwrite original', 'Als Kopie speichern': 'Save as copy', 'In {n} Notizen verwendet – wird als Kopie gespeichert': 'Used in {n} notes – saved as a copy',
+
+  'Daneben als Spalte': 'Next to it as a column', 'Hierher verschieben': 'Move here', 'Nebeneinander (Spalten)': 'Side by side (columns)', 'Markierte Absätze nebeneinander (Spalten)': 'Selected paragraphs side by side (columns)', 'Markiere 2 oder 3 Absätze, die nebeneinander stehen sollen.': 'Select 2 or 3 paragraphs to put side by side.',
+
+  'Hashtag-Schreibweisen vereinheitlichen': 'Unify hashtag spellings', 'Hashtag-Schreibweisen vereinheitlichen …': 'Unify hashtag spellings …',
+  'Jeder Hashtag hat schon nur eine Schreibweise.': 'Every hashtag already has one spelling.', '{others} → #{tag}': '{others} → #{tag}',
+  'Alle Notizen bekommen die gewählte Schreibweise. Code und Eigenschaften (Frontmatter) bleiben unverändert.': 'All notes get the chosen spelling. Code and properties (frontmatter) stay unchanged.',
+  'Vereinheitlichen': 'Unify', 'Notiz angepasst.': 'note updated.', 'Notizen angepasst.': 'notes updated.', 'Schreibweise': 'Spelling',
+  'Hashtag in mehreren Schreibweisen': 'hashtag written in several ways', 'Hashtags in mehreren Schreibweisen': 'hashtags written in several ways',
+
+  'Zoom {n} %': 'Zoom {n} %', 'Ansicht vergrößern': 'Zoom in', 'Ansicht verkleinern': 'Zoom out', 'Ansicht in Originalgröße': 'Actual size',
+
+  'Suche leeren': 'Clear search', 'Treffer als PDF exportieren …': 'Export results as PDF …',
+
+  'Bild verkleinern': 'Shrink picture', 'Auflösung behalten (nur komprimieren)': 'Keep resolution (compress only)', 'Höchstens': 'At most',
+  'Mit dieser Größe wird das Bild kaum kleiner – nichts zu tun.': 'At this size the picture hardly gets smaller – nothing to do.', 'scharf': 'sharp', 'gut': 'good', 'unscharf beim Drucken': 'blurry when printed',
+  'Druck über die Textbreite: {a} → {b} dpi': 'Printed across the text width: {a} → {b} dpi',
+
+  'noch nie': 'never', 'heute {time}': 'today {time}', 'Sichern und hochladen …': 'Backing up and uploading …', 'Gesichert und hochgeladen.': 'Backed up and uploaded.',
+  'Hochladen hat nicht geklappt.': 'Upload failed.', 'Änderungen geholt.': 'Changes fetched.', 'Holen hat nicht geklappt.': 'Fetching failed.',
+  'Git ist auf diesem Mac nicht installiert.': 'Git is not installed on this Mac.', 'Noch nicht hochgeladen · zuletzt hochgeladen: {w}': 'Not uploaded yet · last upload: {w}',
+  'Alles gesichert · zuletzt hochgeladen: {w}': 'All backed up · last upload: {w}', 'Jetzt sichern & hochladen': 'Back up & upload now', 'Änderungen holen': 'Fetch changes',
+  'Git-Sync einstellen …': 'Git-Sync settings …', 'Git: jetzt sichern & hochladen': 'Git: back up & upload now', 'Git: Änderungen holen': 'Git: fetch changes', 'Git-Sync': 'Git-Sync',
+  'Zusätzlich zu iCloud: ein Verlauf deiner Notizen als Backup in einem Git-Repository (z. B. privat auf GitHub). Gesichert werden nur Änderungen. Die Git-Daten liegen lokal auf diesem Mac, nicht in iCloud – keine Datei liegt doppelt.': 'In addition to iCloud: a history of your notes as a backup in a git repository (e.g. private on GitHub). Only changes are stored. The git data stays on this Mac, not in iCloud – no file exists twice.',
+  'Git-Sync verwenden': 'Use Git-Sync', 'Nur auf dem Mac. Das iPhone bekommt alles weiter über iCloud.': 'Mac only. The iPhone keeps getting everything through iCloud.',
+  'Verbindung testen': 'Test connection', 'Teste …': 'Testing …', '✓ Verbindung klappt.': '✓ Connection works.', 'Repository-Adresse': 'Repository address',
+  'Leeres, privates Repository anlegen und die SSH-Adresse hier eintragen.': 'Create an empty private repository and enter its SSH address here.',
+  'Sichern (commit)': 'Back up (commit)', 'Speichert eine neue Version lokal – nur was sich geändert hat.': 'Stores a new version locally – only what changed.',
+  'Automatisch, 10 Minuten nach dem Tippen': 'Automatically, 10 minutes after typing', 'Einmal am Tag': 'Once a day', 'Nur von Hand': 'Manually only', 'Hochladen (push)': 'Upload (push)', 'Nach jedem Sichern': 'After every backup',
+  'Holen (pull)': 'Fetch (pull)', 'Holt Änderungen vom Server, z. B. von einem anderen Mac. Gleich geänderte Notizen gehen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.': 'Fetches changes from the server, e.g. from another Mac. Notes changed on both sides are not lost: the other version is saved next to it as "Name (Konflikt)".',
+  'Beim ersten Start am Tag': 'At the first start of the day', 'Bei jedem Start': 'At every start',
+  'Git ist auf diesem Mac nicht installiert. Im Terminal „xcode-select --install“ ausführen.': 'Git is not installed on this Mac. Run "xcode-select --install" in Terminal.',
+  'Zuletzt gesichert: {c} · hochgeladen: {p} · geholt: {l}': 'Last backup: {c} · upload: {p} · fetch: {l}', 'Jetzt': 'Now', 'Sichern & hochladen': 'Back up & upload', 'Holen': 'Fetch',
+  'Anmeldung bei GitHub einrichten': 'Set up GitHub login',
+  'Ordo nutzt die Git-Anmeldung deines Macs und speichert selbst keine Passwörter. Am einfachsten mit der GitHub CLI: im Terminal „brew install gh“ und „gh auth login“ (SSH wählen). Danach ein privates, leeres Repository anlegen und dessen SSH-Adresse oben eintragen.': 'Ordo uses your Mac\'s git login and stores no passwords itself. Easiest with the GitHub CLI: in Terminal run "brew install gh" and "gh auth login" (choose SSH). Then create an empty private repository and enter its SSH address above.',
+
+  // hotkey names
+  'Leertaste': 'Space', 'Strg': 'Ctrl', 'Umschalt': 'Shift', 'Esc': 'Esc',
+};
