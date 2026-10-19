@@ -258,6 +258,14 @@ export const EN: Record<string, string> = {
   'Anmeldung bei GitHub einrichten': 'Set up GitHub login',
   'Ordo nutzt die Git-Anmeldung deines Macs und speichert selbst keine Passwörter. Am einfachsten mit der GitHub CLI: im Terminal „brew install gh“ und „gh auth login“ (SSH wählen). Danach ein privates, leeres Repository anlegen und dessen SSH-Adresse oben eintragen.': 'Ordo uses your Mac\'s git login and stores no passwords itself. Easiest with the GitHub CLI: in Terminal run "brew install gh" and "gh auth login" (choose SSH). Then create an empty private repository and enter its SSH address above.',
 
+  'Papierkorb': 'Trash', 'Papierkorb öffnen': 'Open trash', 'Der Papierkorb ist leer.': 'The trash is empty.', 'aus {folder} · gelöscht {when}': 'from {folder} · deleted {when}',
+  'Wiederherstellen': 'Restore', '„{name}“ ist wieder da.': '“{name}” is back.', 'Endgültig löschen': 'Delete permanently', 'Endgültig löschen?': 'Delete permanently?',
+  '„{name}“ wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.': '“{name}” will be deleted permanently. This cannot be undone.',
+  'Gelöschte Notizen und Bilder liegen hier, bis du sie wiederherstellst oder den Papierkorb leerst.': 'Deleted notes and pictures stay here until you restore them or empty the trash.',
+  'Papierkorb leeren': 'Empty trash', 'Papierkorb leeren?': 'Empty trash?', 'Element': 'item', 'Elemente': 'items', 'werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.': 'will be deleted permanently. This cannot be undone.', 'wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.': 'will be deleted permanently. This cannot be undone.', 'Leeren': 'Empty',
+  'Bist du sicher?': 'Are you sure?', '„{name}“ mit {n} Notizen in den Papierkorb verschieben?': 'Move “{name}” with {n} notes to the trash?', '„{name}“ in den Papierkorb verschieben?': 'Move “{name}” to the trash?',
+  'Du kannst es dort wiederherstellen.': 'You can restore it there.', 'In den Papierkorb verschoben.': 'Moved to the trash.',
+
   // hotkey names
   'Leertaste': 'Space', 'Strg': 'Ctrl', 'Umschalt': 'Shift', 'Esc': 'Esc',
 };

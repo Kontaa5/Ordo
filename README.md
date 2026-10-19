@@ -14,6 +14,7 @@ App für macOS, iPhone und iPad. Die Oberfläche ist wie bei Obsidian eine Web-O
 - **PDF-Export nach Hashtags** (⌘⇧E), z. B. alle mit `#4klasse` UND `#medt`, auch direkt aus Suchtreffern oder per Rechtsklick auf einen Tab.
 - **Graph** (⌘G): *Global* mit Hashtags als Gruppen, *Lokal* zeigt einen Hashtag mit allen Notizen im Kreis, dazu „Ohne Hashtag“ und „Ohne Verbindungen“.
 - **Darstellung wie Obsidian**: Hell/Dunkel/System, Akzentfarbe, Themes, CSS-Snippets, Schriften, Deutsch/Englisch, Zoom (⌘+ / ⌘− / ⌘0).
+- **Papierkorb** unten in der Dateiliste: Löschen fragt immer nach, alles lässt sich wiederherstellen (`.trash`, wie Obsidian).
 - **iCloud**: Vault in iCloud Drive ablegen und am iPhone denselben Ordner wählen.
 - **Git-Sync** (Mac, Einstellungen › Git-Sync): Verlauf und Backup in einem Git-Repository. Die Git-Daten liegen lokal (nicht in iCloud), gesichert werden nur Änderungen; Hochladen z. B. einmal am Tag.
 

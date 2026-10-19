@@ -533,6 +533,57 @@ final class VaultStore {
     }
 
     /// Moves into the vault's `.trash` folder (like Obsidian), nothing is deleted for good.
+    // MARK: trash (.trash, like Obsidian; remembers where things came from)
+
+    struct TrashEntry: Codable { var from: String; var date: Date }
+    private var trashDir: URL { root.appendingPathComponent(".trash", isDirectory: true) }
+    private var trashRecordURL: URL { trashDir.appendingPathComponent(".ordo-trash.json") }
+    private func trashRecords() -> [String: TrashEntry] {
+        guard let d = Self.coordinatedRead(trashRecordURL) else { return [:] }
+        return (try? JSONDecoder().decode([String: TrashEntry].self, from: d)) ?? [:]
+    }
+    private func saveTrashRecords(_ r: [String: TrashEntry]) {
+        if let d = try? JSONEncoder().encode(r) { Self.coordinatedWrite(d, to: trashRecordURL) }
+    }
+
+    /// What is in the trash: name in .trash, original path, when it was deleted.
+    func listTrash() -> [[String: Any]] {
+        let record = trashRecords()
+        let items = (try? FileManager.default.contentsOfDirectory(at: trashDir, includingPropertiesForKeys: [.isDirectoryKey, .contentModificationDateKey, .fileSizeKey], options: [.skipsHiddenFiles])) ?? []
+        return items.map { u -> [String: Any] in
+            let v = try? u.resourceValues(forKeys: [.isDirectoryKey, .contentModificationDateKey, .fileSizeKey])
+            let rec = record[u.lastPathComponent]
+            return ["name": u.lastPathComponent, "from": rec?.from ?? u.lastPathComponent, "date": (rec?.date ?? v?.contentModificationDate ?? Date()).timeIntervalSince1970,
+                    "folder": v?.isDirectory ?? false, "size": v?.fileSize ?? 0]
+        }.sorted { ($0["date"] as? Double ?? 0) > ($1["date"] as? Double ?? 0) }
+    }
+
+    /// Puts an item back where it was (next to it if that name is taken now). Returns the new path.
+    func restoreFromTrash(_ name: String) async throws -> String {
+        var record = trashRecords()
+        let from = record[name]?.from ?? name
+        let isDir = (try? trashDir.appendingPathComponent(name).resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+        var target = from
+        if FileManager.default.fileExists(atPath: url(target).path) { target = isDir ? target + " (wiederhergestellt)" : uniquePath(target) }
+        try FileManager.default.createDirectory(at: url(Paths.folder(target)), withIntermediateDirectories: true)
+        try Self.coordinatedMove(from: trashDir.appendingPathComponent(name), to: url(target))
+        record[name] = nil
+        saveTrashRecords(record)
+        await refresh()
+        return target
+    }
+
+    /// Deletes an item from the trash for good.
+    func deleteFromTrash(_ name: String) throws {
+        guard !name.contains("/"), !name.hasPrefix(".") else { return }
+        try FileManager.default.removeItem(at: trashDir.appendingPathComponent(name))
+        var record = trashRecords(); record[name] = nil; saveTrashRecords(record)
+    }
+
+    func emptyTrash() throws {
+        for item in listTrash() { if let n = item["name"] as? String { try deleteFromTrash(n) } }
+    }
+
     func trash(_ path: String) throws {
         let trashDir = root.appendingPathComponent(".trash", isDirectory: true)
         try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
@@ -544,6 +595,9 @@ final class VaultStore {
             i += 1
         }
         try Self.coordinatedMove(from: url(path), to: dest)
+        var record = trashRecords()
+        record[dest.lastPathComponent] = TrashEntry(from: path, date: Date())
+        saveTrashRecords(record)
         if notes[path] != nil {
             notes[path] = nil; contents[path] = nil; mtimes[path] = nil; state.notes[path] = nil
             onDelete?(path)

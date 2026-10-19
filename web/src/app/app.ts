@@ -20,6 +20,7 @@ import { ExportModal } from './modals/export';
 import { SortAllModal } from './modals/sortAll';
 import { CompressImagesModal } from './modals/compressImages';
 import { TagSpellingModal } from './modals/tagSpelling';
+import { TrashModal } from './modals/trash';
 import { gitStatusItem, gitSyncNow, gitPullNow } from './git';
 import { MathPalette } from './modals/mathPalette';
 import { getActiveMarkdownView, format, MarkdownView } from './views/markdown';
@@ -120,6 +121,7 @@ function registerCommands() {
   for (const p of vault.settings?.exportPresets ?? []) addCommand({ id: 'ordo:preset-' + p.id, name: t('Export-Vorlage: {name}', { name: p.name }), icon: 'file-down', callback: () => emit('export', { preset: p }) });
   addCommand({ id: 'git:sync', name: t('Git: jetzt sichern & hochladen'), icon: 'refresh', check: () => isMac, callback: () => gitSyncNow() });
   addCommand({ id: 'git:pull', name: t('Git: Änderungen holen'), icon: 'download', check: () => isMac, callback: () => gitPullNow() });
+  addCommand({ id: 'app:open-trash', name: t('Papierkorb öffnen'), icon: 'trash', callback: () => new TrashModal().open() });
   addCommand({ id: 'ordo:tag-spellings', name: t('Hashtag-Schreibweisen vereinheitlichen …'), icon: 'type', callback: () => new TagSpellingModal().open() });
   addCommand({ id: 'ordo:compress-images', name: t('Große Bilder verkleinern …'), icon: 'image', callback: () => new CompressImagesModal().open() });
   addCommand({ id: 'ordo:sort-all', name: t('Alle Notizen nach Hashtags einsortieren …'), icon: 'wand', callback: () => new SortAllModal().open() });

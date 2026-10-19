@@ -1,7 +1,7 @@
 // File explorer in Obsidian's structure (.nav-header, .nav-files-container,
 // .tree-item.nav-folder / .nav-file) so themes style it like Obsidian.
 
-import { h, icon, iconButton, tooltip, noteName, dirname, basename } from '../dom';
+import { h, icon, iconButton, tooltip, noteName, dirname, basename, debounce } from '../dom';
 import { request, on, emit } from '../host';
 import { vault, TreeFolder, SortOrder } from '../store';
 import { Menu } from '../ui/menu';
@@ -13,6 +13,7 @@ import { setPinned } from '../views/markdown';
 import { FolderSuggestModal } from '../modals/fileModals';
 
 import { t, tn } from '../i18n';
+import { TrashModal, trashCount } from '../modals/trash';
 const SORT_LABELS: [SortOrder, string][] = [
   ['name-asc', t('Dateiname (A bis Z)')], ['name-desc', t('Dateiname (Z bis A)')],
   ['mtime-desc', t('Bearbeitet (neu → alt)')], ['mtime-asc', t('Bearbeitet (alt → neu)')],
@@ -38,9 +39,15 @@ export class FileExplorer implements SidePane {
       iconButton('collapse-all', t('Alle einklappen'), () => this.toggleAll(), 'nav-action-button ordo-collapse-all'),
       iconButton('wand', t('Nach Hashtags einsortieren …'), () => executeCommand('ordo:sort-all'), 'nav-action-button'));
     this.list = h('div', { cls: 'nav-files-container node-insert-event' });
+    // trash is always reachable at the bottom
+    const trashCountEl = h('span', { cls: 'ordo-trash-count' });
+    const trashEntry = h('div', { cls: 'ordo-trash-entry', onclick: () => new TrashModal().open() }, icon('trash'), h('span', { text: t('Papierkorb') }), trashCountEl);
+    const updateTrash = async () => { const n = await trashCount(); trashCountEl.textContent = n ? String(n) : ''; trashEntry.classList.toggle('is-empty', !n); };
+    on('trash-changed', updateTrash); on('vault-opened', updateTrash); on('vault-changed', debounce(updateTrash, 500));
+    updateTrash();
     this.el = h('div', { cls: 'workspace-leaf-content', 'data-type': 'file-explorer' },
       h('div', { cls: 'nav-header' }, buttons),
-      this.list);
+      this.list, trashEntry);
 
     // drop on empty area = vault root
     this.list.addEventListener('dragover', e => { if (e.dataTransfer?.types.includes('text/ordo-path')) { e.preventDefault(); this.list.classList.add('is-being-dragged-over'); } });
@@ -308,13 +315,14 @@ export async function moveTo(path: string, folder: string) {
   } catch (err) { notice(t('Verschieben fehlgeschlagen: ') + err); }
 }
 
+/** Deleting always asks first; everything goes to the trash and can be restored there. */
 export async function trashPath(path: string) {
   const isFolder = vault.folders.has(path);
-  if (isFolder) {
-    const n = [...vault.notes.keys()].filter(p => p.startsWith(path + '/')).length;
-    if (!(await confirmDialog(t('Ordner löschen'), t('„{name}“ mit {n} Notizen in den Papierkorb (.trash) verschieben?', { name: basename(path), n }), t('Löschen'), true))) return;
-  }
-  try { await request('trash', { path }); notice(t('In den Papierkorb (.trash) verschoben.')); }
+  const name = /\.md$/i.test(path) ? noteName(path) : basename(path);
+  const n = isFolder ? [...vault.notes.keys()].filter(p => p.startsWith(path + '/')).length : 0;
+  const msg = isFolder ? t('„{name}“ mit {n} Notizen in den Papierkorb verschieben?', { name, n }) : t('„{name}“ in den Papierkorb verschieben?', { name });
+  if (!(await confirmDialog(t('Bist du sicher?'), msg + ' ' + t('Du kannst es dort wiederherstellen.'), t('Löschen'), true))) return;
+  try { await request('trash', { path }); notice(t('In den Papierkorb verschoben.')); emit('trash-changed'); }
   catch (err) { notice(t('Löschen fehlgeschlagen: ') + err); }
 }
 

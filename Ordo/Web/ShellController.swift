@@ -144,6 +144,18 @@ final class ShellController: WebController {
             try v.trash(str("path"))
             app.pushIndexIfNeeded()
             return nil
+        case "trashList":
+            return v.listTrash()
+        case "trashRestore":
+            let path = try await v.restoreFromTrash(str("name"))
+            app.pushIndexIfNeeded()
+            return path
+        case "trashDelete":
+            try v.deleteFromTrash(str("name"))
+            return nil
+        case "trashEmpty":
+            try v.emptyTrash()
+            return nil
         case "setPinned":
             let path = str("path")
             let dest = v.setPinned(path, body["pinned"] as? Bool ?? true)
