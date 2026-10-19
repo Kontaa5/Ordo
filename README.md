@@ -18,6 +18,15 @@ App für macOS, iPhone und iPad. Die Oberfläche ist wie bei Obsidian eine Web-O
 - **iCloud**: Vault in iCloud Drive ablegen und am iPhone denselben Ordner wählen.
 - **Git-Sync** (Mac, Einstellungen › Git-Sync): Verlauf und Backup in einem Git-Repository. Die Git-Daten liegen lokal (nicht in iCloud), gesichert werden nur Änderungen; Hochladen z. B. einmal am Tag.
 
+## Installieren (Homebrew)
+```bash
+brew tap kontaa5/ordo https://github.com/Kontaa5/Ordo
+brew install --cask ordo
+```
+Update: `brew upgrade --cask ordo`. Ordo ist nicht von Apple notarisiert (kostenloser Entwickler-Account); die Formel entfernt deshalb nach der Installation die Quarantäne-Markierung, damit macOS die App öffnet.
+
+Neue Version veröffentlichen: `tools/release.sh 0.2.0`, danach `main` committen und pushen.
+
 ## Bauen
 ```bash
 cd web && npm install && npm run build   # Editor-Bundle → Ordo/Resources/Web

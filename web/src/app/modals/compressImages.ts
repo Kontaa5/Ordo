@@ -14,17 +14,20 @@ import { t, tn } from '../i18n';
 interface PlanItem { path: string; old: number; new: number; w0: number; h0: number; w1: number; h1: number }
 
 const mb = (bytes: number) => (bytes / 1_000_000).toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' MB';
-const SIZES: [number, string][] = [[0, 'Auflösung behalten (nur komprimieren)'], [3200, '3200 px'], [2400, '2400 px'], [1600, '1600 px'], [1200, '1200 px']];
+const AUTO = -1;
+const SIZES: [number, string][] = [[AUTO, 'Automatisch – bleibt druckscharf (300 dpi)'], [0, 'Auflösung behalten (nur komprimieren)'], [3200, '3200 px'], [2400, '2400 px'], [1600, '1600 px'], [1200, '1200 px']];
 
-/** dpi when the picture fills the text width of a printed page (export settings). */
-function printDpi(px: number) {
+/** Printable text width in inches (export page settings). */
+function textWidthIn() {
   const page = vault.settings?.page;
   const paperMm = page?.paper === 'a5' ? 148 : page?.paper === 'letter' ? 216 : 210;
   const widthMm = (page?.landscape ? (page?.paper === 'a5' ? 210 : 297) : paperMm) - 2 * (page?.marginMM ?? 20);
-  return Math.round(px / (widthMm / 25.4));
+  return widthMm / 25.4;
 }
+/** dpi when the picture fills the text width of a printed page. */
+function printDpi(px: number) { return Math.round(px / textWidthIn()); }
 function sharpness(dpi: number): [string, string] {
-  return dpi >= 300 ? [t('scharf'), 'is-good'] : dpi >= 150 ? [t('gut'), 'is-ok'] : [t('unscharf beim Drucken'), 'is-bad'];
+  return dpi >= 290 ? [t('scharf'), 'is-good'] : dpi >= 150 ? [t('gut'), 'is-ok'] : [t('unscharf beim Drucken'), 'is-bad'];
 }
 
 export class CompressImagesModal extends Modal {
@@ -32,7 +35,7 @@ export class CompressImagesModal extends Modal {
   constructor(private paths?: string[]) {
     super('ordo-sort-all');
     this.setTitle(paths?.length === 1 ? t('Bild verkleinern') : t('Große Bilder verkleinern'));
-    this.maxDim = vault.settings?.maxImageDimension ?? 2400;
+    this.maxDim = AUTO;   // default: only as small as stays sharp in print
   }
 
   async onOpen() { await this.load(); }
@@ -42,10 +45,13 @@ export class CompressImagesModal extends Modal {
     sizeSel.value = String(this.maxDim);
     sizeSel.addEventListener('change', () => { this.maxDim = +sizeSel.value; this.load(); });
     const head = h('div', { cls: 'ordo-compress-head' }, h('span', { text: t('Höchstens') }), sizeSel);
+    if (this.maxDim === AUTO) head.appendChild(h('span', { cls: 'ordo-compress-hint', text: t('Verkleinert nur so weit, dass das Bild über die ganze Textbreite gedruckt noch scharf ist (300 dpi). Kleinere Bilder werden nur platzsparender gespeichert.') }));
     this.contentEl.replaceChildren(head, h('div', { cls: 'setting-item-description', text: this.paths ? t('Berechne …') : t('Suche Bilder über 1 MB …') }));
-    const plan = await request<PlanItem[]>('compressPlan', { maxDim: this.maxDim, ...(this.paths ? { paths: this.paths } : {}) }).catch(() => []);
+    // automatic: scale down only to the width that still prints at 300 dpi across the text width; never below
+    const size = this.maxDim === AUTO ? { maxDim: 0, targetWidth: Math.ceil(300 * textWidthIn()) } : { maxDim: this.maxDim };
+    const plan = await request<PlanItem[]>('compressPlan', { ...size, ...(this.paths ? { paths: this.paths } : {}) }).catch(() => []);
     if (!plan.length) {
-      this.contentEl.replaceChildren(head, h('p', { text: this.paths ? t('Mit dieser Größe wird das Bild kaum kleiner – nichts zu tun.') : t('Keine großen Bilder gefunden, die sich verkleinern lassen.') }),
+      this.contentEl.replaceChildren(head, h('p', { text: this.paths ? (this.maxDim === AUTO ? t('Das Bild ist schon so klein, dass es ohne Qualitätsverlust nicht weiter geht.') : t('Mit dieser Größe wird das Bild kaum kleiner – nichts zu tun.')) : t('Keine großen Bilder gefunden, die sich verkleinern lassen.') }),
         h('div', { cls: 'modal-button-container' }, h('button', { cls: 'mod-cta', text: 'OK', onclick: () => this.close() })));
       return;
     }

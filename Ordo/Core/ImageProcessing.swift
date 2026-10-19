@@ -63,18 +63,22 @@ enum ImageProcessing {
     /// For pictures already in the vault: a smaller version in the same format
     /// (so every link keeps working), scaled to at most `maxDim` px (0 = keep the
     /// resolution). nil if it would not save at least 10 %.
-    static func shrinkKeepingFormat(_ data: Data, ext: String, maxDim: Int) -> Shrunk? {
+    /// `targetWidth` > 0: scale only as far as the width stays at least that many px (keeps print sharpness).
+    static func shrinkKeepingFormat(_ data: Data, ext: String, maxDim: Int, targetWidth: Int = 0) -> Shrunk? {
         let e = ext.lowercased()
         guard ["jpg", "jpeg", "png"].contains(e),
               let src = CGImageSourceCreateWithData(data as CFData, nil),
               let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] else { return nil }
         let w = props[kCGImagePropertyPixelWidth] as? Int ?? 0, h = props[kCGImagePropertyPixelHeight] as? Int ?? 0
-        let tooBig = maxDim > 0 && max(w, h) > maxDim
-        if e == "png" && !tooBig { return nil }   // lossless: only scaling helps
+        var limit = max(w, h)
+        if maxDim > 0 { limit = min(limit, maxDim) }
+        if targetWidth > 0, w > targetWidth { limit = min(limit, Int((Double(max(w, h)) * Double(targetWidth) / Double(w)).rounded(.up))) }
+        let scaled = limit < max(w, h)
+        if e == "png" && !scaled { return nil }   // lossless: only scaling helps
         let opts: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: tooBig ? maxDim : max(w, h),
+            kCGImageSourceThumbnailMaxPixelSize: limit,
         ]
         guard let img = CGImageSourceCreateThumbnailAtIndex(src, 0, opts as CFDictionary) else { return nil }
         let out = NSMutableData()

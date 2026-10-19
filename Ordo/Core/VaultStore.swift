@@ -720,7 +720,7 @@ final class VaultStore {
 
     /// Pictures that can be stored smaller in the same format (dry run, nothing is written).
     /// `paths` = only these pictures (any size), else every picture over 1 MB. `maxDim` 0 = keep the resolution.
-    func compressPlan(maxDim: Int, paths: [String]? = nil) async -> [(path: String, old: Int, shrunk: ImageProcessing.Shrunk)] {
+    func compressPlan(maxDim: Int, targetWidth: Int = 0, paths: [String]? = nil) async -> [(path: String, old: Int, shrunk: ImageProcessing.Shrunk)] {
         let pool = paths ?? files.filter { ["jpg", "jpeg", "png"].contains(Paths.ext($0).lowercased()) }.sorted()
         let candidates: [(String, URL)] = pool.map { ($0, url($0)) }
         let minSize = paths == nil ? ImageProcessing.compressThreshold : 0
@@ -729,7 +729,7 @@ final class VaultStore {
             for (path, u) in candidates {
                 let size = (try? u.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
                 guard size > minSize, let data = VaultStore.coordinatedRead(u),
-                      let smaller = ImageProcessing.shrinkKeepingFormat(data, ext: Paths.ext(path), maxDim: maxDim) else { continue }
+                      let smaller = ImageProcessing.shrinkKeepingFormat(data, ext: Paths.ext(path), maxDim: maxDim, targetWidth: targetWidth) else { continue }
                 out.append((path, data.count, smaller))
             }
             return out

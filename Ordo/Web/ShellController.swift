@@ -238,7 +238,7 @@ final class ShellController: WebController {
             return false
             #endif
         case "compressPlan":
-            let plan = await v.compressPlan(maxDim: body["maxDim"] as? Int ?? v.settings.maxImageDimension, paths: body["paths"] as? [String])
+            let plan = await v.compressPlan(maxDim: body["maxDim"] as? Int ?? v.settings.maxImageDimension, targetWidth: body["targetWidth"] as? Int ?? 0, paths: body["paths"] as? [String])
             compressCache = Dictionary(plan.map { ($0.path, $0.shrunk.data) }, uniquingKeysWith: { a, _ in a })
             return plan.map { ["path": $0.path, "old": $0.old, "new": $0.shrunk.data.count,
                                "w0": $0.shrunk.oldSize.w, "h0": $0.shrunk.oldSize.h, "w1": $0.shrunk.newSize.w, "h1": $0.shrunk.newSize.h] as [String: Any] }

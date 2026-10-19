@@ -969,7 +969,7 @@ body.is-mobile .ordo-block-handle { display: none; }
 .ordo-tag-hint-action { margin-left: auto; color: var(--text-accent); font-weight: 600; }
 
 /* shrink pictures: before/after */
-.ordo-compress-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: var(--font-ui-small); color: var(--text-muted); }
+.ordo-compress-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; font-size: var(--font-ui-small); color: var(--text-muted); }
 .ordo-compress-row { align-items: center; }
 .ordo-compress-thumb { width: 56px; height: 42px; object-fit: cover; border-radius: var(--radius-s); flex: 0 0 auto; background: var(--background-secondary); }
 .ordo-sharpness { font-weight: 600; } .ordo-sharpness.is-good { color: var(--color-green); } .ordo-sharpness.is-ok { color: var(--color-orange); } .ordo-sharpness.is-bad { color: var(--color-red); }
@@ -999,3 +999,4 @@ body.is-mobile .ordo-block-handle { display: none; }
 .ordo-trash-row { align-items: center; gap: 10px; --icon-size: 16px; color: var(--text-normal); }
 .ordo-trash-info { flex: 1 1 auto; min-width: 0; }
 .ordo-trash-delete { color: var(--text-error); }
+.ordo-compress-hint { flex-basis: 100%; font-size: var(--font-ui-smaller); color: var(--text-faint); }

@@ -266,6 +266,10 @@ export const EN: Record<string, string> = {
   'Bist du sicher?': 'Are you sure?', '„{name}“ mit {n} Notizen in den Papierkorb verschieben?': 'Move “{name}” with {n} notes to the trash?', '„{name}“ in den Papierkorb verschieben?': 'Move “{name}” to the trash?',
   'Du kannst es dort wiederherstellen.': 'You can restore it there.', 'In den Papierkorb verschoben.': 'Moved to the trash.',
 
+  'Automatisch – bleibt druckscharf (300 dpi)': 'Automatic – stays print-sharp (300 dpi)',
+  'Verkleinert nur so weit, dass das Bild über die ganze Textbreite gedruckt noch scharf ist (300 dpi). Kleinere Bilder werden nur platzsparender gespeichert.': 'Only shrinks as far as the picture still prints sharp across the full text width (300 dpi). Smaller pictures are only stored more compactly.',
+  'Das Bild ist schon so klein, dass es ohne Qualitätsverlust nicht weiter geht.': 'The picture is already so small that it can’t shrink further without losing quality.',
+
   // hotkey names
   'Leertaste': 'Space', 'Strg': 'Ctrl', 'Umschalt': 'Shift', 'Esc': 'Esc',
 };
