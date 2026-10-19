@@ -7,14 +7,17 @@ cask "ordo" do
   desc "Markdown-Notizen wie Obsidian, mit Hashtag-Ordnern und PDF-Export"
   homepage "https://github.com/Kontaa5/Ordo"
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "Ordo.app"
 
   # Ordo ist nicht von Apple notarisiert (kostenloser Entwickler-Account):
   # ohne diesen Schritt würde macOS das Öffnen blockieren.
-  postflight do
-    system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{appdir}/Ordo.app"]
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args:           ["-dr", "com.apple.quarantine", "{{appdir}}/Ordo.app"],
+        writable_paths: ["Ordo.app"],
+        writable_base:  :appdir
   end
 
   zap trash: [
