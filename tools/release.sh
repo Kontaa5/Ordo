@@ -13,14 +13,14 @@ sed -i '' "s/MARKETING_VERSION: \".*\"/MARKETING_VERSION: \"$version\"/" project
 (cd web && node build.mjs)
 xcodegen generate >/dev/null
 xcodebuild -project Ordo.xcodeproj -scheme Ordo -configuration Release -destination 'generic/platform=macOS' \
-  -derivedDataPath build/release ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO build | grep -E "error:|BUILD" || true
-app=build/release/Build/Products/Release/Ordo.app
+  -derivedDataPath build.noindex/release ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO build | grep -E "error:|BUILD" || true
+app=build.noindex/release/Build/Products/Release/Ordo.app
 [[ -d $app ]] || { echo "Build fehlgeschlagen"; exit 1; }
 
 zip="Ordo-$version.zip"
-rm -rf build/dist && mkdir -p build/dist
-ditto -c -k --sequesterRsrc --keepParent "$app" "build/dist/$zip"
-sha=$(shasum -a 256 "build/dist/$zip" | cut -d' ' -f1)
+rm -rf build.noindex/dist && mkdir -p build.noindex/dist
+ditto -c -k --sequesterRsrc --keepParent "$app" "build.noindex/dist/$zip"
+sha=$(shasum -a 256 "build.noindex/dist/$zip" | cut -d' ' -f1)
 
 # zip onto the releases branch (separate history, keeps main small)
 tmp=$(mktemp -d)
@@ -28,7 +28,7 @@ tmp=$(mktemp -d)
 https=$(echo "$remote" | sed -E 's#^git@github.com:#https://github.com/#')
 git clone -q --depth 1 --branch releases "$https" "$tmp" 2>/dev/null || git init -q -b releases "$tmp"
 git -C "$tmp" remote remove origin 2>/dev/null; git -C "$tmp" remote add origin "$remote"
-cp "build/dist/$zip" "$tmp/"
+cp "build.noindex/dist/$zip" "$tmp/"
 git -C "$tmp" add "$zip"
 git -C "$tmp" -c user.name="$(git config user.name)" -c user.email="$(git config user.email)" commit -q -m "Ordo $version"
 git -C "$tmp" push -q origin releases

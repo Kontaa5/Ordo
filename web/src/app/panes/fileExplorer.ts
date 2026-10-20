@@ -1,7 +1,7 @@
 // File explorer in Obsidian's structure (.nav-header, .nav-files-container,
 // .tree-item.nav-folder / .nav-file) so themes style it like Obsidian.
 
-import { h, icon, iconButton, tooltip, noteName, dirname, basename, debounce } from '../dom';
+import { h, icon, iconButton, tooltip, noteName, dirname, basename } from '../dom';
 import { request, on, emit } from '../host';
 import { vault, TreeFolder, SortOrder } from '../store';
 import { Menu } from '../ui/menu';

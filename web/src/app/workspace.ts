@@ -6,7 +6,7 @@ import { request, emit, on, isMac, isIOS } from './host';
 import { Menu } from './ui/menu';
 import { hotkeyLabel, executeCommand } from './commands';
 
-import { t, tn } from './i18n';
+import { t } from './i18n';
 export type ViewState =
   | { type: 'markdown'; path: string; mode?: 'source' | 'preview'; line?: number }
   | { type: 'graph' }

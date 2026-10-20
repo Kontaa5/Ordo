@@ -2,6 +2,7 @@
 // them: properties (frontmatter), callouts, tables, $$ math, note embeds.
 
 import { syntaxTree } from '@codemirror/language';
+import type { SyntaxNode } from '@lezer/common';
 import { EditorState, Range, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
 import { render } from '../../markdown';
@@ -9,7 +10,7 @@ import { renderMath } from '../../math';
 import { editorHost } from './host';
 import { ICONS } from '../icons';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 export interface RenderedBlock { from: number; to: number; kind: 'properties' | 'callout' | 'table' | 'math'; text: string }
 
 function touchesSel(state: EditorState, from: number, to: number) {
@@ -33,16 +34,21 @@ function candidateBlocks(state: EditorState): RenderedBlock[] {
       }
     }
   }
-  // callouts and tables are top-level blocks: walk only the document's direct children (not every inline node)
-  for (let n = tree.topNode.firstChild; n; n = n.nextSibling) {
-    if (n.name === 'Blockquote') {
-      const first = doc.lineAt(n.from);
-      if (/^>\s*\[!/.test(first.text)) out.push({ from: first.from, to: doc.lineAt(n.to).to, kind: 'callout', text: doc.sliceString(first.from, doc.lineAt(n.to).to) });
-    } else if (n.name === 'Table') {
-      const first = doc.lineAt(n.from), last = doc.lineAt(n.to);
-      out.push({ from: first.from, to: last.to, kind: 'table', text: doc.sliceString(first.from, last.to) });
+  // callouts and tables: walk block nodes only – top level and inside list items – never inline nodes
+  const scan = (parent: SyntaxNode) => {
+    for (let n = parent.firstChild; n; n = n.nextSibling) {
+      if (n.name === 'Blockquote') {
+        const first = doc.lineAt(n.from), last = doc.lineAt(n.to);
+        if (/^\s*(?:[-*+]\s+|\d+[.)]\s+)?>\s*\[!/.test(first.text)) out.push({ from: first.from, to: last.to, kind: 'callout', text: doc.sliceString(first.from, last.to) });
+      } else if (n.name === 'Table') {
+        const first = doc.lineAt(n.from), last = doc.lineAt(n.to);
+        out.push({ from: first.from, to: last.to, kind: 'table', text: doc.sliceString(first.from, last.to) });
+      } else if (n.name === 'BulletList' || n.name === 'OrderedList' || n.name === 'ListItem') {
+        scan(n);
+      }
     }
-  }
+  };
+  scan(tree.topNode);
   // $$ … $$ display math
   for (let i = 1; i <= doc.lines; i++) {
     const line = doc.line(i);

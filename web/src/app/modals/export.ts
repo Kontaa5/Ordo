@@ -9,7 +9,7 @@ import { notice } from '../ui/notice';
 import { promptText, confirmDialog } from '../ui/modal';
 import { setting } from './tagRule';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 type Sort = 'name' | 'mtime' | 'folder' | 'manual';
 
 export class ExportModal extends Modal {

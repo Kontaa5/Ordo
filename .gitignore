@@ -7,3 +7,4 @@ xcuserdata/
 # Ordo state inside the demo vault (per device)
 Ordo Demo/.ordo/state.json
 Ordo Demo/.ordo/appearance.json
+build.noindex/

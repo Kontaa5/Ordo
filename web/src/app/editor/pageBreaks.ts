@@ -5,7 +5,7 @@ import { Range, StateEffect, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
 
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 export const setPageBreaks = StateEffect.define<{ line: number; page: number }[]>();
 
 class PageBreakWidget extends WidgetType {

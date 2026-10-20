@@ -8,7 +8,7 @@ import { openLightbox } from '../../lightbox';
 import { openImageEditor } from '../../imageEditor';
 import { bumpImage } from '../editor/images';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 export class EmptyView extends View {
   getViewType() { return 'empty'; }
   getDisplayText() { return t('Neuer Tab'); }

@@ -10,7 +10,7 @@ import { on, emit } from '../host';
 import { vault } from '../store';
 import { getActiveMarkdownView, openLinkText } from './markdown';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 interface GNode extends SimulationNodeDatum { id: string; name: string; folder: string; kind: 'note' | 'tag' | 'missing' | 'file'; deg: number }
 interface GLink extends SimulationLinkDatum<GNode> { source: string | GNode; target: string | GNode }
 
@@ -95,14 +95,12 @@ export class GraphView extends View {
   async setState() { setTimeout(() => { this.readColors(); this.resize(); this.build(); setTimeout(() => this.fit(), 900); }, 30); }
   onClose() { views.delete(this); this.sim?.stop(); this.offs.forEach(f => f()); this.ro.disconnect(); }
 
-  private bg = '#fff';
   private muted = '#888';
   private font = 'system-ui';
   private readColors() {
     this.contentEl.querySelectorAll<HTMLElement>('.ordo-graph-colors > div').forEach(el => { this.colors[el.dataset.c!] = getComputedStyle(el).color; });
     this.font = getComputedStyle(document.body).getPropertyValue('--font-interface').trim() || 'system-ui';
     const cs = getComputedStyle(this.contentEl);
-    this.bg = cs.getPropertyValue('--background-primary').trim() || '#fff';
     this.muted = cs.getPropertyValue('--text-muted').trim() || '#888';
   }
 

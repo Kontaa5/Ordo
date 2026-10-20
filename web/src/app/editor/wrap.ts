@@ -4,6 +4,7 @@
 
 import { EditorSelection, Prec } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
+import { request } from '../host';
 
 const PAIRS: Record<string, string> = { '`': '`', '*': '*', '_': '_', '~': '~', '=': '=', '(': ')', '[': ']', '"': '"' };
 
@@ -20,15 +21,18 @@ function wrapSelection(view: EditorView, open: string): boolean {
 
 export const wrapOnType = [
   Prec.highest(EditorView.inputHandler.of((view, _from, _to, text) => wrapSelection(view, text))),
-  // German Mac keyboard: Shift + ´ is a dead key for `. It would replace the selection with
-  // a provisional ` and wait for the next key – so wrap right on the key press instead.
+  // German Mac keyboard: Shift + ´ is a dead key for `. macOS would wait for the next key and
+  // combine it (a → à) – so wrap right on the key press and tell macOS to forget the key.
   Prec.highest(EditorView.domEventHandlers({
     keydown(e, view) {
       if (e.key !== 'Dead' || view.state.selection.main.empty) return false;
       const ch = e.code === 'Equal' && e.shiftKey ? '`' : null;
       if (!ch) return false;
       e.preventDefault();
-      return wrapSelection(view, ch);
+      const done = wrapSelection(view, ch);
+      // the key is still pending in macOS (a → á, space → `): drop it, also once more after the event
+      if (done) { request('discardMarkedText').catch(() => {}); setTimeout(() => request('discardMarkedText').catch(() => {}), 0); }
+      return done;
     },
   })),
 ];

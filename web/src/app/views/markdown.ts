@@ -1,8 +1,8 @@
 // Markdown view: inline title + live-preview editor (CodeMirror 6) and the
 // reading view, with Obsidian's DOM classes.
 
-import { EditorState, Extension, EditorSelection, StateField, Compartment, Prec } from '@codemirror/state';
-import { EditorView, keymap, drawSelection, dropCursor, Decoration, DecorationSet, WidgetType, rectangularSelection, crosshairCursor } from '@codemirror/view';
+import { EditorState, Extension, EditorSelection, Prec } from '@codemirror/state';
+import { EditorView, keymap, drawSelection, dropCursor, rectangularSelection, crosshairCursor } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab, undo, redo, selectAll } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { syntaxHighlighting, indentOnInput, bracketMatching, indentUnit } from '@codemirror/language';
@@ -10,7 +10,7 @@ import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap, C
 import { search, searchKeymap, highlightSelectionMatches, openSearchPanel } from '@codemirror/search';
 
 import { View, Leaf, ViewState, registerView, workspace } from '../workspace';
-import { h, icon, iconButton, debounce, noteName, dirname, basename, tooltip } from '../dom';
+import { h, icon, iconButton, debounce, noteName, dirname, basename } from '../dom';
 import { request, on, emit } from '../host';
 import { vault } from '../store';
 import { notice } from '../ui/notice';

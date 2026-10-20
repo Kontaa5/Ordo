@@ -6,20 +6,12 @@ import { vault, TagRule } from '../store';
 import { request } from '../host';
 import { notice } from '../ui/notice';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 const MODES: [TagRule['mode'], string][] = [
   ['folderAndSubfolder', t('Ordner (2. Hashtag = Unterordner)')],
   ['folderOnly', t('Ordner, aber kein Unterordner')],
   ['ignore', t('Kein Ordner (nur Schlagwort)')],
 ];
-
-/** Does this hashtag create a folder? (rule, else the "all tags are folders" switch) */
-export function isFolderTag(tag: string): boolean {
-  const rules = vault.settings?.tagRules ?? {};
-  const l = tag.toLowerCase();
-  const r = rules[l] ?? rules[l.split('/')[0]];
-  return r ? r.mode !== 'ignore' : !!vault.settings?.allTagsAreFolders;
-}
 
 /** Same logic as the Swift side (FolderRules.targetFolder). */
 export function targetFolder(tags: string[], rules: Record<string, TagRule>, allTagsAreFolders: boolean, base = ''): string | null {

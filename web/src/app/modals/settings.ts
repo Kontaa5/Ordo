@@ -7,13 +7,13 @@ import { request, emit, on, isMac } from '../host';
 import { gitStatus, gitSyncNow, gitPullNow, when, GitStatus } from '../git';
 import { appState } from '../state';
 import { notice } from '../ui/notice';
-import { getScheme, setScheme, getZoom, setZoom, appearance, saveAppearance, applyAll, applyColorScheme, applyAccent, applyFonts, applyTheme, applySnippets, applyStyleSettings, communityThemes, installCommunityTheme, CommunityTheme } from '../appearance';
+import { getScheme, setScheme, getZoom, setZoom, appearance, saveAppearance, applyAll, applyAccent, applyFonts, applyTheme, applySnippets, applyStyleSettings, communityThemes, installCommunityTheme, CommunityTheme } from '../appearance';
 import { executeCommand, getCommands, hotkeysFor, displayHotkey, setHotkey, eventCombo, Hotkey, Modifier } from '../commands';
 import { TagRuleModal } from './tagRule';
 import { SortAllModal } from './sortAll';
 import { setting } from './tagRule';
 
-import { t, tn, lang, setLang, Lang } from '../i18n';
+import { t, lang, setLang, Lang } from '../i18n';
 type Tab = { id: string; name: string; group: string; render: (el: HTMLElement) => void | Promise<void> };
 
 export class SettingsModal extends Modal {
@@ -262,11 +262,7 @@ export class SettingsModal extends Modal {
       result.classList.toggle('is-error', !r.ok);
     } });
     el.append(setting(t('Repository-Adresse'), t('Leeres, privates Repository anlegen und die SSH-Adresse hier eintragen.'), h('div', { cls: 'ordo-git-remote' }, remote, test)), result);
-    el.append(
-      setting(t('Sichern (commit)'), t('Speichert eine neue Version lokal – nur was sich geändert hat.'), this.dropdown([['auto', t('Automatisch, 10 Minuten nach dem Tippen')], ['daily', t('Einmal am Tag')], ['manual', t('Nur von Hand')]], s.gitCommit ?? 'auto', v => this.save({ gitCommit: v as any }))),
-      setting(t('Hochladen (push)'), '', this.dropdown([['daily', t('Einmal am Tag')], ['afterCommit', t('Nach jedem Sichern')], ['manual', t('Nur von Hand')]], s.gitPush ?? 'daily', v => this.save({ gitPush: v as any }))),
-      setting(t('Holen (pull)'), t('Holt Änderungen vom Server, z. B. von einem anderen Mac. Gleich geänderte Notizen gehen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.'), this.dropdown([['dailyStart', t('Beim ersten Start am Tag')], ['everyStart', t('Bei jedem Start')], ['manual', t('Nur von Hand')]], s.gitPull ?? 'dailyStart', v => this.save({ gitPull: v as any }))),
-    );
+    el.append(h('p', { cls: 'setting-item-description', text: t('Ordo lädt nie von selbst hoch oder herunter – nur mit „Sichern & hochladen“ bzw. „Holen“ (hier oder über den Punkt unten in der Statusleiste). Gleich geänderte Notizen gehen beim Holen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.') }));
     const status = h('div', { cls: 'setting-item-description' });
     const show = (st: GitStatus) => {
       status.textContent = st.state === 'nogit' ? t('Git ist auf diesem Mac nicht installiert. Im Terminal „xcode-select --install“ ausführen.')

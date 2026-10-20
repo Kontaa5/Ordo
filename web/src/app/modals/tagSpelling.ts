@@ -2,7 +2,7 @@
 // in every note. Shows the list first; frontmatter and code stay untouched.
 
 import { Modal } from '../ui/modal';
-import { h, noteName } from '../dom';
+import { h } from '../dom';
 import { request } from '../host';
 import { notice } from '../ui/notice';
 import { vault } from '../store';
@@ -92,7 +92,3 @@ export class TagSpellingModal extends Modal {
   }
 }
 
-/** Notes that use a hashtag in a spelling other than its one spelling. */
-export function notesWithOtherSpelling(): string[] {
-  return [...vault.notes.values()].filter(n => (n.rawTags ?? []).some(tg => { const c = vault.canonicalTag(tg); return c && c !== tg; })).map(n => noteName(n.path));
-}

@@ -316,21 +316,6 @@ final class VaultStore {
         return list.min { $0.count < $1.count }
     }
 
-    func backlinks(to path: String) -> [(path: String, snippet: String)] {
-        var out: [(String, String)] = []
-        let name = Paths.noteName(path)
-        for (p, meta) in notes where p != path {
-            let targets = meta.parsed.links + meta.parsed.embeds
-            guard targets.contains(where: { resolve($0, from: p) == path }) else { continue }
-            var snippet = ""
-            if let text = contents[p], let r = text.range(of: name, options: .caseInsensitive) {
-                snippet = MarkdownParsing.snippet(text, around: r, radius: 50)
-            }
-            out.append((p, snippet))
-        }
-        return out.sorted { Paths.noteName($0.0).localizedStandardCompare(Paths.noteName($1.0)) == .orderedAscending }
-    }
-
     func notes(withTags tags: [String], matchAll: Bool) -> [String] {
         let wanted = tags.map { $0.lowercased() }
         guard !wanted.isEmpty else { return [] }
@@ -358,13 +343,9 @@ final class VaultStore {
 
     // MARK: - writing
 
-    /// Last time a note was saved from Ordo (Git-Sync waits for a pause after it).
-    private(set) var lastWrite = Date.distantPast
-
     func write(_ path: String, text: String) {
         guard contents[path] != text || notes[path] == nil else { return }
         contents[path] = text
-        lastWrite = Date()
         let url = url(path)
         Self.coordinatedWrite(Data(text.utf8), to: url)
         let vals = try? url.resourceValues(forKeys: [.contentModificationDateKey, .creationDateKey, .fileSizeKey])

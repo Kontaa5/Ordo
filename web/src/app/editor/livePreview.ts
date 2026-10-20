@@ -12,7 +12,7 @@ import { ImageWidget, findEmbeds, imageRow, refreshImages } from './images';
 import { COPY_ICON, CHECK_ICON } from '../../markdown';
 import { NoteEmbedWidget, renderedBlocks } from './blocks';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 // ---------- helpers ----------
 
 export function frontmatterRange(state: EditorState): { from: number; to: number } | null {

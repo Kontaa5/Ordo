@@ -9,7 +9,7 @@ import { resolve, fileURL, IMAGE_EXT, parseSize } from '../../vault';
 import { editorHost } from './host';
 import { emit } from '../host';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 export interface Embed {
   from: number; to: number; target: string; path: string | null; width?: number;
   kind: 'image' | 'note' | 'other'; syntax: 'wiki' | 'md';

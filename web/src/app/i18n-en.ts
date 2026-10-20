@@ -249,10 +249,6 @@ export const EN: Record<string, string> = {
   'Git-Sync verwenden': 'Use Git-Sync', 'Nur auf dem Mac. Das iPhone bekommt alles weiter über iCloud.': 'Mac only. The iPhone keeps getting everything through iCloud.',
   'Verbindung testen': 'Test connection', 'Teste …': 'Testing …', '✓ Verbindung klappt.': '✓ Connection works.', 'Repository-Adresse': 'Repository address',
   'Leeres, privates Repository anlegen und die SSH-Adresse hier eintragen.': 'Create an empty private repository and enter its SSH address here.',
-  'Sichern (commit)': 'Back up (commit)', 'Speichert eine neue Version lokal – nur was sich geändert hat.': 'Stores a new version locally – only what changed.',
-  'Automatisch, 10 Minuten nach dem Tippen': 'Automatically, 10 minutes after typing', 'Einmal am Tag': 'Once a day', 'Nur von Hand': 'Manually only', 'Hochladen (push)': 'Upload (push)', 'Nach jedem Sichern': 'After every backup',
-  'Holen (pull)': 'Fetch (pull)', 'Holt Änderungen vom Server, z. B. von einem anderen Mac. Gleich geänderte Notizen gehen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.': 'Fetches changes from the server, e.g. from another Mac. Notes changed on both sides are not lost: the other version is saved next to it as "Name (Konflikt)".',
-  'Beim ersten Start am Tag': 'At the first start of the day', 'Bei jedem Start': 'At every start',
   'Git ist auf diesem Mac nicht installiert. Im Terminal „xcode-select --install“ ausführen.': 'Git is not installed on this Mac. Run "xcode-select --install" in Terminal.',
   'Zuletzt gesichert: {c} · hochgeladen: {p} · geholt: {l}': 'Last backup: {c} · upload: {p} · fetch: {l}', 'Jetzt': 'Now', 'Sichern & hochladen': 'Back up & upload', 'Holen': 'Fetch',
   'Anmeldung bei GitHub einrichten': 'Set up GitHub login',
@@ -274,6 +270,8 @@ export const EN: Record<string, string> = {
   'wird morgen endgültig gelöscht': 'will be deleted tomorrow', 'wird in {n} Tagen endgültig gelöscht': 'will be deleted in {n} days', 'Papierkorb leeren nach': 'Empty trash after',
   'Gelöschte Notizen und Bilder bleiben so lange im Papierkorb (Symbol unten neben ⚙) und werden dann endgültig gelöscht.': 'Deleted notes and pictures stay in the trash (icon at the bottom next to ⚙) this long, then they are deleted permanently.',
   '7 Tagen': '7 days', '30 Tagen': '30 days', '90 Tagen': '90 days', 'nie': 'never',
+
+  'Ordo lädt nie von selbst hoch oder herunter – nur mit „Sichern & hochladen“ bzw. „Holen“ (hier oder über den Punkt unten in der Statusleiste). Gleich geänderte Notizen gehen beim Holen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.': 'Ordo never uploads or downloads on its own – only with “Back up & upload” or “Fetch” (here or via the dot in the status bar). Notes changed on both sides are not lost when fetching: the other version is saved next to it as “Name (Konflikt)”.',
 
   // hotkey names
   'Leertaste': 'Space', 'Strg': 'Ctrl', 'Umschalt': 'Shift', 'Esc': 'Esc',

@@ -4,7 +4,7 @@
 import { request, on, isMac } from './host';
 import { isModalOpen } from './ui/modal';
 
-import { t, tn } from './i18n';
+import { t } from './i18n';
 export type Modifier = 'Mod' | 'Ctrl' | 'Alt' | 'Shift';
 export interface Hotkey { modifiers: Modifier[]; key: string }
 
@@ -25,7 +25,6 @@ export interface Command {
 const commands = new Map<string, Command>();
 let custom: Record<string, Hotkey[]> = {};
 let comboMap = new Map<string, string>();
-const listeners = new Set<() => void>();
 
 export function addCommand(cmd: Command) {
   commands.set(cmd.id, cmd);
@@ -33,7 +32,6 @@ export function addCommand(cmd: Command) {
 }
 
 export function getCommands() { return [...commands.values()]; }
-export function getCommand(id: string) { return commands.get(id); }
 
 export function hotkeysFor(id: string): Hotkey[] {
   return custom[id] ?? commands.get(id)?.hotkeys ?? [];
@@ -48,9 +46,7 @@ export function getCustomHotkeys() { return custom; }
 export function setHotkey(id: string, hotkeys: Hotkey[] | null) {
   if (hotkeys == null) delete custom[id]; else custom[id] = hotkeys;
   scheduleRebuild();
-  listeners.forEach(fn => fn());
 }
-export function onHotkeysChanged(fn: () => void) { listeners.add(fn); }
 
 export function comboString(hk: Hotkey): string {
   const order: Modifier[] = ['Mod', 'Ctrl', 'Alt', 'Shift'];

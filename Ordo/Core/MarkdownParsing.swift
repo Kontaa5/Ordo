@@ -164,14 +164,4 @@ enum MarkdownParsing {
     private static func replace(_ re: NSRegularExpression, in s: String, with r: String) -> String {
         re.stringByReplacingMatches(in: s, range: NSRange(location: 0, length: (s as NSString).length), withTemplate: r)
     }
-
-    /// Text for search result snippets.
-    static func snippet(_ text: String, around range: Range<String.Index>, radius: Int = 60) -> String {
-        let start = text.index(range.lowerBound, offsetBy: -radius, limitedBy: text.startIndex) ?? text.startIndex
-        let end = text.index(range.upperBound, offsetBy: radius, limitedBy: text.endIndex) ?? text.endIndex
-        var s = String(text[start..<end]).replacingOccurrences(of: "\n", with: " ")
-        if start > text.startIndex { s = "…" + s }
-        if end < text.endIndex { s += "…" }
-        return s
-    }
 }

@@ -17,8 +17,6 @@ export interface PageGeom {
   fontSize: number;
 }
 
-export const DEFAULT_GEOM: PageGeom = { pageW: 595, pageH: 842, mt: 56, mr: 56, mb: 56, ml: 56, fontSize: 11 };
-
 let index: VaultIndex = { notes: [], files: [], tags: [], attachmentFolder: '' };
 let byBase = new Map<string, string[]>();
 

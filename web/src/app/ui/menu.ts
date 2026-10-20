@@ -122,4 +122,3 @@ export class Menu {
   }
 }
 
-export function closeMenus() { open?.hide(); }

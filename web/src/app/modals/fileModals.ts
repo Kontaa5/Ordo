@@ -7,7 +7,7 @@ import { workspace } from '../workspace';
 import { request } from '../host';
 import { getCommands, executeCommand, hotkeysFor, displayHotkey, Command } from '../commands';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 interface FileItem { path: string; name: string; score: number; matches: number[]; recent: number }
 
 const recent: string[] = [];

@@ -5,7 +5,7 @@ import { h, noteName, dirname } from '../dom';
 import { request } from '../host';
 import { notice } from '../ui/notice';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 export class SortAllModal extends Modal {
   constructor() { super('ordo-sort-all'); this.setTitle(t('Nach Hashtags einsortieren')); }
 

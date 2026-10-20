@@ -7,7 +7,7 @@ import { EditorView } from '@codemirror/view';
 import { Modal } from '../ui/modal';
 import { h } from '../dom';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 interface Item { name: string; tex: string; snippet?: string }
 
 export const MATH: { title: string; items: Item[] }[] = [

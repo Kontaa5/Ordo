@@ -144,6 +144,13 @@ final class ShellController: WebController {
             try v.trash(str("path"))
             app.pushIndexIfNeeded()
             return nil
+        case "discardMarkedText":
+            // a dead key (´ `) was used to wrap a selection: forget it, otherwise macOS
+            // combines it with the next key (a → á) or adds another ` on space
+            #if os(macOS)
+            webView.inputContext?.discardMarkedText()
+            #endif
+            return nil
         case "trashList":
             return ["items": v.listTrash(), "days": v.settings.trashDays]
         case "trashRestore":

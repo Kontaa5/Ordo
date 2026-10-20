@@ -56,12 +56,6 @@ struct VaultSettings: Codable, Equatable, Sendable {
 
     var gitEnabled: Bool = false
     var gitRemote: String = ""
-    /// "auto" = after 10 min without changes, "daily", "manual"
-    var gitCommit: String = "auto"
-    /// "daily", "afterCommit", "manual"
-    var gitPush: String = "daily"
-    /// "dailyStart" = first start of the day, "everyStart", "manual"
-    var gitPull: String = "dailyStart"
 
     var defaultMode: EditorMode = .edit
     var editorFontSize: Double = 16
@@ -95,9 +89,6 @@ struct VaultSettings: Codable, Equatable, Sendable {
         trashDays = (try? c.decode(Int.self, forKey: .trashDays)) ?? d.trashDays
         gitEnabled = (try? c.decode(Bool.self, forKey: .gitEnabled)) ?? d.gitEnabled
         gitRemote = (try? c.decode(String.self, forKey: .gitRemote)) ?? d.gitRemote
-        gitCommit = (try? c.decode(String.self, forKey: .gitCommit)) ?? d.gitCommit
-        gitPush = (try? c.decode(String.self, forKey: .gitPush)) ?? d.gitPush
-        gitPull = (try? c.decode(String.self, forKey: .gitPull)) ?? d.gitPull
         exportPresets = (try? c.decode([ExportPreset].self, forKey: .exportPresets)) ?? d.exportPresets
         newNoteFolder = (try? c.decode(String.self, forKey: .newNoteFolder)) ?? d.newNoteFolder
         defaultMode = (try? c.decode(EditorMode.self, forKey: .defaultMode)) ?? d.defaultMode

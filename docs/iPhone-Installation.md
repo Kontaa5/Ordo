@@ -39,7 +39,7 @@ Hintergrund**, solange dein Mac läuft und im selben WLAN ist.
    ```bash
    tools/build-ipa.sh
    ```
-   Ergebnis: `build/Ordo.ipa`
+   Ergebnis: `build.noindex/Ordo.ipa`
 5. `Ordo.ipa` per AirDrop aufs iPhone schicken › „Öffnen in AltStore“
    (oder in AltStore › My Apps › „+“).
 6. In AltServer (Menüleiste) **„Launch at Login“** aktivieren. Fertig: AltStore

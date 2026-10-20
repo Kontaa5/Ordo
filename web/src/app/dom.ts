@@ -16,10 +16,6 @@ export function icon(name: string, size?: number): SVGSVGElement {
   return svg;
 }
 
-export function setIcon(el: HTMLElement, name: string) {
-  el.replaceChildren(icon(name));
-}
-
 type Child = Node | string | null | undefined | false;
 type Attrs = Record<string, any> & { cls?: string; text?: string; onclick?: (e: MouseEvent) => void };
 
@@ -131,7 +127,3 @@ export function highlightMatches(text: string, matches: number[]): DocumentFragm
   return f;
 }
 
-export function formatDate(ms: number) {
-  if (!ms) return '';
-  return new Date(ms).toLocaleString('de-AT', { dateStyle: 'medium', timeStyle: 'short' });
-}

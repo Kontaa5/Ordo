@@ -3,7 +3,7 @@
 
 import { h, icon } from '../dom';
 
-import { t, tn } from '../i18n';
+import { t } from '../i18n';
 const stack: Modal[] = [];
 
 export class Modal {

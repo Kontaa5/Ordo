@@ -3,7 +3,7 @@
 
 import './ui.css';
 import '../shared.css';
-import { h, icon, iconButton, tooltip, basename, noteName, dirname } from './dom';
+import { h, icon, iconButton, tooltip, noteName } from './dom';
 import { request, on, emit, isMac, isIOS } from './host';
 import { vault } from './store';
 import { addCommand, initHotkeys, executeCommand, hotkeyLabel } from './commands';
@@ -31,7 +31,7 @@ import { setGraphOption } from './views/graph';
 import { isModalOpen } from './ui/modal';
 import { post } from '../bridge';
 
-import { t, tn, lang } from './i18n';
+import { t, lang } from './i18n';
 interface Boot { platform: 'mac' | 'ios'; isPhone: boolean; vault: { name: string; path: string; importedFromObsidian?: boolean; isObsidianVault?: boolean } | null; recent: { name: string; path: string }[]; obsidianVaults: { name: string; path: string }[]; version: string }
 
 let boot: Boot;
@@ -182,7 +182,7 @@ function buildVaultProfile(ws: Workspace) {
   const switcher = h('div', { cls: 'workspace-drawer-vault-switcher' },
     h('div', { cls: 'workspace-drawer-vault-switcher-icon' }, icon('expand-all')),
     h('div', { cls: 'workspace-drawer-vault-name', text: vault.name }));
-  switcher.addEventListener('click', e => {
+  switcher.addEventListener('click', () => {
     const m = new Menu();
     for (const r of boot.recent.filter(r => r.path !== vault.path).slice(0, 8)) m.addItem({ title: r.name, icon: 'vault', onClick: () => request('openVault', { path: r.path }) });
     if (boot.recent.length > 1) m.addSeparator();

@@ -52,14 +52,6 @@ enum ImageProcessing {
     /// Result of shrinking a picture that is already in the vault.
     struct Shrunk { var data: Data; var oldSize: (w: Int, h: Int); var newSize: (w: Int, h: Int) }
 
-    /// Pixel size of a picture file (nil if it can't be read).
-    static func pixelSize(_ data: Data) -> (w: Int, h: Int)? {
-        guard let src = CGImageSourceCreateWithData(data as CFData, nil),
-              let p = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any],
-              let w = p[kCGImagePropertyPixelWidth] as? Int, let h = p[kCGImagePropertyPixelHeight] as? Int else { return nil }
-        return (w, h)
-    }
-
     /// For pictures already in the vault: a smaller version in the same format
     /// (so every link keeps working), scaled to at most `maxDim` px (0 = keep the
     /// resolution). nil if it would not save at least 10 %.

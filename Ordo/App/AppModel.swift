@@ -25,6 +25,9 @@ final class AppModel {
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var lastRevision = -1
     @ObservationIgnored private var lastPurge = Date()
+    #if os(macOS)
+    @ObservationIgnored private var watcher: FileWatcher?
+    #endif
     @ObservationIgnored var photoContinuation: CheckedContinuation<[(Data, String)], Never>?
 
     init() {
@@ -53,9 +56,16 @@ final class AppModel {
             startGit()
             #endif
         }
+        #if os(macOS)
+        // the Mac reports changes itself; the loop below is only a slow safety net
+        watcher = FileWatcher(path: url.path) { [weak self] in Task { @MainActor in self?.refreshNow() } }
+        let interval: Duration = .seconds(30)
+        #else
+        let interval: Duration = .seconds(3)
+        #endif
         refreshTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(3))
+                try? await Task.sleep(for: interval)
                 guard let self, let v = self.vault, v === store else { return }
                 await v.refresh()
                 // … and once a day while Ordo stays open
@@ -71,7 +81,9 @@ final class AppModel {
     @ObservationIgnored var git: GitSync?
     @ObservationIgnored private var gitTask: Task<Void, Never>?
 
-    /// (Re)starts Git-Sync for the open vault according to its settings.
+    /// (Re)starts Git-Sync for the open vault. Nothing is uploaded or fetched on its own:
+    /// every network step (and so every Touch-ID prompt) comes from "Jetzt sichern" / "Holen".
+    /// Only the local status (for the dot in the status bar) is refreshed once a minute.
     func startGit() {
         gitTask?.cancel(); gitTask = nil; git = nil
         guard let store = vault, store.settings.gitEnabled, GitSync.gitAvailable() else { pushGitStatus(); return }
@@ -80,28 +92,10 @@ final class AppModel {
         g.onChange = { [weak self] in self?.pushGitStatus() }
         gitTask = Task { [weak self] in
             guard await g.prepare(remote: store.settings.gitRemote) else { return }
-            let today = { (d: Date?) in Calendar.current.isDateInToday(d ?? .distantPast) }
-            let pull = store.settings.gitPull
-            if pull == "everyStart" || (pull == "dailyStart" && !today(g.lastPull)) {
-                if await g.pull() { self?.refreshNow() }
-            }
-            await g.refreshStatus()
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(60))
-                guard let self, let v = self.vault, v === store, v.settings.gitEnabled else { return }
-                let st = v.settings
-                let quiet = Date().timeIntervalSince(v.lastWrite) > 600          // 10 min without typing
-                let changedSince = v.lastWrite > (g.lastCommit ?? .distantPast)
-                let stale = Date().timeIntervalSince(g.lastCommit ?? .distantPast) > 3600   // picks up iPhone edits too
-                var committed = 0
-                if st.gitCommit == "auto", quiet, changedSince || stale { committed = await g.commit() }
-                if st.gitCommit == "daily", !today(g.lastCommit) { committed = await g.commit() }
-                if st.gitPush == "afterCommit", committed > 0 { _ = await g.push() }
-                if st.gitPush == "daily", !today(g.lastPush) {
-                    if st.gitCommit != "manual" { await g.commit() }
-                    if g.unpushed > 0 { _ = await g.push() }
-                }
                 await g.refreshStatus()
+                try? await Task.sleep(for: .seconds(60))
+                guard let self, self.vault === store, store.settings.gitEnabled else { return }
             }
         }
     }
@@ -113,6 +107,7 @@ final class AppModel {
 
     func closeVault(notify: Bool = true) {
         #if os(macOS)
+        watcher = nil
         gitTask?.cancel(); gitTask = nil; git = nil
         #endif
         refreshTask?.cancel()

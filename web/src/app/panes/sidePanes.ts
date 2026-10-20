@@ -71,10 +71,10 @@ export class SearchPane implements SidePane {
     this.el.classList.toggle('has-hits', hits.length > 0);
     const total = hits.reduce((s, x) => s + x.matches.length, 0);
     this.info.textContent = total ? t('{n} Dateien · {m} Treffer', { n: hits.length, m: total }) : (hits.length === 1 ? t('1 Datei') : t('{n} Dateien', { n: hits.length }));
-    this.results.replaceChildren(...hits.map(hit => this.renderHit(hit, q)));
+    this.results.replaceChildren(...hits.map(hit => this.renderHit(hit)));
   }
 
-  private renderHit(hit: SearchHit, q: string) {
+  private renderHit(hit: SearchHit) {
     const item = h('div', { cls: 'tree-item search-result' });
     const title = h('div', { cls: 'tree-item-self search-result-file-title is-clickable' },
       h('div', { cls: 'tree-item-icon collapse-icon' }, icon('chevron-down')),

@@ -32,22 +32,8 @@ enum Platform {
         return url
     }
 
-    static var iCloudDrive: URL? {
-        let url = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Mobile Documents/com~apple~CloudDocs")
-        return FileManager.default.fileExists(atPath: url.path) ? url : nil
-    }
     #else
     static var isPhone: Bool { UIDevice.current.userInterfaceIdiom == .phone }
     static func reveal(_ url: URL) {}
     #endif
-}
-
-extension View {
-    @ViewBuilder func phoneOnly<V: View>(_ transform: (Self) -> V) -> some View {
-        #if os(iOS)
-        if Platform.isPhone { transform(self) } else { self }
-        #else
-        self
-        #endif
-    }
 }
