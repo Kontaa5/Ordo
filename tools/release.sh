@@ -24,7 +24,10 @@ sha=$(shasum -a 256 "build/dist/$zip" | cut -d' ' -f1)
 
 # zip onto the releases branch (separate history, keeps main small)
 tmp=$(mktemp -d)
-git clone -q --depth 1 --branch releases "$remote" "$tmp" 2>/dev/null || { git init -q -b releases "$tmp"; git -C "$tmp" remote add origin "$remote"; }
+# read over HTTPS (public repo, no login); only the push uses the SSH remote
+https=$(echo "$remote" | sed -E 's#^git@github.com:#https://github.com/#')
+git clone -q --depth 1 --branch releases "$https" "$tmp" 2>/dev/null || git init -q -b releases "$tmp"
+git -C "$tmp" remote remove origin 2>/dev/null; git -C "$tmp" remote add origin "$remote"
 cp "build/dist/$zip" "$tmp/"
 git -C "$tmp" add "$zip"
 git -C "$tmp" -c user.name="$(git config user.name)" -c user.email="$(git config user.email)" commit -q -m "Ordo $version"
