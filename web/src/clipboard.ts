@@ -41,6 +41,20 @@ td.addRule('preBlock', {
     return `\n\n${fence}${langOf(code)}\n${text}\n${fence}\n\n`;
   },
 });
+td.addRule('notBold', {
+  filter: node => (node.nodeName === 'B' || node.nodeName === 'STRONG') && NORMAL.test((node as HTMLElement).style?.cssText ?? ''),
+  replacement: c => c,
+});
+td.addRule('styledText', {
+  filter: node => node.nodeName === 'SPAN' && (BOLD.test((node as HTMLElement).style.cssText) || ITALIC.test((node as HTMLElement).style.cssText)),
+  replacement: (c, node) => {
+    if (!c.trim()) return c;
+    const css = (node as HTMLElement).style.cssText;
+    const m = (BOLD.test(css) ? '**' : '') + (ITALIC.test(css) ? '*' : '');
+    const [, lead, core, trail] = /^(\s*)([\s\S]*?)(\s*)$/.exec(c)!;
+    return `${lead}${m}${core}${[...m].reverse().join('')}${trail}`;
+  },
+});
 td.addRule('mark', { filter: ['mark'], replacement: c => `==${c}==` });
 
 // drop UI chrome that sites put next to code ("Copy code" buttons etc.)
@@ -51,9 +65,14 @@ export function cleanSpaces(s: string) {
 }
 
 const MD_HINT = /(^|\n)\s{0,3}(```|~~~|#{1,6}\s|[-*+]\s|\d+[.)]\s|>\s?|\|.*\|)|\*\*[^*\n]+\*\*|\[\[[^\]]+\]\]|\]\([^)]+\)|`[^`\n]+`/;
-const SEMANTIC_HTML = /<(p|h[1-6]|ul|ol|li|pre|table|blockquote|strong|b|em|i|a\s|code|img|br)\b/i;
-// code editors (VS Code, Xcode) put styled <div>/<span> on the clipboard – that's not prose
-const EDITOR_HTML = /<meta[^>]+charset|font-family:\s*[^;"]*(menlo|monaco|consolas|courier|mono)/i;
+const RICH = 'p,h1,h2,h3,h4,h5,h6,ul,ol,li,pre,table,blockquote,strong,b,em,i,a[href],code,img,br,mark,s,del';
+const MONO = /font-family:[^;"]*(menlo|monaco|consolas|courier|mono)/i;
+const BOLD = /font-weight:\s*(bold|[6-9]00)/i, ITALIC = /font-style:\s*italic/i, NORMAL = /font-weight:\s*(normal|[1-4]00)/i;
+/** Our own copies carry the Markdown source under this type. */
+export const ORDO_MD = 'application/x-ordo-markdown';
+
+/** Turndown writes "-   item"; Markdown editors write "- item". */
+const tidyLists = (md: string) => md.replace(/^(\s*)([-*+]|\d+\.)\s{2,}/gm, '$1$2 ');
 
 export function inCodeBlock(state: EditorState, pos: number) {
   for (let n: any = syntaxTree(state).resolveInner(pos, -1); n; n = n.parent) {
@@ -65,13 +84,17 @@ export function inCodeBlock(state: EditorState, pos: number) {
 /** Decide what text a paste should insert. */
 export function pasteText(plain: string, html: string, insideCode: boolean): string {
   const text = cleanSpaces(plain);
-  if (insideCode) return text;
-  if (!html) return text;
-  if (text && MD_HINT.test(text)) return text;           // already Markdown (Obsidian, Ordo, .md files)
-  if (EDITOR_HTML.test(html) && !/<pre\b/i.test(html)) return text; // copied from a code editor
-  if (!SEMANTIC_HTML.test(html)) return text;
+  if (insideCode || !html) return text;
+  const body = new DOMParser().parseFromString(html, 'text/html').body;
+  const styled = [...body.querySelectorAll<HTMLElement>('[style]')];
+  const rich = body.querySelector(RICH) || styled.some(el => BOLD.test(el.style.cssText) || ITALIC.test(el.style.cssText));
+  if (!rich) return text;
+  // code editors (VS Code …) copy styled monospace <div>/<span>s without real structure – that's code, not prose
+  if (!body.querySelector('p,h1,h2,h3,h4,h5,h6,li,a[href],pre,table') && styled.some(el => MONO.test(el.style.cssText))) return text;
+  // Markdown shown as styled text (an editor showing .md source): the syntax is in the HTML text itself
+  if (MD_HINT.test(text) && MD_HINT.test(cleanSpaces(body.textContent ?? ''))) return text;
   try {
-    const md = td.turndown(html).replace(/\n{3,}/g, '\n\n').trim();
+    const md = tidyLists(td.turndown(body)).replace(/\n{3,}/g, '\n\n').trim();
     return md || text;
   } catch { return text; }
 }
@@ -102,8 +125,7 @@ export function selectionToMarkdown(sel: Selection): string | null {
     maths.push(m.dataset.display ? `$$\n${m.dataset.tex}\n$$` : `$${m.dataset.tex}$`);
     m.replaceWith(`ORDOMATH${maths.length - 1}X`);
   });
-  return td.turndown(div.innerHTML)
-    .replace(/^(\s*)([-*+]|\d+\.)\s{2,}/gm, '$1$2 ')
+  return tidyLists(td.turndown(div.innerHTML))
     .replace(/\\\[([ xX]|![\w-]+)\\\]/g, '[$1]')
     .replace(/^> \n> /gm, '> ')
     .replace(/ORDOMATH(\d+)X/g, (_m, i) => maths[+i])

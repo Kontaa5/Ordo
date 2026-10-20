@@ -17,11 +17,10 @@ const loadTrash = () => request<TrashList>('trashList').catch(() => ({ items: []
 
 export async function trashCount(): Promise<number> { return (await loadTrash()).items.length; }
 
-/** " · wird in X Tagen endgültig gelöscht" */
+/** "noch 12 Tage" until the item is deleted for good */
 function left(deleted: number, days: number): string {
-  if (days <= 0) return '';
-  const n = Math.max(0, Math.ceil(days - (Date.now() / 1000 - deleted) / 86_400));
-  return ' · ' + (n <= 1 ? t('wird morgen endgültig gelöscht') : t('wird in {n} Tagen endgültig gelöscht', { n }));
+  const n = Math.max(1, Math.ceil(days - (Date.now() / 1000 - deleted) / 86_400));
+  return n === 1 ? t('noch 1 Tag') : t('noch {n} Tage', { n });
 }
 
 /** Trash button for the bottom bar (next to help and settings) with the number of items. */
@@ -50,19 +49,20 @@ export class TrashModal extends Modal {
     const rows = items.map(it => {
       const folder = dirname(it.from);
       const name = it.folder ? it.name : noteName(it.from) || it.name;
+      const meta = h('span', { cls: 'ordo-trash-meta', text: days > 0 ? left(it.date, days) : when(it.date) });
+      meta.title = t('Gelöscht {when}', { when: when(it.date) });
       return h('div', { cls: 'ordo-sort-row ordo-trash-row' },
         icon(it.folder ? 'folder' : /\.md$/i.test(it.from) ? 'file-text' : 'image'),
-        h('div', { cls: 'ordo-trash-info' },
-          h('div', { text: name }),
-          h('div', { cls: 'setting-item-description', text: t('aus {folder} · gelöscht {when}', { folder: folder || t('Hauptordner'), when: when(it.date) }) + left(it.date, days) })),
-        h('button', { text: t('Wiederherstellen'), onclick: async () => {
+        h('div', { cls: 'ordo-trash-path' }, folder ? h('span', { cls: 'ordo-trash-folder', text: folder + '/' }) : '', name),
+        meta,
+        iconButton('undo', t('Wiederherstellen'), async () => {
           const path = await request<string>('trashRestore', { name: it.name }).catch(e => { notice(String(e)); return null; });
           if (!path) return;
           notice(t('„{name}“ ist wieder da.', { name }));
           if (/\.md$/i.test(path)) workspace.openFile(path);
           emit('trash-changed');
           this.load();
-        } }),
+        }),
         iconButton('trash', t('Endgültig löschen'), async () => {
           if (!(await confirmDialog(t('Endgültig löschen?'), t('„{name}“ wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.', { name }), t('Endgültig löschen'), true))) return;
           await request('trashDelete', { name: it.name }).catch(e => notice(String(e)));
@@ -71,7 +71,7 @@ export class TrashModal extends Modal {
         }, 'ordo-trash-delete'));
     });
     this.contentEl.replaceChildren(
-      h('div', { cls: 'setting-item-description', text: days > 0 ? t('Gelöschtes bleibt {n} Tage hier und wird dann endgültig gelöscht (Einstellungen › Dateien & Links).', { n: days }) : t('Gelöschte Notizen und Bilder liegen hier, bis du sie wiederherstellst oder den Papierkorb leerst.') }),
+      h('div', { cls: 'setting-item-description', text: days > 0 ? t('Wird nach {n} Tagen endgültig gelöscht.', { n: days }) : t('Bleibt hier, bis du den Papierkorb leerst.') }),
       h('div', { cls: 'ordo-sort-list' }, ...rows),
       h('div', { cls: 'modal-button-container' },
         h('button', { cls: 'mod-warning', text: t('Papierkorb leeren'), onclick: async () => {
@@ -79,7 +79,6 @@ export class TrashModal extends Modal {
           await request('trashEmpty').catch(e => notice(String(e)));
           emit('trash-changed');
           this.load();
-        } }),
-        h('button', { text: t('Schließen'), onclick: () => this.close() })));
+        } })));
   }
 }

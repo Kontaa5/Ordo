@@ -818,6 +818,7 @@ button:not(.clickable-icon):hover { background-color: var(--interactive-hover); 
 button.mod-cta { background-color: var(--interactive-accent); color: var(--text-on-accent); }
 button.mod-cta:hover { background-color: var(--interactive-accent-hover); }
 button.mod-warning { background-color: var(--background-modifier-error); color: var(--text-on-accent); }
+button.mod-warning:hover { background-color: var(--background-modifier-error-hover); color: var(--text-on-accent); filter: brightness(0.92); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 button.mod-small { height: 24px; padding: 2px 8px; font-size: var(--font-ui-smaller); }
 .checkbox-container {
@@ -993,6 +994,9 @@ body.is-mobile .ordo-block-handle { display: none; }
 .ordo-trash-badge { position: absolute; right: -4px; bottom: 0; font-size: 9px; line-height: 1; color: inherit; font-variant-numeric: tabular-nums; pointer-events: none; }   /* quiet count, no bubble */
 .ordo-trash-badge:empty { display: none; }
 .ordo-trash-row { align-items: center; gap: 10px; --icon-size: 16px; color: var(--text-normal); }
-.ordo-trash-info { flex: 1 1 auto; min-width: 0; }
+.ordo-trash-path { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ordo-trash-folder { color: var(--text-faint); }
+.ordo-trash-meta { flex: none; font-size: var(--font-ui-smaller); color: var(--text-faint); font-variant-numeric: tabular-nums; }
+.ordo-trash-row .clickable-icon { flex: none; }
 .ordo-trash-delete { color: var(--text-error); }
 .ordo-compress-hint { flex-basis: 100%; font-size: var(--font-ui-smaller); color: var(--text-faint); }

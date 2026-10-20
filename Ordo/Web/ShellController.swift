@@ -144,6 +144,34 @@ final class ShellController: WebController {
             try v.trash(str("path"))
             app.pushIndexIfNeeded()
             return nil
+        #if DEBUG && os(macOS)
+        case "debugPaste":
+            // automated checks: a real ⌘V with the given clipboard; the user's clipboard is restored afterwards
+            let pb = NSPasteboard.general
+            let saved = pb.pasteboardItems?.map { item in item.types.compactMap { t in item.data(forType: t).map { (t, $0) } } } ?? []
+            pb.clearContents()
+            if let html = body["html"] as? String { pb.setString(html, forType: .html) }
+            if let plain = body["plain"] as? String { pb.setString(plain, forType: .string) }
+            webView.window?.makeKeyAndOrderFront(nil); webView.window?.makeFirstResponder(webView); NSApp.sendAction(#selector(NSText.paste(_:)), to: webView, from: nil)
+            try await Task.sleep(nanoseconds: 300_000_000)
+            pb.clearContents()
+            pb.writeObjects(saved.map { pairs in let it = NSPasteboardItem(); for (t, d) in pairs { it.setData(d, forType: t) }; return it })
+            return nil
+        case "debugCopy":
+            let pb = NSPasteboard.general
+            let saved = pb.pasteboardItems?.map { item in item.types.compactMap { t in item.data(forType: t).map { (t, $0) } } } ?? []
+            webView.window?.makeKeyAndOrderFront(nil); webView.window?.makeFirstResponder(webView)
+            NSApp.sendAction(#selector(NSText.copy(_:)), to: webView, from: nil)
+            try await Task.sleep(nanoseconds: 300_000_000)
+            let got = ["types": pb.types?.map(\.rawValue) ?? [], "html": pb.string(forType: .html) ?? "", "plain": pb.string(forType: .string) ?? ""] as [String: Any]
+            if body["paste"] as? Bool == true {   // paste it right back (round trip inside Ordo)
+                NSApp.sendAction(#selector(NSText.paste(_:)), to: webView, from: nil)
+                try await Task.sleep(nanoseconds: 300_000_000)
+            }
+            pb.clearContents()
+            pb.writeObjects(saved.map { pairs in let it = NSPasteboardItem(); for (t, d) in pairs { it.setData(d, forType: t) }; return it })
+            return got
+        #endif
         case "discardMarkedText":
             // a dead key (´ `) was used to wrap a selection: forget it, otherwise macOS
             // combines it with the next key (a → á) or adds another ` on space

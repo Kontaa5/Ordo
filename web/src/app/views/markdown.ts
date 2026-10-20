@@ -29,7 +29,7 @@ import { codeLanguage, codeHighlightStyle } from '../editor/code';
 import { mathCompletion } from '../modals/mathPalette';
 import { render, COPY_ICON, CHECK_ICON } from '../../markdown';
 import { paginate, applyGeomVars, contentSize, whenImagesLoaded } from '../../paginate';
-import { pasteText, inCodeBlock, selectionToMarkdown } from '../../clipboard';
+import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD } from '../../clipboard';
 import { openLightbox } from '../../lightbox';
 import { openImageEditor } from '../../imageEditor';
 import { blobToBase64 } from '../../bridge';
@@ -207,6 +207,8 @@ export class MarkdownView extends View {
       }),
       EditorView.domEventHandlers({
         paste: (e, view) => this.onPaste(e, view),
+        copy: (e, view) => this.onCopy(e, view, false),
+        cut: (e, view) => this.onCopy(e, view, true),
         drop: (e, view) => {
           const files = Array.from(e.dataTransfer?.files ?? []);
           if (!files.length) return false;
@@ -376,7 +378,7 @@ export class MarkdownView extends View {
       const md = sel && selectionToMarkdown(sel);
       if (!md || !e.clipboardData) return;
       e.preventDefault();
-      e.clipboardData.setData('text/plain', md);
+      this.fillClipboard(e.clipboardData, md, sel);
     });
     this.previewEl.addEventListener('click', e => {
       const el = e.target as HTMLElement;
@@ -462,6 +464,26 @@ export class MarkdownView extends View {
     this.editor.focus();
   }
 
+  /** Markdown for Ordo/Obsidian, formatted HTML for Mail, Pages, Word … */
+  private fillClipboard(dt: DataTransfer, md: string, sel?: Selection) {
+    const div = document.createElement('div');
+    if (sel) for (let i = 0; i < sel.rangeCount; i++) div.appendChild(sel.getRangeAt(i).cloneContents());
+    else div.innerHTML = render(md, { path: this.path, showProperties: false });
+    div.querySelectorAll('button, .copy-code-button, .katex-mathml, table.properties').forEach(el => el.remove());
+    dt.setData('text/plain', md);
+    dt.setData('text/html', div.innerHTML);
+    dt.setData(ORDO_MD, md);
+  }
+
+  private onCopy(e: ClipboardEvent, view: EditorView, cut: boolean) {
+    const ranges = view.state.selection.ranges.filter(r => !r.empty);
+    if (!ranges.length || !e.clipboardData) return false;   // empty selection: CodeMirror copies the whole line
+    e.preventDefault();
+    this.fillClipboard(e.clipboardData, ranges.map(r => view.state.sliceDoc(r.from, r.to)).join(view.state.lineBreak));
+    if (cut) view.dispatch({ changes: ranges, userEvent: 'delete.cut', scrollIntoView: true });
+    return true;
+  }
+
   private onPaste(e: ClipboardEvent, view: EditorView) {
     const dt = e.clipboardData;
     if (!dt) return false;
@@ -475,7 +497,7 @@ export class MarkdownView extends View {
     }
     if (!plain && !html) return false;
     e.preventDefault();
-    const text = pasteText(plain, html, inCodeBlock(view.state, view.state.selection.main.head));
+    const text = dt.getData(ORDO_MD) || pasteText(plain, html, inCodeBlock(view.state, view.state.selection.main.head));
     const sel = view.state.selection.main;
     const line = view.state.doc.lineAt(sel.from);
     const before = view.state.sliceDoc(line.from, sel.from);
