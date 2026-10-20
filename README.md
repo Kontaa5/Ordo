@@ -1,49 +1,56 @@
 # Ordo
 
-Markdown-Notizen wie in Obsidian – mit Hashtag-Ordnern, Seitenumbruch-Vorschau und PDF-Export nach Hashtag.
-App für macOS, iPhone und iPad. Die Oberfläche ist wie bei Obsidian eine Web-Oberfläche (CodeMirror 6 als Editor) mit Obsidians CSS-Klassen und -Variablen, deshalb funktionieren Obsidian-Themes und CSS-Snippets. Dateien, iCloud, PDF, Bilder und Git laufen nativ in Swift.
+Markdown-Notizen wie in Obsidian: Hashtags sortieren Notizen in Ordner, PDF-Export nach Hashtag, Graph, Bilder, iCloud.
 
-## Funktionen
-- **Vault = normaler Ordner** mit `.md`-Dateien. Ein bestehender Obsidian-Vault lässt sich direkt öffnen; Ordo schreibt nie in `.obsidian`, beide Apps können parallel laufen.
-- **Hashtag → Ordner**: 1. Hashtag = Ordner, 2. = Unterordner (`#4klasse #medt` → `4klasse/medt/`). Pro Hashtag einstellbar (eigener Ordnername, kein Unterordner, nur Schlagwort). Von Hand verschobene Notizen bleiben, wo sie sind.
-- **Eine Schreibweise pro Hashtag**: `#se` + Tab → `#SEW`; `#sew` wird beim Tippen korrigiert; vorhandene Varianten lassen sich mit Vorschau vereinheitlichen.
-- **Live-Vorschau** wie Obsidian, Lesemodus (⌘E), `->` wird zu →, Markierung + `` ` `` `*` `_` `=` … umschließt den Text.
-- **Bilder**: Link und Foto, Größe ziehen, groß ansehen, zuschneiden (doppelt verwendete Bilder werden als Kopie gespeichert), per Drag & Drop nebeneinander (max. 3 pro Reihe), verkleinern mit Vorher/Nachher in Pixel und DPI.
-- **Spalten**: Absätze markieren › Rechtsklick › *Nebeneinander* oder Blöcke am Griff ⋮⋮ neben einen anderen ziehen (`> [!multi-column]`, kompatibel mit Obsidians Modular-CSS-Layout).
-- **Seitenumbrüche** (⌘⇧B) im Editor, identisch mit dem PDF. Manueller Umbruch: `\pagebreak`.
-- **PDF-Export nach Hashtags** (⌘⇧E), z. B. alle mit `#4klasse` UND `#medt`, auch direkt aus Suchtreffern oder per Rechtsklick auf einen Tab.
-- **Graph** (⌘G): *Global* mit Hashtags als Gruppen, *Lokal* zeigt einen Hashtag mit allen Notizen im Kreis, dazu „Ohne Hashtag“ und „Ohne Verbindungen“.
-- **Darstellung wie Obsidian**: Hell/Dunkel/System, Akzentfarbe, Themes, CSS-Snippets, Schriften, Deutsch/Englisch, Zoom (⌘+ / ⌘− / ⌘0).
-- **Papierkorb** unten in der Dateiliste: Löschen fragt immer nach, alles lässt sich wiederherstellen (`.trash`, wie Obsidian).
-- **iCloud**: Vault in iCloud Drive ablegen und am iPhone denselben Ordner wählen.
-- **Git-Sync** (Mac, Einstellungen › Git-Sync): Verlauf und Backup in einem Git-Repository. Die Git-Daten liegen lokal (nicht in iCloud), gesichert werden nur Änderungen; Hochladen z. B. einmal am Tag.
+![Ordo](docs/images/ordo.png)
 
-## Installieren (Homebrew)
+## Installieren
+
+Voraussetzung: macOS 14 (Sonoma) oder neuer.
+
+**1. Homebrew** – nur falls noch nicht installiert ([brew.sh](https://brew.sh)), im Terminal:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+**2. Ordo installieren:**
+
 ```bash
 brew tap kontaa5/ordo https://github.com/Kontaa5/Ordo
 brew install --cask ordo
 ```
-Update: `brew upgrade --cask ordo`. Ordo ist nicht von Apple notarisiert (kostenloser Entwickler-Account); die Formel entfernt deshalb nach der Installation die Quarantäne-Markierung, damit macOS die App öffnet.
 
-Neue Version veröffentlichen: `tools/release.sh 0.2.0`, danach `main` committen und pushen.
+![Installation im Terminal](docs/images/install.png)
 
-## Bauen
+**3. Starten:** Ordo über Launchpad oder Spotlight öffnen, auf **Öffnen** klicken und einen Ordner wählen – ein bestehender Obsidian-Vault geht auch.
+
+![Erster Start](docs/images/start.png)
+
+## Aktualisieren
+
 ```bash
-cd web && npm install && npm run build   # Editor-Bundle → Ordo/Resources/Web
-xcodegen generate                        # Ordo.xcodeproj (nur nach neuen/gelöschten Dateien nötig)
-open Ordo.xcodeproj
-```
-Tests: `xcodebuild -project Ordo.xcodeproj -scheme OrdoTests -destination 'platform=macOS' test`
-
-**iPhone:** siehe [docs/iPhone-Installation.md](docs/iPhone-Installation.md) (kostenloser Apple-Account, AltStore oder direkt aus Xcode).
-
-## Demo-Vault
-`Ordo Demo/` enthält ein paar Schul-Notizen zum Ausprobieren – mit der Notiz *Willkommen* anfangen. Neu erzeugen:
-```bash
-rm -rf "Ordo Demo" && python3 tools/demo/make_vault.py "Ordo Demo" && swift tools/demo/make_images.swift "Ordo Demo/Anhänge"
+brew upgrade --cask ordo
 ```
 
-## Aufbau
-- `Ordo/` – Swift: App, Vault (Dateien, iCloud, Hashtag-Ordner), PDF-Export, Bilder, Git-Sync
-- `web/src/` – TypeScript: Oberfläche, Editor (CodeMirror 6), Graph, Einstellungen
-- `tools/` – App-Icon und Demo-Vault erzeugen, IPA bauen
+## Deinstallieren
+
+```bash
+brew uninstall --cask ordo
+brew untap kontaa5/ordo
+```
+
+![Deinstallation im Terminal](docs/images/uninstall.png)
+
+Deine Notizen bleiben erhalten – sie liegen in deinem Ordner, nicht in der App.
+Auch die Einstellungen löschen: `brew uninstall --zap --cask ordo`.
+
+## Funktionen
+
+- 1. Hashtag = Ordner, 2. Hashtag = Unterordner (`#4klasse #medt` → `4klasse/medt/`)
+- PDF-Export aller Notizen mit bestimmten Hashtags, Seitenumbrüche im Editor sichtbar
+- Bilder zuschneiden, nebeneinander anordnen, ohne Qualitätsverlust verkleinern
+- Graph nach Hashtags, Spalten, Obsidian-Themes, Hell/Dunkel, Deutsch/Englisch
+- iCloud für Mac und iPhone, optional Git-Backup
+
+iPhone: [docs/iPhone-Installation.md](docs/iPhone-Installation.md) · Entwicklung: [docs/Entwicklung.md](docs/Entwicklung.md)

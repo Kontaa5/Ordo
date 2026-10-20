@@ -197,6 +197,13 @@ function buildVaultProfile(ws: Workspace) {
       iconButton('settings', t('Einstellungen') + (hotkeyLabel('app:open-settings') ? ` (${hotkeyLabel('app:open-settings')})` : ''), () => executeCommand('app:open-settings'))));
 }
 
+/** The app icon (Mono): # on a dark tile with an accent dot. */
+function monoLogo() {
+  const el = h('div', { cls: 'ordo-logo-mark' });
+  el.innerHTML = '<svg viewBox="0 0 100 100" width="64" height="64" aria-hidden="true"><rect width="100" height="100" rx="22" fill="#101012"/><g stroke="#F4F4F5" stroke-width="5.5" stroke-linecap="round"><path d="M44 26l-6 48M62 26l-6 48M28 41h44M26 59h44"/></g><circle cx="74" cy="26" r="6" fill="#9B82FA"/></svg>';
+  return el;
+}
+
 function buildStatusBar(ws: Workspace) {
   const backlinks = h('div', { cls: 'status-bar-item plugin-backlink mod-clickable', onclick: () => workspace.showSidePane('right', 'backlinks') });
   const mode = h('div', { cls: 'status-bar-item plugin-editor-status mod-clickable', onclick: () => executeCommand('markdown:toggle-preview') });
@@ -307,7 +314,7 @@ function showVaultPicker() {
       h('div', { cls: 'ordo-vault-picker-left' }, h('div', { cls: 'titlebar-drag ordo-picker-drag' }), list),
       h('div', { cls: 'ordo-vault-picker-right' },
         started ? h('div', { cls: 'modal-close-button', onclick: close }, icon('x')) : null,
-        h('div', { cls: 'ordo-logo' }, h('div', { cls: 'ordo-logo-mark' }, icon('hash', 40)), h('div', { cls: 'ordo-logo-name', text: t('Ordo') }), h('div', { cls: 'ordo-logo-version', text: t('Version ') + boot.version })),
+        h('div', { cls: 'ordo-logo' }, monoLogo(), h('div', { cls: 'ordo-logo-name', text: t('Ordo') }), h('div', { cls: 'ordo-logo-version', text: t('Version ') + boot.version })),
         h('div', { cls: 'ordo-vault-actions' },
           setting(t('Ordner als Vault öffnen'), isIOS ? t('Wähle in „Dateien“ einen Ordner in iCloud Drive – z. B. den Obsidian-Ordner. So siehst du dieselben Notizen am Mac und am iPhone.') : t('Ein Vault ist ein normaler Ordner mit Markdown-Dateien. Liegt er in iCloud Drive, ist er auf allen Geräten gleich.'),
             h('button', { cls: 'mod-cta', text: t('Öffnen'), onclick: () => request('pickVault') })),

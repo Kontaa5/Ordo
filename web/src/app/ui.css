@@ -889,7 +889,7 @@ input[type=color] { width: 32px; height: 26px; border: none; padding: 0; backgro
 .recent-vaults-list-item-path { font-size: var(--font-ui-smaller); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 .ordo-vault-picker-right { flex: 1; padding: 48px 48px 32px; overflow: auto; position: relative; background: var(--background-primary); }
 .ordo-logo { text-align: center; margin-bottom: 36px; }
-.ordo-logo-mark { display: inline-flex; padding: 14px; border-radius: 18px; background: var(--interactive-accent); color: white; }
+.ordo-logo-mark { display: inline-flex; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18)); }
 .ordo-logo-name { font-size: 28px; font-weight: var(--font-bold); margin-top: 10px; }
 .ordo-logo-version { font-size: var(--font-ui-smaller); color: var(--text-faint); }
 
