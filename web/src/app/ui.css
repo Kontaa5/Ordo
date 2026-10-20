@@ -990,7 +990,7 @@ body.is-mobile .ordo-block-handle { display: none; }
 
 /* trash: button next to help/settings with a count + dialog */
 .ordo-trash-button { position: relative; margin-right: 6px; }
-.ordo-trash-badge { position: absolute; top: -3px; right: -5px; min-width: 15px; height: 15px; padding: 0 4px; box-sizing: border-box; border-radius: 8px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 10px; font-weight: 600; line-height: 15px; text-align: center; pointer-events: none; }
+.ordo-trash-badge { position: absolute; right: -4px; bottom: 0; font-size: 9px; line-height: 1; color: var(--text-faint); font-variant-numeric: tabular-nums; pointer-events: none; }   /* quiet count, no bubble */
 .ordo-trash-badge:empty { display: none; }
 .ordo-trash-row { align-items: center; gap: 10px; --icon-size: 16px; color: var(--text-normal); }
 .ordo-trash-info { flex: 1 1 auto; min-width: 0; }
