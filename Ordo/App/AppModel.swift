@@ -24,6 +24,7 @@ final class AppModel {
     @ObservationIgnored let shell = ShellController()
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var lastRevision = -1
+    @ObservationIgnored private var lastPurge = Date()
     @ObservationIgnored var photoContinuation: CheckedContinuation<[(Data, String)], Never>?
 
     init() {
@@ -45,6 +46,7 @@ final class AppModel {
         vault = store
         Task {
             await store.refresh()
+            store.purgeTrash()   // old trash goes at start …
             lastRevision = store.revision
             shell.callJSON("ordo.host.vaultOpened", vaultInfo(store))
             #if os(macOS)
@@ -56,6 +58,8 @@ final class AppModel {
                 try? await Task.sleep(for: .seconds(3))
                 guard let self, let v = self.vault, v === store else { return }
                 await v.refresh()
+                // … and once a day while Ordo stays open
+                if Date().timeIntervalSince(self.lastPurge) > 86_400 { self.lastPurge = Date(); v.purgeTrash() }
                 self.pushIndexIfNeeded()
             }
         }

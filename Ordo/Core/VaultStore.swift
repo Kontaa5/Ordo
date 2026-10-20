@@ -580,6 +580,19 @@ final class VaultStore {
         var record = trashRecords(); record[name] = nil; saveTrashRecords(record)
     }
 
+    /// Removes everything that has been in the trash longer than `trashDays` (0 = keep forever).
+    @discardableResult
+    func purgeTrash() -> Int {
+        let days = settings.trashDays
+        guard days > 0 else { return 0 }
+        let cutoff = Date().addingTimeInterval(-Double(days) * 86_400).timeIntervalSince1970
+        var removed = 0
+        for item in listTrash() where (item["date"] as? Double ?? .infinity) < cutoff {
+            if let n = item["name"] as? String, (try? deleteFromTrash(n)) != nil { removed += 1 }
+        }
+        return removed
+    }
+
     func emptyTrash() throws {
         for item in listTrash() { if let n = item["name"] as? String { try deleteFromTrash(n) } }
     }

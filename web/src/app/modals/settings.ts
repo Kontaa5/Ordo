@@ -108,6 +108,8 @@ export class SettingsModal extends Modal {
     el.append(
       setting(t('Speicherort für neue Notizen'), t('Wird eine Notiz mit Hashtags versehen, wandert sie automatisch in ihren Ordner.'),
         this.dropdown(this.folderOptions(), s.newNoteFolder, v => this.save({ newNoteFolder: v }))));
+    el.append(setting(t('Papierkorb leeren nach'), t('Gelöschte Notizen und Bilder bleiben so lange im Papierkorb (Symbol unten neben ⚙) und werden dann endgültig gelöscht.'),
+      this.dropdown([['7', t('7 Tagen')], ['30', t('30 Tagen')], ['90', t('90 Tagen')], ['0', t('nie')]], String(s.trashDays ?? 30), v => this.save({ trashDays: +v }).then(() => emit('trash-changed')))));
     this.heading(el, t('Bilder & Anhänge'));
     el.append(
       setting(t('Ablage für Anhänge'), t('Wohin eingefügte Fotos und Dateien gespeichert werden.'),

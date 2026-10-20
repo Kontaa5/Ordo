@@ -20,7 +20,7 @@ import { ExportModal } from './modals/export';
 import { SortAllModal } from './modals/sortAll';
 import { CompressImagesModal } from './modals/compressImages';
 import { TagSpellingModal } from './modals/tagSpelling';
-import { TrashModal } from './modals/trash';
+import { TrashModal, trashButton } from './modals/trash';
 import { gitStatusItem, gitSyncNow, gitPullNow } from './git';
 import { MathPalette } from './modals/mathPalette';
 import { getActiveMarkdownView, format, MarkdownView } from './views/markdown';
@@ -193,6 +193,7 @@ function buildVaultProfile(ws: Workspace) {
   tooltip(switcher, vault.path, 'top');
   ws.vaultProfile.replaceChildren(switcher,
     h('div', { cls: 'workspace-drawer-vault-actions' },
+      trashButton(),
       iconButton('help', t('Hilfe & Tastenkürzel'), () => showHelp()),
       iconButton('settings', t('Einstellungen') + (hotkeyLabel('app:open-settings') ? ` (${hotkeyLabel('app:open-settings')})` : ''), () => executeCommand('app:open-settings'))));
 }

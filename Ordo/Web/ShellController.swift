@@ -145,7 +145,7 @@ final class ShellController: WebController {
             app.pushIndexIfNeeded()
             return nil
         case "trashList":
-            return v.listTrash()
+            return ["items": v.listTrash(), "days": v.settings.trashDays]
         case "trashRestore":
             let path = try await v.restoreFromTrash(str("name"))
             app.pushIndexIfNeeded()
@@ -185,7 +185,9 @@ final class ShellController: WebController {
             #if os(macOS)
             let before = (v.settings.gitEnabled, v.settings.gitRemote)
             #endif
+            let oldDays = v.settings.trashDays
             if let s = body["settings"] { v.applySettingsJSON(s) }
+            if v.settings.trashDays != oldDays { v.purgeTrash() }
             #if os(macOS)
             if before != (v.settings.gitEnabled, v.settings.gitRemote) { app.startGit() }   // switched on/off or new remote
             #endif

@@ -13,7 +13,6 @@ import { setPinned } from '../views/markdown';
 import { FolderSuggestModal } from '../modals/fileModals';
 
 import { t, tn } from '../i18n';
-import { TrashModal, trashCount } from '../modals/trash';
 const SORT_LABELS: [SortOrder, string][] = [
   ['name-asc', t('Dateiname (A bis Z)')], ['name-desc', t('Dateiname (Z bis A)')],
   ['mtime-desc', t('Bearbeitet (neu → alt)')], ['mtime-asc', t('Bearbeitet (alt → neu)')],
@@ -39,15 +38,9 @@ export class FileExplorer implements SidePane {
       iconButton('collapse-all', t('Alle einklappen'), () => this.toggleAll(), 'nav-action-button ordo-collapse-all'),
       iconButton('wand', t('Nach Hashtags einsortieren …'), () => executeCommand('ordo:sort-all'), 'nav-action-button'));
     this.list = h('div', { cls: 'nav-files-container node-insert-event' });
-    // trash is always reachable at the bottom
-    const trashCountEl = h('span', { cls: 'ordo-trash-count' });
-    const trashEntry = h('div', { cls: 'ordo-trash-entry', onclick: () => new TrashModal().open() }, icon('trash'), h('span', { text: t('Papierkorb') }), trashCountEl);
-    const updateTrash = async () => { const n = await trashCount(); trashCountEl.textContent = n ? String(n) : ''; trashEntry.classList.toggle('is-empty', !n); };
-    on('trash-changed', updateTrash); on('vault-opened', updateTrash); on('vault-changed', debounce(updateTrash, 500));
-    updateTrash();
     this.el = h('div', { cls: 'workspace-leaf-content', 'data-type': 'file-explorer' },
       h('div', { cls: 'nav-header' }, buttons),
-      this.list, trashEntry);
+      this.list);
 
     // drop on empty area = vault root
     this.list.addEventListener('dragover', e => { if (e.dataTransfer?.types.includes('text/ordo-path')) { e.preventDefault(); this.list.classList.add('is-being-dragged-over'); } });

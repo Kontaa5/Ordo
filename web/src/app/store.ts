@@ -26,6 +26,7 @@ export interface VaultSettings {
   attachmentFolder: string; attachmentSubfolderName: string; linkStyle: 'wiki' | 'markdown';
   maxImageDimension: number; convertHEIC: boolean; compressImages: boolean;
   autoSort: boolean; sortBaseFolder: string; tagRules: Record<string, TagRule>; allTagsAreFolders: boolean; tagSpellings?: Record<string, string>;
+  trashDays?: number;
   gitEnabled?: boolean; gitRemote?: string; gitCommit?: 'auto' | 'daily' | 'manual'; gitPush?: 'daily' | 'afterCommit' | 'manual'; gitPull?: 'dailyStart' | 'everyStart' | 'manual';
   newNoteFolder: string; defaultMode: 'edit' | 'read'; editorFontSize: number; readableLineWidth: boolean;
   page: PageSettings; exportPresets: ExportPreset[];

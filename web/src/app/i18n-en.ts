@@ -270,6 +270,11 @@ export const EN: Record<string, string> = {
   'Verkleinert nur so weit, dass das Bild über die ganze Textbreite gedruckt noch scharf ist (300 dpi). Kleinere Bilder werden nur platzsparender gespeichert.': 'Only shrinks as far as the picture still prints sharp across the full text width (300 dpi). Smaller pictures are only stored more compactly.',
   'Das Bild ist schon so klein, dass es ohne Qualitätsverlust nicht weiter geht.': 'The picture is already so small that it can’t shrink further without losing quality.',
 
+  'Gelöschtes bleibt {n} Tage hier und wird dann endgültig gelöscht (Einstellungen › Dateien & Links).': 'Deleted items stay here for {n} days and are then deleted permanently (Settings › Files & links).',
+  'wird morgen endgültig gelöscht': 'will be deleted tomorrow', 'wird in {n} Tagen endgültig gelöscht': 'will be deleted in {n} days', 'Papierkorb leeren nach': 'Empty trash after',
+  'Gelöschte Notizen und Bilder bleiben so lange im Papierkorb (Symbol unten neben ⚙) und werden dann endgültig gelöscht.': 'Deleted notes and pictures stay in the trash (icon at the bottom next to ⚙) this long, then they are deleted permanently.',
+  '7 Tagen': '7 days', '30 Tagen': '30 days', '90 Tagen': '90 days', 'nie': 'never',
+
   // hotkey names
   'Leertaste': 'Space', 'Strg': 'Ctrl', 'Umschalt': 'Shift', 'Esc': 'Esc',
 };

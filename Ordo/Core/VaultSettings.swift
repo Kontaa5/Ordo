@@ -51,6 +51,9 @@ struct VaultSettings: Codable, Equatable, Sendable {
     var tagSpellings: [String: String] = [:]
 
     // Git-Sync (Mac): backup of the vault to a git remote, history kept outside iCloud
+    /// Days deleted items stay in .trash before they are removed for good (0 = never).
+    var trashDays: Int = 30
+
     var gitEnabled: Bool = false
     var gitRemote: String = ""
     /// "auto" = after 10 min without changes, "daily", "manual"
@@ -89,6 +92,7 @@ struct VaultSettings: Codable, Equatable, Sendable {
         }
         allTagsAreFolders = (try? c.decode(Bool.self, forKey: .allTagsAreFolders)) ?? d.allTagsAreFolders
         tagSpellings = (try? c.decode([String: String].self, forKey: .tagSpellings)) ?? d.tagSpellings
+        trashDays = (try? c.decode(Int.self, forKey: .trashDays)) ?? d.trashDays
         gitEnabled = (try? c.decode(Bool.self, forKey: .gitEnabled)) ?? d.gitEnabled
         gitRemote = (try? c.decode(String.self, forKey: .gitRemote)) ?? d.gitRemote
         gitCommit = (try? c.decode(String.self, forKey: .gitCommit)) ?? d.gitCommit

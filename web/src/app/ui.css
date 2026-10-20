@@ -988,14 +988,10 @@ body.is-mobile .ordo-block-handle { display: none; }
 .ordo-git-help { margin-top: 12px; font-size: var(--font-ui-small); color: var(--text-muted); }
 .ordo-git-help summary { cursor: var(--cursor); }
 
-/* trash: entry at the bottom of the file list + dialog */
-.workspace-leaf-content[data-type="file-explorer"] { display: flex; flex-direction: column; }
-.workspace-leaf-content[data-type="file-explorer"] > .nav-files-container { flex: 1 1 auto; min-height: 0; }
-.ordo-trash-entry { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; margin: 4px 8px 8px; padding: 5px 8px; border-radius: var(--radius-s); color: var(--text-muted); font-size: var(--font-ui-small); cursor: var(--cursor); --icon-size: 15px; }
-.ordo-trash-entry:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
-.ordo-trash-entry.is-empty { color: var(--text-faint); }
-.ordo-trash-count { margin-left: auto; font-size: var(--font-ui-smaller); background: var(--background-modifier-hover); border-radius: 10px; padding: 0 7px; }
-.ordo-trash-count:empty { display: none; }
+/* trash: button next to help/settings with a count + dialog */
+.ordo-trash-button { position: relative; margin-right: 6px; }
+.ordo-trash-badge { position: absolute; top: -3px; right: -5px; min-width: 15px; height: 15px; padding: 0 4px; box-sizing: border-box; border-radius: 8px; background: var(--interactive-accent); color: var(--text-on-accent); font-size: 10px; font-weight: 600; line-height: 15px; text-align: center; pointer-events: none; }
+.ordo-trash-badge:empty { display: none; }
 .ordo-trash-row { align-items: center; gap: 10px; --icon-size: 16px; color: var(--text-normal); }
 .ordo-trash-info { flex: 1 1 auto; min-width: 0; }
 .ordo-trash-delete { color: var(--text-error); }
