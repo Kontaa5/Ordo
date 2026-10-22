@@ -1,6 +1,8 @@
-#if DEBUG && os(macOS)
-import AppKit
+#if DEBUG
 import WebKit
+#if os(macOS)
+import AppKit
+#endif
 
 /// Debug builds only: `ORDO_DEBUG_SCRIPT=/path/steps.json` drives the web shell
 /// for automated UI checks. Steps: {"js": "...", "wait": 1.0, "snap": "name"}.
@@ -23,14 +25,22 @@ enum DebugScript {
                 }
                 if let w = step["wait"] as? Double { try? await Task.sleep(for: .seconds(w)) }
                 if let name = step["snap"] as? String {
+                    #if os(macOS)
                     if let img = try? await model.shell.webView.takeSnapshot(configuration: nil), let tiff = img.tiffRepresentation,
                        let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
                         try? png.write(to: dir.appendingPathComponent(name + ".png"))
                     }
+                    #else
+                    if let png = try? await model.shell.webView.takeSnapshot(configuration: nil).pngData() {
+                        try? png.write(to: dir.appendingPathComponent(name + ".png"))
+                    }
+                    #endif
                 }
             }
             NSLog("DBG done")
+            #if os(macOS)
             if (ProcessInfo.processInfo.environment["ORDO_DEBUG_QUIT"] ?? "1") == "1" { NSApp.terminate(nil) }
+            #endif
         }
     }
 }

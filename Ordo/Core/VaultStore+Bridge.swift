@@ -165,7 +165,7 @@ extension VaultStore {
 
     func themeCSS(_ name: String) -> String? {
         for dir in [ordoDir.appendingPathComponent("themes"), obsidianDir.appendingPathComponent("themes")] {
-            let url = dir.appendingPathComponent(name).appendingPathComponent("theme.css")
+            let url = dir.appendingPathComponent(Paths.file(name)).appendingPathComponent("theme.css")   // name comes from appearance.json: no ../
             if let data = Self.coordinatedRead(url) { return String(decoding: data, as: UTF8.self) }
         }
         return nil
@@ -182,7 +182,7 @@ extension VaultStore {
 
     func snippetCSS(_ name: String) -> String? {
         for dir in [ordoDir.appendingPathComponent("snippets"), obsidianDir.appendingPathComponent("snippets")] {
-            if let data = Self.coordinatedRead(dir.appendingPathComponent(name + ".css")) { return String(decoding: data, as: UTF8.self) }
+            if let data = Self.coordinatedRead(dir.appendingPathComponent(Paths.file(name) + ".css")) { return String(decoding: data, as: UTF8.self) }
         }
         return nil
     }

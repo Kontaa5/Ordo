@@ -3,7 +3,7 @@
 import { Modal } from '../ui/modal';
 import { h, icon, iconButton } from '../dom';
 import { vault } from '../store';
-import { request, emit, on, isMac } from '../host';
+import { request, emit, on, isMac, isIOS } from '../host';
 import { gitStatus, gitSyncNow, gitPullNow, when, GitStatus } from '../git';
 import { appState } from '../state';
 import { notice } from '../ui/notice';
@@ -84,8 +84,8 @@ export class SettingsModal extends Modal {
     el.append(
       setting(t('Sprache'), t('Sprache der Oberfläche (pro Gerät). Deine Notizen werden nie übersetzt.'),
         this.dropdown([['de', 'Deutsch'], ['en', 'English']], lang, v => { setLang(v as Lang); request('setLanguage', { lang: v }).catch(() => {}); location.reload(); })),
-      setting(t('Vault'), vault.path, h('button', { text: t('Anderen Vault öffnen …'), onclick: () => { this.close(); emit('show-vault-picker'); } })),
-      setting(t('Im Finder zeigen'), t('Öffnet den Vault-Ordner.'), h('button', { text: t('Öffnen'), onclick: () => request('reveal', { path: '' }) })),
+      setting(t('Vault'), isIOS ? vault.name : vault.path, h('button', { text: t('Anderen Vault öffnen …'), onclick: () => { this.close(); emit('show-vault-picker'); } })),
+      ...(isIOS ? [] : [setting(t('Im Finder zeigen'), t('Öffnet den Vault-Ordner.'), h('button', { text: t('Öffnen'), onclick: () => request('reveal', { path: '' }) }))]),
       setting(t('Parallel mit Obsidian'), t('Ordo liest dieselben Markdown-Dateien wie Obsidian und schreibt nie in den .obsidian-Ordner. Themes, Snippets und Darstellung werden von Obsidian übernommen.')),
       setting(t('Ordo'), t('Notizen in Markdown, die sich nach Hashtags selbst einsortieren.')),
     );

@@ -85,6 +85,11 @@ enum FolderRules {
         return name.components(separatedBy: bad).joined().trimmingCharacters(in: .whitespaces)
     }
 
+    /// Vault-relative path without `..`, `.` and leading `/` – it can never point outside the vault.
+    static func insideVault(_ rel: String) -> String {
+        rel.split(separator: "/").filter { $0 != ".." && $0 != "." }.joined(separator: "/")
+    }
+
     /// Case-insensitive comparison of folder paths.
     static func same(_ a: String, _ b: String) -> Bool {
         a.lowercased() == b.lowercased()

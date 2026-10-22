@@ -126,7 +126,8 @@ export class MarkdownView extends View {
       this.loaded = true;
       request('noteOpened', { path: s.path }).catch(() => {});
       this.updateTitle();
-      this.mode = s.mode ?? (vault.settings?.defaultMode === 'read' ? 'preview' : 'source');
+      // on the phone notes are mostly read: open them in reading view (new notes ask for 'source')
+      this.mode = s.mode ?? (vault.settings?.defaultMode === 'read' || document.body.classList.contains('is-mobile') ? 'preview' : 'source');
       this.applyMode();
       emit('file-open', this.path);
     } else if (s.mode && s.mode !== this.mode) {
@@ -316,6 +317,7 @@ export class MarkdownView extends View {
     this.modeButton.setAttribute('aria-label', src ? t('Lesemodus') : t('Bearbeiten'));
     if (src) { this.editor.requestMeasure(); } else this.renderPreview();
     this.emitStats();
+    emit('mode-change', this);
   }
 
   private applyReadable() {

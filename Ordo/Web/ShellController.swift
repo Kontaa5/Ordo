@@ -140,6 +140,9 @@ final class ShellController: WebController {
             else { try v.moveFile(path, toFolder: folder); dest = Paths.join(folder, Paths.file(path)) }
             app.pushIndexIfNeeded()
             return dest
+        case "endDemo":
+            try app.endDemo(keep: body["keep"] as? Bool ?? false)
+            return nil
         case "trash":
             try v.trash(str("path"))
             app.pushIndexIfNeeded()

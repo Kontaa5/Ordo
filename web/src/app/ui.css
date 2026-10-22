@@ -479,8 +479,9 @@ body.mod-macos .workspace:not(.is-left-sidedock-open) .mod-root .workspace-tab-h
   border-radius: var(--checkbox-radius); vertical-align: -0.15em; cursor: var(--cursor); position: relative; background: transparent; flex-shrink: 0;
 }
 .task-list-item-checkbox:hover { border-color: var(--checkbox-border-color-hover); }
-.task-list-item-checkbox:checked { background-color: var(--checkbox-color); border-color: var(--checkbox-color); }
-.task-list-item-checkbox:checked::after {
+/* same weight as the base rule above, otherwise its `background: transparent` wins and a done task looks empty */
+input[type="checkbox"].task-list-item-checkbox:checked { background-color: var(--checkbox-color); border-color: var(--checkbox-color); }
+input[type="checkbox"].task-list-item-checkbox:checked::after {
   content: ""; position: absolute; inset: 0; background-color: var(--checkbox-marker-color);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 80% no-repeat;
 }
@@ -664,6 +665,10 @@ table.properties td { border: none; padding: 2px 16px 2px 0; } table.properties 
 .callout[data-callout="quote"], .callout[data-callout="cite"] { --callout-color: var(--callout-quote); }
 .callout-title { display: flex; gap: 4px; align-items: flex-start; color: rgb(var(--callout-color)); font-weight: var(--callout-title-weight); line-height: var(--line-height-tight); }
 .callout-icon { display: flex; align-items: center; height: calc(1em * var(--line-height-tight)); } .callout-icon svg { width: 18px; height: 18px; }
+.callout.is-collapsible > .callout-title { cursor: var(--cursor); }
+.callout-fold { display: flex; align-items: center; height: calc(1em * var(--line-height-tight)); opacity: 0.7; } .callout-fold svg { width: 14px; height: 14px; transition: transform 120ms ease; }
+.callout.is-collapsed > .callout-title .callout-fold svg { transform: rotate(-90deg); }
+.callout.is-collapsed > .callout-content { display: none; }
 .callout-content { padding-top: 0.4em; } .callout-content > :last-child { margin-bottom: 0; } .callout-content > :first-child { margin-top: 0; }
 
 /* ---------------- empty state, image view ---------------- */
@@ -893,6 +898,17 @@ input[type=color] { width: 32px; height: 26px; border: none; padding: 0; backgro
 .ordo-logo-mark { display: inline-flex; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18)); }
 .ordo-logo-name { font-size: 28px; font-weight: var(--font-bold); margin-top: 10px; }
 .ordo-logo-version { font-size: var(--font-ui-smaller); color: var(--text-faint); }
+/* phone: logo + "Öffnen" on top, recent vaults below, everything full width */
+@media (max-width: 600px) {
+  .ordo-vault-picker-inner { flex-direction: column; overflow: auto; }
+  .ordo-vault-picker-right { order: -1; }
+  .ordo-vault-picker-left { width: auto; border-right: 0; background: none; padding-bottom: env(safe-area-inset-bottom); }
+  .ordo-vault-picker-left:not(:has(.recent-vaults-list-item)) { display: none; }
+  .ordo-vault-picker-right { flex: none; overflow: visible; padding: calc(32px + env(safe-area-inset-top)) 20px 16px; }
+  .ordo-vault-actions .setting-item { flex-wrap: wrap; gap: 12px; }
+  .ordo-vault-actions .setting-item-control { width: 100%; }
+  .ordo-vault-actions .setting-item-control button { width: 100%; height: 44px; }
+}
 
 /* ---------------- mobile (iPhone) ---------------- */
 body.is-mobile { --header-height: 44px; --font-ui-medium: 16px; --font-ui-small: 15px; --nav-item-size: 16px; --nav-item-padding: 8px 8px 8px 24px; }
@@ -910,8 +926,8 @@ body.is-mobile .mod-root > .workspace-tabs > .workspace-tab-header-container { d
 body.is-mobile .mod-left-split .workspace-tab-header-container { padding-left: 8px; }
 body.is-mobile .sidebar-toggle-button { display: none !important; }
 body.is-mobile .workspace-leaf-resize-handle { display: none; }
-body.is-mobile .mod-root { padding-top: env(safe-area-inset-top); padding-bottom: calc(52px + env(safe-area-inset-bottom)); }
-body.is-mobile.is-keyboard-open .mod-root { padding-bottom: 44px; }
+body.is-mobile .workspace-split.mod-root { padding-top: env(safe-area-inset-top); padding-bottom: calc(52px + env(safe-area-inset-bottom)); }
+body.is-mobile.is-keyboard-open .workspace-split.mod-root { padding-bottom: 44px; }
 body.is-mobile .view-header-nav-buttons { display: none; }
 body.is-mobile .status-bar { display: none; }
 body.is-mobile .markdown-source-view .cm-scroller, body.is-mobile .markdown-preview-view { --file-margins: 18px; padding-top: 12px; }
@@ -926,7 +942,7 @@ body.is-mobile .vertical-tab-header { width: 130px; }
 body.is-keyboard-open .mobile-navbar { display: none; }
 .mobile-navbar-actions { display: flex; justify-content: space-around; align-items: center; }
 .mobile-navbar-action { --icon-size: 22px; padding: 10px; }
-.mobile-navbar-action.mod-cta { color: var(--interactive-accent); }
+.mobile-navbar-action.mod-cta, .mobile-navbar-action.is-active { color: var(--interactive-accent); }
 .mobile-toolbar {
   display: none; position: fixed; left: 0; right: 0; z-index: 31; height: 44px; overflow-x: auto; background: var(--background-secondary); border-top: 1px solid var(--divider-color);
   padding: 0 6px; gap: 2px; align-items: center; scrollbar-width: none;
@@ -1000,3 +1016,14 @@ body.is-mobile .ordo-block-handle { display: none; }
 .ordo-trash-row .clickable-icon { flex: none; }
 .ordo-trash-delete { color: var(--text-error); }
 .ordo-compress-hint { flex-basis: 100%; font-size: var(--font-ui-smaller); color: var(--text-faint); }
+
+/* demo vault: "enough seen" bar */
+.ordo-demo-bar { position: fixed; left: 50%; bottom: 36px; transform: translateX(-50%); z-index: 2500; display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-radius: 10px; background: var(--background-secondary); border: 1px solid var(--background-modifier-border); box-shadow: var(--shadow-s); font-size: var(--font-ui-small); max-width: calc(100vw - 32px); }
+.ordo-demo-bar-text { color: var(--text-muted); white-space: nowrap; }
+.is-mobile .ordo-demo-bar { bottom: calc(64px + env(safe-area-inset-bottom)); flex-wrap: wrap; justify-content: center; padding: 8px; }
+.is-mobile .ordo-demo-bar-text { flex-basis: 100%; text-align: center; }
+body.is-mobile:has(.is-left-sidedock-open, .is-right-sidedock-open) .ordo-demo-bar, body.is-keyboard-open .ordo-demo-bar { display: none; }
+body.is-mobile .empty-state-hotkey, body.is-mobile .prompt-instructions { display: none; }
+body:has(.modal-container) .ordo-demo-bar { display: none; }
+body.is-mobile .modal .setting-item { flex-wrap: wrap; gap: 8px; }
+body.is-mobile .modal .setting-item-description { overflow-wrap: anywhere; }

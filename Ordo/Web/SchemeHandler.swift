@@ -28,19 +28,38 @@ final class SchemeHandler: NSObject, WKURLSchemeHandler {
             if let fileURL { try? FileManager.default.startDownloadingUbiquitousItem(at: fileURL) }
             return fail(task, url)
         }
-        let mime = UTType(filenameExtension: fileURL.pathExtension)?.preferredMIMEType ?? "application/octet-stream"
-        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: [
-            "Content-Type": mime,
+        var headers = [
+            "Content-Type": Self.mime(fileURL, fromVault: area == "vault"),
             "Content-Length": String(data.count),
             "Cache-Control": area == "vault" ? "no-cache" : "max-age=60",
-            "Access-Control-Allow-Origin": "*",
-        ])!
+            "X-Content-Type-Options": "nosniff",
+        ]
+        // Vault files are data, never code: an .html/.svg in a note folder must not
+        // run script with access to the app (it would share the app's origin).
+        if area == "vault" { headers["Content-Security-Policy"] = "sandbox; default-src 'none'; img-src ordo: data:; style-src 'unsafe-inline'; media-src ordo:" }
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: headers)!
         task.didReceive(response)
         task.didReceive(data)
         task.didFinish()
     }
 
     func webView(_ webView: WKWebView, stop task: WKURLSchemeTask) {}
+
+    /// Media types the app needs from the vault (pictures, PDFs, audio/video, fonts);
+    /// everything else – HTML, scripts, XML … – goes out as plain text.
+    static func mime(_ file: URL, fromVault: Bool) -> String {
+        let type = UTType(filenameExtension: file.pathExtension)
+        let mime = type?.preferredMIMEType ?? "application/octet-stream"
+        guard fromVault else { return mime }
+        if let type, [UTType.image, .audiovisualContent, .pdf, .font].contains(where: { type.conforms(to: $0) }) { return mime }
+        return "text/plain; charset=utf-8"
+    }
+
+    /// The only pages allowed to talk to the app: its own bundled shell and export view.
+    static func isAppPage(_ url: URL?) -> Bool {
+        guard let url, url.scheme == scheme, url.host == "local" else { return false }
+        return ["/app/app.html", "/app/export.html"].contains(url.path)
+    }
 
     private func fail(_ task: WKURLSchemeTask, _ url: URL) {
         let r = HTTPURLResponse(url: url, statusCode: 404, httpVersion: "HTTP/1.1", headerFields: nil)!

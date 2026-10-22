@@ -2,7 +2,7 @@
 // .trash folder. Here it can be put back where it was or deleted for good.
 
 import { Modal, confirmDialog } from '../ui/modal';
-import { h, icon, iconButton, noteName, dirname, debounce } from '../dom';
+import { h, icon, iconButton, dirname, debounce } from '../dom';
 import { request, emit, on } from '../host';
 import { notice } from '../ui/notice';
 import { workspace } from '../workspace';
@@ -48,7 +48,7 @@ export class TrashModal extends Modal {
     }
     const rows = items.map(it => {
       const folder = dirname(it.from);
-      const name = it.folder ? it.name : noteName(it.from) || it.name;
+      const name = it.folder ? it.name : it.from.split('/').pop() || it.name;   // full file name, e.g. „Java Basics.md“
       const meta = h('span', { cls: 'ordo-trash-meta', text: days > 0 ? left(it.date, days) : when(it.date) });
       meta.title = t('Gelöscht {when}', { when: when(it.date) });
       return h('div', { cls: 'ordo-sort-row ordo-trash-row' },

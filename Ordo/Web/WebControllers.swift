@@ -81,6 +81,7 @@ class WebController: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDele
         webView.scrollView.isScrollEnabled = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.scrollView.bounces = false
+        webView.hideInputAccessoryBar()
         #endif
         webView.load(URLRequest(url: SchemeHandler.appURL(page)))
     }
@@ -108,6 +109,8 @@ class WebController: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDele
     func didBecomeReady() {}
 
     func userContentController(_ ucc: WKUserContentController, didReceive message: WKScriptMessage, replyHandler: @escaping @MainActor @Sendable (Any?, String?) -> Void) {
+        // only the app's own top-level page may use the bridge – never a frame or a vault file
+        guard message.frameInfo.isMainFrame, SchemeHandler.isAppPage(message.frameInfo.request.url) else { replyHandler(nil, "not allowed"); return }
         guard let body = message.body as? [String: Any], let type = body["type"] as? String else { replyHandler(nil, nil); return }
         if type == "ready" { markReady(); didBecomeReady(); replyHandler(nil, nil); return }
         Task { @MainActor in
@@ -130,7 +133,9 @@ class WebController: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDele
 
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction) async -> WKNavigationActionPolicy {
         guard let url = action.request.url else { return .cancel }
-        if url.scheme == SchemeHandler.scheme { return .allow }
+        // the shell never navigates away from its own pages (a vault .html would otherwise take over)
+        if SchemeHandler.isAppPage(url) { return .allow }
+        if url.scheme == SchemeHandler.scheme { return .cancel }
         if action.navigationType == .linkActivated { openExternal(url) }
         return .cancel
     }
@@ -146,6 +151,8 @@ private final class MessageProxy: NSObject, WKScriptMessageHandlerWithReply {
 
 @MainActor
 func openExternal(_ url: URL) {
+    // only web and mail links leave the app – never file:, app schemes etc.
+    guard ["http", "https", "mailto"].contains(url.scheme?.lowercased() ?? "") else { return }
     #if os(macOS)
     NSWorkspace.shared.open(url)
     #else
@@ -204,6 +211,29 @@ struct WebViewHost: UIViewRepresentable {
         container.addSubview(webView)
         webView.frame = container.bounds
         container.setNeedsLayout()
+    }
+}
+#endif
+
+#if os(iOS)
+extension WKWebView {
+    /// Ordo shows its own formatting bar above the keyboard; drop Safari's ‹ › ✓ bar
+    /// (same trick as Capacitor's hideFormAccessoryBar: a subclass of the content view without one).
+    func hideInputAccessoryBar() {
+        guard let content = scrollView.subviews.first(where: { String(describing: type(of: $0)).hasPrefix("WKContent") }),
+              let base = object_getClass(content) else { return }
+        let name = "\(base)_OrdoNoAccessory"
+        var cls: AnyClass? = NSClassFromString(name)
+        if cls == nil, let new = objc_allocateClassPair(base, name, 0) {
+            let sel = #selector(getter: UIResponder.inputAccessoryView)
+            let none: @convention(block) (AnyObject) -> AnyObject? = { _ in nil }
+            if let m = class_getInstanceMethod(UIResponder.self, sel) {
+                class_addMethod(new, sel, imp_implementationWithBlock(none), method_getTypeEncoding(m))
+            }
+            objc_registerClassPair(new)
+            cls = new
+        }
+        if let cls { object_setClass(content, cls) }
     }
 }
 #endif

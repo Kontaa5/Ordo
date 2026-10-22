@@ -24,15 +24,16 @@ import { TrashModal, trashButton } from './modals/trash';
 import { gitStatusItem, gitSyncNow, gitPullNow } from './git';
 import { MathPalette } from './modals/mathPalette';
 import { getActiveMarkdownView, format, MarkdownView } from './views/markdown';
+import { toggleCallout } from '../markdown';
 import { sideBySideChange, stackedChange } from './editor/images';
 import { sideBySideBlocksChange } from './editor/blockDrag';
 import './views/simple';
 import { setGraphOption } from './views/graph';
-import { isModalOpen } from './ui/modal';
+import { isModalOpen, confirmDialog } from './ui/modal';
 import { post } from '../bridge';
 
 import { t, lang } from './i18n';
-interface Boot { platform: 'mac' | 'ios'; isPhone: boolean; vault: { name: string; path: string; importedFromObsidian?: boolean; isObsidianVault?: boolean } | null; recent: { name: string; path: string }[]; obsidianVaults: { name: string; path: string }[]; version: string }
+interface Boot { platform: 'mac' | 'ios'; isPhone: boolean; vault: { name: string; path: string; importedFromObsidian?: boolean; isObsidianVault?: boolean; isDemo?: boolean } | null; recent: { name: string; path: string }[]; obsidianVaults: { name: string; path: string }[]; version: string }
 
 let boot: Boot;
 let started = '';
@@ -249,10 +250,22 @@ function showHelp() {
 
 function buildMobile(ws: Workspace) {
   document.body.classList.add('is-mobile', 'is-phone');
+  // one tap between reading and writing; shows what a tap will do
+  const modeToggle = iconButton('pencil', t('Bearbeiten'), () => executeCommand('markdown:toggle-preview'), 'mobile-navbar-action');
+  const syncMode = () => {
+    const v = getActiveMarkdownView();
+    modeToggle.style.visibility = v ? '' : 'hidden';
+    const reading = v?.mode === 'preview';
+    modeToggle.replaceChildren(icon(reading ? 'pencil' : 'book-open'));
+    modeToggle.setAttribute('aria-label', reading ? t('Bearbeiten') : t('Lesemodus'));
+    modeToggle.classList.toggle('is-active', !reading && !!v);
+  };
+  on('mode-change', syncMode); on('active-leaf-change', syncMode); on('file-open', syncMode);
+  setTimeout(syncMode);
   const nav = h('div', { cls: 'mobile-navbar' },
     h('div', { cls: 'mobile-navbar-actions' },
       iconButton('menu', t('Dateien'), () => ws.toggleSide('left'), 'mobile-navbar-action'),
-      iconButton('arrow-left', t('Zurück'), () => ws.activeLeaf?.goBack(), 'mobile-navbar-action'),
+      modeToggle,
       iconButton('square-pen', t('Neue Notiz'), () => executeCommand('file:new-note'), 'mobile-navbar-action mod-cta'),
       iconButton('search', t('Suchen'), () => executeCommand('switcher:open'), 'mobile-navbar-action'),
       iconButton('more', t('Mehr'), e => mobileMenu(e), 'mobile-navbar-action')));
@@ -282,7 +295,6 @@ function mobileMenu(e: MouseEvent) {
   m.addItem({ title: 'Tabs', icon: 'files', submenu: workspace.leaves.map(l => ({ title: l.getDisplayText(), checked: l === workspace.activeLeaf, onClick: () => workspace.setActiveLeaf(l) })) });
   m.addItem({ title: 'Graph', icon: 'graph', onClick: () => executeCommand('graph:open') });
   m.addItem({ title: t('Rückverweise & Gliederung'), icon: 'panel-right', onClick: () => workspace.toggleSide('right', true) });
-  m.addItem({ title: t('Lesen / Bearbeiten'), icon: 'book-open', onClick: () => executeCommand('markdown:toggle-preview') });
   m.addItem({ title: t('Als PDF exportieren …'), icon: 'file-down', onClick: () => executeCommand('ordo:export') });
   m.addItem({ title: t('Einstellungen'), icon: 'settings', onClick: () => executeCommand('app:open-settings') });
   m.addItem({ title: t('Tab schließen'), icon: 'x', onClick: () => executeCommand('workspace:close-tab') });
@@ -322,6 +334,19 @@ function showVaultPicker() {
           ...obsidian.map(o => setting(`Obsidian-Vault „${o.name}“`, prettyPath(o.path) + t(' – parallel zu Obsidian nutzbar.'), h('button', { text: t('Öffnen'), onclick: () => request('openVault', { path: o.path }) })))))));
   document.body.appendChild(wrap);
   workspace?.reportDragRegions();
+}
+
+// ---------- demo vault: "enough seen" ----------
+
+function showDemoBar() {
+  const bar = h('div', { cls: 'ordo-demo-bar' },
+    h('span', { cls: 'ordo-demo-bar-text', text: t('Demo-Vault – genug gesehen?') }),
+    h('button', { cls: 'mod-cta', text: t('Demo löschen & loslegen'), onclick: async () => {
+      if (!await confirmDialog(t('Demo löschen?'), isIOS ? t('Der Ordner „{name}“ wird gelöscht (in iCloud Drive meist unter „Zuletzt gelöscht“ wiederherstellbar). Danach wählst du deinen eigenen Ordner.', { name: vault.name }) : t('Der Ordner „{name}“ kommt in den Papierkorb. Danach wählst du deinen eigenen Ordner.', { name: vault.name }), t('Löschen & loslegen'), true)) return;
+      try { await request('endDemo', { keep: false }); } catch (e: any) { notice(String(e?.message ?? e)); }
+    } }),
+    h('button', { text: t('Behalten'), title: t('Als normalen Vault weiterverwenden'), onclick: async () => { await request('endDemo', { keep: true }); bar.remove(); } }));
+  document.body.appendChild(bar);
 }
 
 function setting(name: string, desc: string, ...ctl: HTMLElement[]) {
@@ -369,6 +394,7 @@ async function start(info: NonNullable<Boot['vault']>) {
   vault.setIndex(await request('index'));
   explorer.render();
   await ws.restore(p => vault.exists(p));
+  if (info.isDemo) showDemoBar();
   if (info.importedFromObsidian) notice(t('Obsidian-Vault erkannt: Einstellungen und Darstellung übernommen. Obsidian kann parallel weiterlaufen.'), { timeout: 8000 });
 }
 
@@ -386,6 +412,8 @@ document.addEventListener('click', e => {
   const a = (e.target as HTMLElement).closest('a[href]') as HTMLAnchorElement | null;
   if (a && /^https?:/.test(a.href)) { e.preventDefault(); request('external', { url: a.href }); }
 });
+// foldable callouts in reading view (the editor handles its own on mousedown)
+document.addEventListener('click', e => { if (!(e.target as HTMLElement).closest?.('.cm-editor')) toggleCallout(e.target); });
 // keep drag regions current after layout changes
 document.addEventListener('transitionend', () => workspace?.reportDragRegions());
 window.addEventListener('blur', () => getActiveMarkdownView()?.flush());

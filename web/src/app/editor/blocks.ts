@@ -5,7 +5,7 @@ import { syntaxTree } from '@codemirror/language';
 import type { SyntaxNode } from '@lezer/common';
 import { EditorState, Range, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
-import { render } from '../../markdown';
+import { render, toggleCallout } from '../../markdown';
 import { renderMath } from '../../math';
 import { editorHost } from './host';
 import { ICONS } from '../icons';
@@ -100,6 +100,7 @@ class BlockWidget extends WidgetType {
       const t = e.target as HTMLElement;
       if (t.closest('a.internal-link, a.tag, a.external-link') && !t.closest('.edit-block-button')) return;
       e.preventDefault();
+      if (!t.closest('.edit-block-button') && toggleCallout(t)) return;
       const pos = view.posAtDOM(el);
       const line = view.state.doc.lineAt(pos);
       const anchor = b.kind === 'properties' ? Math.min(view.state.doc.line(Math.min(2, view.state.doc.lines)).from, view.state.doc.length) : Math.min(line.to, view.state.doc.length);

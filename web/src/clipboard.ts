@@ -117,7 +117,7 @@ export function selectionToMarkdown(sel: Selection): string | null {
   div.querySelectorAll<HTMLElement>('.callout').forEach(c => {
     const t = c.querySelector('.callout-title');
     const p = document.createElement('p');
-    p.textContent = `[!${c.dataset.callout ?? 'note'}] ${t?.textContent ?? ''}`.trim();
+    p.textContent = `[!${c.dataset.callout ?? 'note'}]${c.dataset.calloutFold ?? ''} ${t?.textContent ?? ''}`.trim();
     if (t) t.replaceWith(p); else c.prepend(p);
   });
   const maths: string[] = [];

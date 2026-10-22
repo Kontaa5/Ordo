@@ -1,73 +1,62 @@
 {
-  "allTagsAreFolders" : false,
-  "attachmentFolder" : "Anhänge",
-  "attachmentLocation" : "folder",
-  "attachmentSubfolderName" : "Anhänge",
-  "autoSort" : true,
-  "compressImages" : true,
-  "convertHEIC" : true,
-  "defaultMode" : "edit",
-  "editorFontSize" : 16,
-  "exportPresets" : [
-
-  ],
-  "gitCommit" : "auto",
-  "gitEnabled" : false,
-  "gitPull" : "dailyStart",
-  "gitPush" : "daily",
-  "gitRemote" : "",
-  "linkStyle" : "wiki",
-  "maxImageDimension" : 2400,
-  "newNoteFolder" : "",
-  "page" : {
-    "fontSize" : 11,
-    "landscape" : false,
-    "marginMM" : 20,
-    "pageNumbers" : true,
-    "paper" : "a4"
+  "allTagsAreFolders": false,
+  "attachmentFolder": "Anhänge",
+  "attachmentLocation": "folder",
+  "attachmentSubfolderName": "Anhänge",
+  "autoSort": true,
+  "compressImages": true,
+  "convertHEIC": true,
+  "defaultMode": "edit",
+  "editorFontSize": 16,
+  "exportPresets": [],
+  "linkStyle": "wiki",
+  "maxImageDimension": 2400,
+  "newNoteFolder": "",
+  "page": {
+    "fontSize": 11,
+    "landscape": false,
+    "marginMM": 20,
+    "pageNumbers": true,
+    "paper": "a4"
   },
-  "readableLineWidth" : true,
-  "sortBaseFolder" : "",
-  "tagRules" : {
-    "4klasse" : {
-      "folder" : "",
-      "mode" : "ignore"
+  "readableLineWidth": true,
+  "sortBaseFolder": "",
+  "tagRules": {
+    "serw": {
+      "mode": "folderOnly",
+      "folder": "Softwareentwicklung"
     },
-    "5sem" : {
-      "folder" : "",
-      "mode" : "ignore"
+    "insy": {
+      "mode": "folderOnly",
+      "folder": "INSY"
     },
-    "analysis" : {
-      "folder" : "Analysis",
-      "mode" : "folderAndSubfolder"
+    "wirtschaft-recht": {
+      "mode": "folderOnly",
+      "folder": "Wirtschaft und Recht"
     },
-    "deutsch" : {
-      "folder" : "Deutsch",
-      "mode" : "folderOnly"
+    "deutsch": {
+      "mode": "folderOnly",
+      "folder": "Deutsch"
     },
-    "insy" : {
-      "folder" : "INSY",
-      "mode" : "folderOnly"
+    "medienproduktion": {
+      "mode": "folderOnly",
+      "folder": "Medienproduktion"
     },
-    "mathe" : {
-      "folder" : "Mathe",
-      "mode" : "folderAndSubfolder"
+    "mathe": {
+      "mode": "folderAndSubfolder",
+      "folder": "Mathe"
     },
-    "medienproduktion" : {
-      "folder" : "Medienproduktion",
-      "mode" : "folderOnly"
+    "analysis": {
+      "mode": "folderAndSubfolder",
+      "folder": "Analysis"
     },
-    "serw" : {
-      "folder" : "Softwareentwicklung",
-      "mode" : "folderOnly"
+    "4klasse": {
+      "mode": "ignore",
+      "folder": ""
     },
-    "wirtschaft-recht" : {
-      "folder" : "Wirtschaft und Recht",
-      "mode" : "folderOnly"
+    "5sem": {
+      "mode": "ignore",
+      "folder": ""
     }
-  },
-  "tagSpellings" : {
-
-  },
-  "trashDays" : 30
+  }
 }

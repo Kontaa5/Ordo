@@ -273,6 +273,15 @@ export const EN: Record<string, string> = {
 
   'Ordo lädt nie von selbst hoch oder herunter – nur mit „Sichern & hochladen“ bzw. „Holen“ (hier oder über den Punkt unten in der Statusleiste). Gleich geänderte Notizen gehen beim Holen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.': 'Ordo never uploads or downloads on its own – only with “Back up & upload” or “Fetch” (here or via the dot in the status bar). Notes changed on both sides are not lost when fetching: the other version is saved next to it as “Name (Konflikt)”.',
 
+  'Demo-Vault – genug gesehen?': 'Demo vault – seen enough?',
+  'Demo löschen & loslegen': 'Delete demo & get started',
+  'Demo löschen?': 'Delete demo?',
+  'Der Ordner „{name}“ kommt in den Papierkorb. Danach wählst du deinen eigenen Ordner.': 'The folder “{name}” is moved to the Trash. Then you choose your own folder.',
+  'Der Ordner „{name}“ wird gelöscht (in iCloud Drive meist unter „Zuletzt gelöscht“ wiederherstellbar). Danach wählst du deinen eigenen Ordner.': 'The folder “{name}” is deleted (in iCloud Drive usually restorable from “Recently Deleted”). Then you choose your own folder.',
+  'Löschen & loslegen': 'Delete & get started',
+  'Behalten': 'Keep',
+  'Als normalen Vault weiterverwenden': 'Keep using it as a normal vault',
+
   // hotkey names
   'Leertaste': 'Space', 'Strg': 'Ctrl', 'Umschalt': 'Shift', 'Esc': 'Esc',
 };

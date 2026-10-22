@@ -3,6 +3,7 @@
 // Every block carries data-line so pages can be mapped back to source lines.
 
 import MarkdownIt from 'markdown-it';
+import DOMPurify from 'dompurify';
 import type { StateInline, StateCore, Token } from 'markdown-it';
 import { resolve, fileURL, IMAGE_EXT, parseSize, basename } from './vault';
 import { mathPlugin } from './math';
@@ -105,7 +106,15 @@ md.inline.ruler.push('tag', tag);
 // ---------- callouts:  > [!note] Title  →  Obsidian's .callout structure ----------
 export const COPY_ICON = `<svg viewBox="0 0 256 256" fill="currentColor" class="svg-icon">${ICONS.copy}</svg>`;
 export const CHECK_ICON = `<svg viewBox="0 0 256 256" fill="currentColor" class="svg-icon">${ICONS.check}</svg>`;
-const CALLOUT_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" class="svg-icon">${ICONS.info}</svg>`;
+const svg = (name: string) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" class="svg-icon">${ICONS[name]}</svg>`;
+// icon per callout type (aliases like Obsidian); unknown types get the pencil of "note"
+const CALLOUT_ICONS: Record<string, string> = {
+  info: 'info', todo: 'list-checks', abstract: 'list', summary: 'list', tldr: 'list',
+  tip: 'highlighter', hint: 'highlighter', important: 'highlighter',
+  success: 'check', check: 'check', done: 'check', question: 'help', help: 'help', faq: 'help',
+  warning: 'alert', caution: 'alert', attention: 'alert', failure: 'x', fail: 'x', missing: 'x',
+  danger: 'alert', error: 'alert', bug: 'alert', example: 'list', quote: 'quote', cite: 'quote',
+};
 md.core.ruler.before('inline', 'callouts', (state: StateCore) => {
   const toks = state.tokens;
   for (let i = 0; i < toks.length - 2; i++) {
@@ -124,7 +133,10 @@ md.core.ruler.before('inline', 'callouts', (state: StateCore) => {
     }
     if (close < 0) continue;
     const open = new state.Token('html_block', '', 0);
-    open.content = `<div class="callout" data-callout="${esc(kind)}"${m[2] ? ` data-callout-fold="${m[2]}"` : ''} data-line="${toks[i].map?.[0] ?? 0}"><div class="callout-title"><div class="callout-icon">${CALLOUT_ICON}</div><div class="callout-title-inner">${esc(title)}</div></div><div class="callout-content">\n`;
+    // [!type]- starts folded, [!type]+ starts open; both fold by clicking the title
+    const fold = m[2] ? ` is-collapsible${m[2] === '-' ? ' is-collapsed' : ''}` : '';
+    const chevron = m[2] ? `<div class="callout-fold">${svg('chevron-down')}</div>` : '';
+    open.content = `<div class="callout${fold}" data-callout="${esc(kind)}"${m[2] ? ` data-callout-fold="${m[2]}"` : ''} data-line="${toks[i].map?.[0] ?? 0}"><div class="callout-title"><div class="callout-icon">${svg(CALLOUT_ICONS[kind] ?? 'pencil')}</div><div class="callout-title-inner">${esc(title)}</div>${chevron}</div><div class="callout-content">\n`;
     const end = new state.Token('html_block', '', 0);
     end.content = '</div></div>\n';
     inline.content = inline.content.slice(m[0].length);
@@ -256,5 +268,25 @@ export function render(text: string, opts: RenderOpts): string {
   const { fm, body, lines } = splitFrontmatter(text);
   // keep line numbers aligned with the source by padding the stripped frontmatter
   const html = md.render('\n'.repeat(lines) + body);
-  return (fm && opts.showProperties !== false ? renderProperties(fm) : '') + html;
+  return sanitize((fm && opts.showProperties !== false ? renderProperties(fm) : '') + html);
+}
+
+// Notes may contain raw HTML (Obsidian does too), but a note must never run code in
+// the app: no <script>, no on…= handlers, no iframes/forms, no javascript: links.
+// ordo: stays allowed for the vault's own pictures.
+const SAFE_URI = /^(?:(?:https?|mailto|tel|ordo|obsidian):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
+/** Click on the title of a foldable callout: open / close it. True if it was one. */
+export function toggleCallout(target: EventTarget | null): boolean {
+  const callout = (target as HTMLElement | null)?.closest?.('.callout.is-collapsible > .callout-title')?.parentElement;
+  if (!callout) return false;
+  callout.classList.toggle('is-collapsed');
+  return true;
+}
+
+export function sanitize(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_URI_REGEXP: SAFE_URI,
+    FORBID_TAGS: ['style', 'form', 'iframe', 'frame', 'object', 'embed', 'base', 'meta', 'link'],
+    ADD_ATTR: ['data-line', 'data-href', 'data-path', 'data-tex', 'data-display', 'data-callout', 'data-callout-fold'],
+  });
 }

@@ -135,7 +135,29 @@ final class AppModel {
             "path": v.root.path,
             "importedFromObsidian": v.importedFromObsidian,
             "isObsidianVault": ObsidianImport.isObsidianVault(v.root),
+            "isDemo": FileManager.default.fileExists(atPath: Self.demoMarker(v.root).path),
         ]
+    }
+
+    /// `tools/demo/make_vault.py` leaves this file so the app can offer "enough seen".
+    static func demoMarker(_ root: URL) -> URL { root.appendingPathComponent(".ordo/demo") }
+
+    /// Ends the demo: `keep` turns it into a normal vault, otherwise the whole folder
+    /// goes to the system trash (removed only if there is none) and the picker shows.
+    func endDemo(keep: Bool) throws {
+        guard let v = vault else { return }
+        let root = v.root
+        if keep { try? FileManager.default.removeItem(at: Self.demoMarker(root)); return }
+        closeVault(notify: false)
+        if let rec = VaultAccess.recent.first(where: { $0.path == root.path }) { VaultAccess.forget(rec) }
+        let scoped = root.startAccessingSecurityScopedResource()
+        defer { if scoped { root.stopAccessingSecurityScopedResource() }; shell.callJSON("ordo.host.vaultClosed", bootInfo()) }
+        #if os(macOS)
+        try FileManager.default.trashItem(at: root, resultingItemURL: nil)   // never delete for good on the Mac
+        #else
+        do { try FileManager.default.trashItem(at: root, resultingItemURL: nil) }
+        catch { try FileManager.default.removeItem(at: root) }
+        #endif
     }
 
     func bootInfo() -> [String: Any] {

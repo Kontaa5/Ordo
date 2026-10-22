@@ -153,3 +153,14 @@ final class ImageProcessingTests: XCTestCase {
         XCTAssertEqual(out, data)
     }
 }
+
+final class VaultPathTests: XCTestCase {
+    func testPathsNeverLeaveTheVault() {
+        XCTAssertEqual(FolderRules.insideVault("../../etc/passwd"), "etc/passwd")
+        XCTAssertEqual(FolderRules.insideVault("/etc/passwd"), "etc/passwd")
+        XCTAssertEqual(FolderRules.insideVault("a/../../b"), "a/b")
+        XCTAssertEqual(FolderRules.insideVault("./../x.md"), "x.md")
+        XCTAssertEqual(FolderRules.insideVault("INSY/Aufgabe 01.md"), "INSY/Aufgabe 01.md")
+        XCTAssertEqual(FolderRules.insideVault(""), "")
+    }
+}

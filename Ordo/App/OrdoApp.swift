@@ -22,7 +22,7 @@ struct OrdoApp: App {
                     #if os(macOS)
                     DockIcon.follow()
                     #endif
-                    #if DEBUG && os(macOS)
+                    #if DEBUG
                     DebugScript.runIfRequested(model: model)
                     #endif
                 }

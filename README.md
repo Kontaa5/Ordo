@@ -54,3 +54,7 @@ Auch die Einstellungen löschen: `brew uninstall --zap --cask ordo`.
 - iCloud für Mac und iPhone, optional Git-Backup
 
 iPhone: [docs/iPhone-Installation.md](docs/iPhone-Installation.md) · Entwicklung: [docs/Entwicklung.md](docs/Entwicklung.md)
+
+## Lizenz
+
+MIT – siehe [LICENSE](LICENSE).

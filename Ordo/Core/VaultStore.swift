@@ -85,8 +85,11 @@ final class VaultStore {
 
     // MARK: - URLs
 
+    /// Paths come from the web side and from vault data (links, folder rules), so
+    /// `..`, `.` and leading `/` are dropped: nothing can point outside the vault.
     func url(_ rel: String) -> URL {
-        rel.isEmpty ? root : root.appendingPathComponent(rel, isDirectory: false)
+        let safe = FolderRules.insideVault(rel)
+        return safe.isEmpty ? root : root.appendingPathComponent(safe, isDirectory: false)
     }
 
     private var ordoDir: URL { root.appendingPathComponent(".ordo", isDirectory: true) }
