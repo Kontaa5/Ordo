@@ -283,6 +283,12 @@ export function toggleCallout(target: EventTarget | null): boolean {
   return true;
 }
 
+// a note may style its own text, but never lay itself over the app (fake dialogs, hidden buttons)
+DOMPurify.addHook('afterSanitizeAttributes', node => {
+  const st = (node as HTMLElement).style;
+  if (st && /fixed|absolute|sticky/i.test(st.position)) st.removeProperty('position');
+});
+
 export function sanitize(html: string): string {
   return DOMPurify.sanitize(html, {
     ALLOWED_URI_REGEXP: SAFE_URI,

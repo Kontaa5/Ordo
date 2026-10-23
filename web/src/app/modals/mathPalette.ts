@@ -88,7 +88,8 @@ export const MATH: { title: string; items: Item[] }[] = [
 ];
 
 function katexHTML(tex: string, display = false) {
-  try { return katex.renderToString(tex, { throwOnError: false, displayMode: display, output: 'html' }); } catch { return tex; }
+  try { return katex.renderToString(tex, { throwOnError: false, displayMode: display, output: 'html' }); }
+  catch { return tex.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!)); }
 }
 
 /** Is `pos` inside $…$ or a $$ block? */

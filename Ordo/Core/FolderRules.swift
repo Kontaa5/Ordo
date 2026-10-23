@@ -82,12 +82,21 @@ enum FolderRules {
 
     static func sanitize(_ name: String) -> String {
         let bad = CharacterSet(charactersIn: ":\\*?\"<>|")
-        return name.components(separatedBy: bad).joined().trimmingCharacters(in: .whitespaces)
+        let clean = name.components(separatedBy: bad).joined().trimmingCharacters(in: .whitespaces)
+        return clean == "." || clean == ".." ? "" : clean
     }
 
     /// Vault-relative path without `..`, `.` and leading `/` – it can never point outside the vault.
     static func insideVault(_ rel: String) -> String {
         rel.split(separator: "/").filter { $0 != ".." && $0 != "." }.joined(separator: "/")
+    }
+
+    /// False for anything that leaves the vault through a symlink (e.g. `note.md → ~/.ssh/id_ed25519`,
+    /// which a shared vault or a git pull could bring in).
+    static func isInside(_ url: URL, root: URL) -> Bool {
+        let base = root.resolvingSymlinksInPath().path
+        let real = url.resolvingSymlinksInPath().path
+        return real == base || real.hasPrefix(base.hasSuffix("/") ? base : base + "/")
     }
 
     /// Case-insensitive comparison of folder paths.

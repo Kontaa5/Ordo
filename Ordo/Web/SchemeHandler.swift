@@ -24,7 +24,9 @@ final class SchemeHandler: NSObject, WKURLSchemeHandler {
         case "vault": fileURL = Self.vaultRoot?.appendingPathComponent(rest)
         default: fileURL = nil
         }
-        guard let fileURL, !rest.contains(".."), let data = VaultStore.coordinatedRead(fileURL) else {
+        guard let fileURL, !rest.contains(".."),
+              area != "vault" || Self.vaultRoot.map({ FolderRules.isInside(fileURL, root: $0) }) == true,
+              let data = VaultStore.coordinatedRead(fileURL) else {
             if let fileURL { try? FileManager.default.startDownloadingUbiquitousItem(at: fileURL) }
             return fail(task, url)
         }

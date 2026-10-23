@@ -92,6 +92,7 @@ final class VaultStore {
         return safe.isEmpty ? root : root.appendingPathComponent(safe, isDirectory: false)
     }
 
+
     private var ordoDir: URL { root.appendingPathComponent(".ordo", isDirectory: true) }
 
     // MARK: - settings & state
@@ -148,7 +149,7 @@ final class VaultStore {
 
     nonisolated static func scan(root: URL) -> ScanResult {
         var r = ScanResult()
-        let keys: [URLResourceKey] = [.isDirectoryKey, .contentModificationDateKey, .creationDateKey, .fileSizeKey]
+        let keys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey, .contentModificationDateKey, .creationDateKey, .fileSizeKey]
         let rootPath = root.path.hasSuffix("/") ? String(root.path.dropLast()) : root.path
         guard let en = FileManager.default.enumerator(at: root, includingPropertiesForKeys: keys, options: [], errorHandler: { _, _ in true }) else { return r }
         for case let url as URL in en {
@@ -156,6 +157,7 @@ final class VaultStore {
             guard url.path.hasPrefix(rootPath + "/") else { continue }
             let rel = String(url.path.dropFirst(rootPath.count + 1))
             let vals = try? url.resourceValues(forKeys: Set(keys))
+            if vals?.isSymbolicLink == true { continue }   // links may point outside the vault
             if vals?.isDirectory == true {
                 if name.hasPrefix(".") || name == "node_modules" { en.skipDescendants(); continue }
                 r.folders.insert(rel)
@@ -291,7 +293,9 @@ final class VaultStore {
 
     func text(_ path: String) -> String? {
         if let t = contents[path] { return t }
-        let t = Self.readText(url(path))
+        let u = url(path)
+        guard FolderRules.isInside(u, root: root) else { return nil }
+        let t = Self.readText(u)
         if let t { contents[path] = t }
         return t
     }
@@ -544,6 +548,7 @@ final class VaultStore {
 
     /// Puts an item back where it was (next to it if that name is taken now). Returns the new path.
     func restoreFromTrash(_ name: String) async throws -> String {
+        guard !name.isEmpty, !name.contains("/"), !name.hasPrefix(".") else { throw HostError(message: "Ungültiger Name") }
         var record = trashRecords()
         let from = record[name]?.from ?? name
         let isDir = (try? trashDir.appendingPathComponent(name).resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
@@ -582,6 +587,7 @@ final class VaultStore {
     }
 
     func trash(_ path: String) throws {
+        guard !FolderRules.insideVault(path).isEmpty else { return }   // never the vault itself
         let trashDir = root.appendingPathComponent(".trash", isDirectory: true)
         try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
         var dest = trashDir.appendingPathComponent(Paths.file(path))

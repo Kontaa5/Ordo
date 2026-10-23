@@ -16,6 +16,7 @@
 		48B74DC65AD573806057D7B6 /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FDA751C2B16B30D751EA0 /* FileWatcher.swift */; };
 		5BD3D22B4629630330AA8DE1 /* MarkdownParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B677B6C49092CB164F6E72 /* MarkdownParsing.swift */; };
 		60580B6FCF778840EBD1FDF2 /* ShellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42103208F49AEAF32308DF0B /* ShellController.swift */; };
+		60AF283D95E606C9D8E4A494 /* GitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313737E0E5E4CE7DC7206BB /* GitSync.swift */; };
 		6757DD794F18E9CBCEE3B525 /* VaultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EDD942D0D847832387D39 /* VaultStore.swift */; };
 		71BCA2111BB05975E6FC4831 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C74341FCE1F2DC3211AE7233 /* AppModel.swift */; };
 		7F65BEAB26425C59E2D2CE4A /* DebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE52032C282D1C04E5CA48A3 /* DebugSnapshot.swift */; };
@@ -302,6 +303,7 @@
 			files = (
 				A34D38E50052C17AB5D79868 /* CoreTests.swift in Sources */,
 				F0B7C64288003D2D423D8B0E /* FolderRules.swift in Sources */,
+				60AF283D95E606C9D8E4A494 /* GitSync.swift in Sources */,
 				367724F6EF04E69FF4B1CA04 /* ImageProcessing.swift in Sources */,
 				5BD3D22B4629630330AA8DE1 /* MarkdownParsing.swift in Sources */,
 			);
@@ -453,7 +455,8 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
-				ENABLE_HARDENED_RUNTIME = NO;
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Ordo;

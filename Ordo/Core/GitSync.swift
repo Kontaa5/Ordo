@@ -68,6 +68,17 @@ final class GitSync {
 
     // MARK: setup
 
+    /// Only real repository addresses: https, ssh (`git@host:repo`, `ssh://`), or a local path.
+    /// The remote comes from the vault's settings file, so it must never smuggle in a git option
+    /// (`--upload-pack=…` runs a command) or a transport helper (`ext::…`).
+    nonisolated static func isValidRemote(_ remote: String) -> Bool {
+        let r = remote.trimmingCharacters(in: .whitespaces)
+        guard !r.isEmpty, !r.hasPrefix("-"), !r.contains("::"),
+              r.rangeOfCharacter(from: .whitespacesAndNewlines.union(.controlCharacters)) == nil else { return false }
+        if r.hasPrefix("https://") || r.hasPrefix("ssh://") || r.hasPrefix("file://") || r.hasPrefix("/") { return true }
+        return r.range(of: #"^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+:[A-Za-z0-9._~/-]+$"#, options: .regularExpression) != nil
+    }
+
     /// Creates the repository (outside iCloud) and points `origin` at the remote.
     func prepare(remote: String) async -> Bool {
         if !FileManager.default.fileExists(atPath: gitDir.appendingPathComponent("HEAD").path) {
@@ -92,6 +103,11 @@ final class GitSync {
         if !(await git(["config", "user.email"])).ok { _ = await git(["config", "user.email", "ordo@localhost"]) }
         let current = await git(["remote", "get-url", "origin"])
         let url = remote.trimmingCharacters(in: .whitespaces)
+        if !url.isEmpty, !Self.isValidRemote(url) {
+            if current.ok { _ = await git(["remote", "remove", "origin"]) }
+            set(.error, "Ungültige Repository-Adresse")
+            return false
+        }
         if url.isEmpty { if current.ok { _ = await git(["remote", "remove", "origin"]) } }
         else if !current.ok { _ = await git(["remote", "add", "origin", url]) }
         else if current.out.trimmingCharacters(in: .whitespacesAndNewlines) != url { _ = await git(["remote", "set-url", "origin", url]) }
@@ -100,6 +116,7 @@ final class GitSync {
 
     /// Can the remote be reached with the Mac's git login (SSH key / credential helper)?
     func test(remote: String) async -> (ok: Bool, message: String) {
+        guard Self.isValidRemote(remote) else { return (false, "Ungültige Adresse – erlaubt sind https://…, git@host:… oder ssh://…") }
         let r = await git(["ls-remote", "--heads", remote.trimmingCharacters(in: .whitespaces)], workTree: false)
         return r.ok ? (true, "") : (false, Self.explain(r.err))
     }

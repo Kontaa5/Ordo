@@ -43,6 +43,11 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         "CODE_SIGN_IDENTITY[sdk=macosx*]": "-"
         ENABLE_HARDENED_RUNTIME: NO
+      configs:
+        # shipped builds: no debugger attach (get-task-allow) and the hardened runtime
+        Release:
+          CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
+          ENABLE_HARDENED_RUNTIME: YES
   OrdoTests:
     type: bundle.unit-test
     platform: macOS
@@ -51,6 +56,7 @@ targets:
       - path: Ordo/Core/MarkdownParsing.swift
       - path: Ordo/Core/FolderRules.swift
       - path: Ordo/Core/ImageProcessing.swift
+      - path: Ordo/Core/GitSync.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: at.ordo.notes.tests

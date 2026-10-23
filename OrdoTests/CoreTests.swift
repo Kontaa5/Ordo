@@ -164,3 +164,30 @@ final class VaultPathTests: XCTestCase {
         XCTAssertEqual(FolderRules.insideVault(""), "")
     }
 }
+
+final class SecurityTests: XCTestCase {
+    func testNamesCannotBeDotDot() {
+        XCTAssertEqual(FolderRules.sanitize(".."), "")
+        XCTAssertEqual(FolderRules.sanitize("."), "")
+        XCTAssertEqual(FolderRules.sanitize("Notiz"), "Notiz")
+    }
+
+    func testSymlinksOutOfTheVaultAreRejected() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ordo-sec-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try "x".write(to: root.appendingPathComponent("ok.md"), atomically: true, encoding: .utf8)
+        try FileManager.default.createSymbolicLink(at: root.appendingPathComponent("out.md"), withDestinationURL: URL(fileURLWithPath: "/etc/hosts"))
+        XCTAssertTrue(FolderRules.isInside(root.appendingPathComponent("ok.md"), root: root))
+        XCTAssertFalse(FolderRules.isInside(root.appendingPathComponent("out.md"), root: root))
+    }
+
+    func testGitRemoteMustBeARealAddress() {
+        for ok in ["git@github.com:Kontaa5/Ordo.git", "https://github.com/a/b.git", "ssh://git@host/x.git", "/Volumes/USB/vault.git"] {
+            XCTAssertTrue(GitSync.isValidRemote(ok), ok)
+        }
+        for bad in ["--upload-pack=touch /tmp/x", "-c", "ext::sh -c touch% /tmp/x", "fd::3", "https://a b", "git@host:x;rm", "", "http://insecure"] {
+            XCTAssertFalse(GitSync.isValidRemote(bad), bad)
+        }
+    }
+}
