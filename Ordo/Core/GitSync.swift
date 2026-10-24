@@ -156,10 +156,13 @@ final class GitSync {
     /// those files are left out of this backup and come along next time.
     private func downloadFromICloud() async -> [String] {
         let root = self.root
+        let base = root.standardizedFileURL.path + "/"
+        func rel(_ urls: [URL]) -> [String] { urls.map { String($0.standardizedFileURL.path.dropFirst(base.count)) } }
         var left = await Task.detached(priority: .utility) { Self.notDownloaded(root) }.value
-        guard !left.isEmpty else { return [] }
-        set(.working, "Lade \(left.count) \(left.count == 1 ? "Datei" : "Dateien") aus iCloud …")
         for u in left { try? FileManager.default.startDownloadingUbiquitousItem(at: u) }
+        // the same files didn't come down last time either: don't wait for them again
+        guard !left.isEmpty, !Set(rel(left)).isSubset(of: stuck) else { stuck = Set(rel(left)); return rel(left) }
+        set(.working, left.count == 1 ? "Lade „\(left[0].lastPathComponent)“ aus iCloud …" : "Lade \(left.count) Dateien aus iCloud …")
         // wait while files keep arriving (at most a minute); give up after 10 s without progress
         var idle = 0
         for _ in 0..<60 where !left.isEmpty && idle < 10 {
@@ -169,9 +172,12 @@ final class GitSync {
             left = now
         }
         set(.working, "Sichern …")
-        let base = root.standardizedFileURL.path + "/"
-        return left.map { String($0.standardizedFileURL.path.dropFirst(base.count)) }
+        stuck = Set(rel(left))
+        return rel(left)
     }
+
+    /// Files iCloud did not download during the last backup.
+    private var stuck: Set<String> = []
 
     /// Files in the vault that are only in iCloud, not on this Mac. (".downloaded" – a local copy
     /// with a newer one in iCloud – is readable for git, so it does not count.)
