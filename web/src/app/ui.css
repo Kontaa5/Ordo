@@ -761,6 +761,7 @@ table.properties td { border: none; padding: 2px 16px 2px 0; } table.properties 
 .modal-close-button:hover { background-color: var(--background-modifier-hover); }
 .modal-content { display: flex; flex-direction: column; gap: var(--size-4-2); }
 .modal-content p { margin: 0 0 8px; color: var(--text-muted); }
+.modal .modal-content > p { font-size: var(--font-ui-medium); line-height: 1.45; }   /* UI size, not the note's text size: never bigger than the title */
 .modal-button-container { display: flex; justify-content: flex-end; align-items: center; gap: var(--size-4-2); margin-top: var(--size-4-3); flex-wrap: wrap; }
 .mod-prompt-text input { width: 100%; }
 
@@ -831,6 +832,9 @@ button.mod-cta:hover { background-color: var(--interactive-accent-hover); }
 .modal.ordo-custom-css { width: min(760px, 92vw); }
 button.mod-warning { background-color: var(--background-modifier-error); color: var(--text-on-accent); }
 button.mod-warning:hover { background-color: var(--background-modifier-error-hover); color: var(--text-on-accent); filter: brightness(0.92); }
+/* themes sometimes colour this text red as well – then the button looks empty */
+.modal-button-container > button.mod-warning { background-color: var(--color-red, #e93147) !important; color: #fff !important; }
+.modal-button-container > button.mod-warning:hover { filter: brightness(0.92); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 button.mod-small { height: 24px; padding: 2px 8px; font-size: var(--font-ui-smaller); }
 .checkbox-container {
