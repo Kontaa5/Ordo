@@ -1,6 +1,6 @@
 # Ordo
 
-Markdown-Notizen wie in Obsidian: Hashtags sortieren Notizen in Ordner, PDF-Export nach Hashtag, Graph, Bilder, iCloud.
+Markdown-Editor für Mac und iPhone: Hashtags sortieren Notizen in Ordner, PDF-Export nach Hashtag, Graph, Bilder, iCloud.
 
 ![Ordo](docs/images/ordo.png)
 
@@ -23,7 +23,7 @@ brew install --cask ordo
 
 ![Installation im Terminal](docs/images/install.png)
 
-**3. Starten:** Ordo über Launchpad oder Spotlight öffnen, auf **Öffnen** klicken und einen Ordner wählen – ein bestehender Obsidian-Vault geht auch.
+**3. Starten:** Ordo über Launchpad oder Spotlight öffnen, auf **Öffnen** klicken und einen Ordner mit Markdown-Dateien wählen (oder einen neuen).
 
 ![Erster Start](docs/images/start.png)
 
@@ -50,7 +50,7 @@ Auch die Einstellungen löschen: `brew uninstall --zap --cask ordo`.
 - 1. Hashtag = Ordner, 2. Hashtag = Unterordner (`#4klasse #medt` → `4klasse/medt/`)
 - PDF-Export aller Notizen mit bestimmten Hashtags, Seitenumbrüche im Editor sichtbar
 - Bilder zuschneiden, nebeneinander anordnen, ohne Qualitätsverlust verkleinern
-- Graph nach Hashtags, Spalten, Obsidian-Themes, Hell/Dunkel, Deutsch/Englisch
+- Graph nach Hashtags, Spalten, Themes, Hell/Dunkel, Deutsch/Englisch
 - iCloud für Mac und iPhone, optional Git-Backup
 
 iPhone: [docs/iPhone-Installation.md](docs/iPhone-Installation.md) · Entwicklung: [docs/Entwicklung.md](docs/Entwicklung.md)
@@ -77,4 +77,4 @@ MIT – siehe [LICENSE](LICENSE). Ohne Gewährleistung und Haftung. Eingebaute O
 
 Offenlegung gemäß § 25 MedienG: Gabriel Suntinger, Villach (Österreich). Privates, nicht kommerzielles Open-Source-Projekt. Kontakt: [GitHub-Issues](https://github.com/Kontaa5/Ordo/issues).
 
-Ordo ist ein privates Projekt ohne Verbindung zu Obsidian (Dynalist Inc.) oder Apple. Obsidian, Apple, macOS, iPhone und iCloud sind Marken ihrer Inhaber; sie werden hier nur beschreibend genannt.
+Ordo ist ein privates Projekt ohne Verbindung zu Apple. Apple, macOS, iPhone und iCloud sind Marken von Apple Inc.

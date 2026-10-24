@@ -4,7 +4,7 @@ cask "ordo" do
 
   url "https://raw.githubusercontent.com/Kontaa5/Ordo/releases/Ordo-#{version}.zip"
   name "Ordo"
-  desc "Markdown-Notizen wie Obsidian, mit Hashtag-Ordnern und PDF-Export"
+  desc "Markdown-Editor mit Hashtag-Ordnern und PDF-Export"
   homepage "https://github.com/Kontaa5/Ordo"
 
   depends_on macos: :sonoma
