@@ -309,6 +309,9 @@ final class ShellController: WebController {
             return v.snippetCSS(str("name"))
         case "styleSettings":
             return v.styleSettings()
+        case "saveCustomCSS":
+            v.saveCustomCSS(str("css"))
+            return nil
         case "openSnippetsFolder":
             let dir = v.folderSnippetsPath()
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)

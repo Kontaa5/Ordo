@@ -827,6 +827,8 @@ button:not(.clickable-icon) {
 button:not(.clickable-icon):hover { background-color: var(--interactive-hover); box-shadow: var(--input-shadow-hover); }
 button.mod-cta { background-color: var(--interactive-accent); color: var(--text-on-accent); }
 button.mod-cta:hover { background-color: var(--interactive-accent-hover); }
+.ordo-css-editor { width: 100%; min-height: 360px; font-family: var(--font-monospace); font-size: 12.5px; line-height: 1.5; padding: 10px 12px; border-radius: var(--radius-s); border: 1px solid var(--background-modifier-border); background: var(--background-primary-alt); color: var(--text-normal); resize: vertical; tab-size: 2; margin: 10px 0; }
+.modal.ordo-custom-css { width: min(760px, 92vw); }
 button.mod-warning { background-color: var(--background-modifier-error); color: var(--text-on-accent); }
 button.mod-warning:hover { background-color: var(--background-modifier-error-hover); color: var(--text-on-accent); filter: brightness(0.92); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }

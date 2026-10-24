@@ -7,7 +7,7 @@ import { request, emit, on, isMac, isIOS } from '../host';
 import { gitStatus, gitSyncNow, gitPullNow, when, GitStatus } from '../git';
 import { appState } from '../state';
 import { notice } from '../ui/notice';
-import { getScheme, setScheme, getZoom, setZoom, appearance, saveAppearance, applyAll, applyAccent, applyFonts, applyTheme, applySnippets, applyStyleSettings, communityThemes, installCommunityTheme, CommunityTheme } from '../appearance';
+import { getScheme, setScheme, getZoom, setZoom, appearance, saveAppearance, applyAll, applyAccent, applyFonts, applyTheme, applySnippets, applyStyleSettings, communityThemes, installCommunityTheme, CommunityTheme, CUSTOM_SNIPPET } from '../appearance';
 import { executeCommand, getCommands, hotkeysFor, displayHotkey, setHotkey, eventCombo, Hotkey, Modifier } from '../commands';
 import { TagRuleModal } from './tagRule';
 import { SortAllModal } from './sortAll';
@@ -186,7 +186,9 @@ export class SettingsModal extends Modal {
         h('button', { text: t('Durchsuchen …'), onclick: () => new ThemeBrowser(() => this.refresh()).open() })),
     );
     this.heading(el, t('CSS-Snippets'));
-    const snippets = await request<string[]>('snippets').catch(() => []);
+    el.append(setting(t('Eigenes CSS'), t('Spaltenbreite, Ränder, Überschriften … selbst festlegen. Wirkt sofort, nach Theme und Snippets.'),
+      h('button', { text: t('Bearbeiten …'), onclick: () => new CustomCSSModal(() => this.refresh()).open() })));
+    const snippets = (await request<string[]>('snippets').catch(() => [])).filter(s => s !== CUSTOM_SNIPPET);
     el.append(setting(t('Snippets'), t('Eigene CSS-Dateien aus .obsidian/snippets und .ordo/snippets.'),
       iconButton('refresh', t('Neu laden'), async () => { await applySnippets(); this.refresh(); }),
       iconButton('folder-open', t('Snippet-Ordner öffnen'), () => request('openSnippetsFolder'))));
@@ -307,6 +309,62 @@ export class SettingsModal extends Modal {
         h('button', { text: t('Exportieren'), onclick: () => { this.close(); emit('export', { preset: pr }); } }),
         iconButton('trash', t('Löschen'), async () => { await this.save({ exportPresets: presets.filter(x => x.id !== pr.id) }); this.refresh(); })));
     }
+  }
+}
+
+const CUSTOM_CSS_TEMPLATE = `/* Eigenes CSS – gilt für diesen Vault, nach Theme und Snippets. */
+
+body {
+  --file-line-width: 700px;   /* Breite der Textspalte */
+  --file-margins: 32px;       /* Rand links/rechts, mindestens */
+}
+
+/* Überschriften */
+.markdown-preview-view h1, .cm-s-obsidian .cm-header-1 { font-size: 1.5rem !important; }
+.markdown-preview-view h2, .cm-s-obsidian .cm-header-2 { font-size: 1.3rem !important; }
+.markdown-preview-view h3, .cm-s-obsidian .cm-header-3 { font-size: 1.2rem !important; }
+.markdown-preview-view h4, .cm-s-obsidian .cm-header-4 { font-size: 1.15rem !important; }
+
+/* Titel über der Notiz */
+.inline-title { font-size: 1.6rem !important; font-weight: bold !important; }
+`;
+
+/** Edits .ordo/snippets/eigenes.css with a live preview; Abbrechen restores what was there. */
+class CustomCSSModal extends Modal {
+  constructor(private done: () => void) { super('ordo-custom-css'); this.setTitle(t('Eigenes CSS')); }
+  private preview = h('style', { id: 'ordo-custom-css-preview' });
+  private saved = false;
+
+  async onOpen() {
+    const current = await request<string | null>('snippetCSS', { name: CUSTOM_SNIPPET }).catch(() => null);
+    const area = h('textarea', { cls: 'ordo-css-editor', spellcheck: 'false' }) as HTMLTextAreaElement;
+    area.value = current ?? CUSTOM_CSS_TEMPLATE;
+    // live preview: the saved version steps aside while editing
+    document.querySelectorAll<HTMLStyleElement>(`style.ordo-snippet[data-name="${CUSTOM_SNIPPET}"]`).forEach(s => (s.disabled = true));
+    document.head.appendChild(this.preview);
+    const show = () => { this.preview.textContent = area.value; };
+    area.addEventListener('input', show); show();
+    area.addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); area.setRangeText('  ', area.selectionStart, area.selectionEnd, 'end'); show(); } });
+    this.contentEl.append(
+      h('div', { cls: 'setting-item-description', text: t('Tipp: --file-line-width ändert die Breite der Textspalte, ⌘+ / ⌘− zoomt alles.') }),
+      area,
+      h('div', { cls: 'modal-button-container' },
+        h('button', { text: t('Abbrechen'), onclick: () => this.close() }),
+        h('button', { cls: 'mod-cta', text: t('Speichern'), onclick: async () => {
+          await request('saveCustomCSS', { css: area.value });
+          if (!appearance.enabledCssSnippets.includes(CUSTOM_SNIPPET)) appearance.enabledCssSnippets = [...appearance.enabledCssSnippets, CUSTOM_SNIPPET];
+          saveAppearance();
+          this.saved = true;
+          this.close();
+        } })));
+    area.focus();
+  }
+
+  async onClose() {
+    this.preview.remove();
+    await applySnippets();   // saved → new file, cancelled → the old one again
+    if (this.saved) notice(t('Eigenes CSS gespeichert.'));
+    this.done();
   }
 }
 

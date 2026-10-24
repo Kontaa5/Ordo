@@ -198,4 +198,9 @@ extension VaultStore {
     }
 
     func folderSnippetsPath() -> URL { ordoDir.appendingPathComponent("snippets") }
+
+    /// "Eigenes CSS" from the settings: an ordinary snippet in .ordo/snippets.
+    func saveCustomCSS(_ css: String) {
+        Self.coordinatedWrite(Data(css.utf8), to: folderSnippetsPath().appendingPathComponent("eigenes.css"))
+    }
 }

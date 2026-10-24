@@ -130,9 +130,13 @@ export async function applyTheme() {
   document.body.dataset.theme = appearance.cssTheme;
 }
 
+/** The snippet edited under Einstellungen › Darstellung › Eigenes CSS; always applied last. */
+export const CUSTOM_SNIPPET = 'eigenes';
+
 export async function applySnippets() {
   document.querySelectorAll('style.ordo-snippet').forEach(e => e.remove());
-  for (const name of appearance.enabledCssSnippets ?? []) {
+  const names = appearance.enabledCssSnippets ?? [];
+  for (const name of [...names.filter(n => n !== CUSTOM_SNIPPET), ...names.filter(n => n === CUSTOM_SNIPPET)]) {
     const css = await request<string | null>('snippetCSS', { name }).catch(() => null);
     if (!css) continue;
     const el = document.createElement('style');
