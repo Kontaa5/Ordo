@@ -1,6 +1,6 @@
 cask "ordo" do
-  version "0.1.6"
-  sha256 "6e3016288008667a5264c4cb12ba4f337f208c26b2cf40cb73287c2eeeff376e"
+  version "0.1.7"
+  sha256 "58d303eb8c2c5fec81107f3241051c6dc36e0965f1ca51f113cd9155ab0a4d0a"
 
   url "https://raw.githubusercontent.com/Kontaa5/Ordo/releases/Ordo-#{version}.zip"
   name "Ordo"
