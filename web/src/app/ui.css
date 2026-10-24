@@ -413,8 +413,10 @@ body.mod-macos .workspace:not(.is-left-sidedock-open) .mod-root .workspace-tab-h
 .markdown-source-view .cm-scroller { flex-direction: column; align-items: stretch; }
 .markdown-source-view .cm-content { padding: 0; caret-color: var(--text-normal); width: 100%; margin: 0 auto; flex-grow: 1; }
 .markdown-source-view .cm-scroller > .inline-title { width: 100%; margin-left: auto; margin-right: auto; flex: 0 0 auto; }
-.markdown-source-view.is-readable-line-width .cm-scroller > .inline-title { max-width: var(--file-line-width); }
-.markdown-source-view.is-readable-line-width .cm-content { max-width: var(--file-line-width); }
+/* readable line width: title and text share one centred column. !important because Obsidian themes
+   (Minimal …) put the width on .cm-sizer, which Ordo doesn't have, and set .cm-content to 100%. */
+.markdown-source-view.is-readable-line-width .cm-scroller > .inline-title,
+.markdown-source-view.is-readable-line-width .cm-content { width: 100% !important; max-width: var(--file-line-width) !important; margin-left: auto !important; margin-right: auto !important; }
 .markdown-source-view .cm-line { padding: 0; }
 .markdown-source-view .cm-cursor { border-left: 1.5px solid var(--text-normal); }
 .markdown-source-view .cm-selectionBackground, .markdown-source-view .cm-focused .cm-selectionBackground { background-color: var(--text-selection) !important; }
@@ -601,7 +603,10 @@ body.is-mobile .ordo-image-tools { opacity: 1; }
   height: 100%; overflow-y: auto; padding: var(--size-4-8) var(--file-margins) 40vh; font-family: var(--font-text); font-size: var(--font-text-size);
   line-height: var(--line-height-normal); user-select: text; -webkit-user-select: text; word-wrap: break-word;
 }
-.markdown-preview-view.is-readable-line-width .markdown-preview-sizer { max-width: var(--file-line-width); margin: 0 auto; }
+.markdown-preview-view.is-readable-line-width .markdown-preview-sizer { width: 100% !important; max-width: var(--file-line-width) !important; margin-left: auto !important; margin-right: auto !important; }
+/* every block (title, callouts …) starts at the text edge, as in Obsidian. The doubled class out-ranks
+   themes like Minimal that give the sizer's divs their own width and margins. */
+.markdown-preview-view.is-readable-line-width .markdown-preview-sizer.markdown-preview-sizer > div { width: auto !important; max-width: none !important; margin-inline: 0 !important; }
 .markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3, .markdown-rendered h4, .markdown-rendered h5, .markdown-rendered h6 { margin: var(--heading-spacing, 1.4em) 0 0.5em; line-height: var(--line-height-tight); }
 .markdown-rendered h1 { font-size: var(--h1-size); font-weight: var(--h1-weight); color: var(--h1-color); font-family: var(--h1-font); line-height: var(--h1-line-height); }
 .markdown-rendered h2 { font-size: var(--h2-size); font-weight: var(--h2-weight); color: var(--h2-color); font-family: var(--h2-font); line-height: var(--h2-line-height); }
