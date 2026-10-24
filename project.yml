@@ -18,7 +18,11 @@ targets:
     supportedDestinations: [iOS, macOS]
     sources:
       - path: Ordo
-        excludes: ["Resources/Web"]
+        excludes: ["Resources/Web", "AppIcon.icon", "AppIcon.icon/**"]
+      # Icon Composer icon (macOS/iOS 26): light and dark variant, the system picks one – even with Ordo closed
+      - path: Ordo/AppIcon.icon
+        type: file
+        buildPhase: resources
       - path: Ordo/Resources/Web
         type: folder
         buildPhase: resources

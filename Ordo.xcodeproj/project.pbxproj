@@ -23,6 +23,7 @@
 		60AF283D95E606C9D8E4A494 /* GitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313737E0E5E4CE7DC7206BB /* GitSync.swift */; };
 		6757DD794F18E9CBCEE3B525 /* VaultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EDD942D0D847832387D39 /* VaultStore.swift */; };
 		6ED714651D1A573E8226BCA4 /* VaultStore+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */; };
+		717F82A926FBD193BF3DC16B /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = B9A288AD68E9D0F8065A9863 /* AppIcon.icon */; };
 		71BCA2111BB05975E6FC4831 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C74341FCE1F2DC3211AE7233 /* AppModel.swift */; };
 		7F65BEAB26425C59E2D2CE4A /* DebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE52032C282D1C04E5CA48A3 /* DebugSnapshot.swift */; };
 		8C1F174602B2EFC63C7FBC02 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D14055BE10C4CB0614DE810 /* Platform.swift */; };
@@ -61,6 +62,7 @@
 		B1E13FF8916C700A408F7F71 /* Web */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Web; path = Ordo/Resources/Web; sourceTree = SOURCE_ROOT; };
 		B313737E0E5E4CE7DC7206BB /* GitSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitSync.swift; sourceTree = "<group>"; };
 		B51FDA751C2B16B30D751EA0 /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
+		B9A288AD68E9D0F8065A9863 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		C69570E34AF79B5D0B9F6630 /* Ordo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Ordo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C74341FCE1F2DC3211AE7233 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultStore+Bridge.swift"; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 		2295AA7FF5D47358E542BB39 /* Ordo */ = {
 			isa = PBXGroup;
 			children = (
+				B9A288AD68E9D0F8065A9863 /* AppIcon.icon */,
 				35FF15D5FB22B8664A5A4D89 /* Assets.xcassets */,
 				BBD682E51E3BE06B7FE53662 /* App */,
 				1B341A56CB3FBB07BBB6C269 /* Core */,
@@ -267,6 +270,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				717F82A926FBD193BF3DC16B /* AppIcon.icon in Resources */,
 				A2FF68899518ED8298E20AE2 /* Assets.xcassets in Resources */,
 				9D38B4236566373A86F85848 /* Web in Resources */,
 			);
