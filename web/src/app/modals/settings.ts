@@ -7,7 +7,7 @@ import { request, emit, on, isMac, isIOS } from '../host';
 import { gitStatus, gitSyncNow, gitPullNow, when, GitStatus } from '../git';
 import { appState } from '../state';
 import { notice } from '../ui/notice';
-import { getScheme, setScheme, getZoom, setZoom, appearance, saveAppearance, applyAll, applyAccent, applyFonts, applyTheme, applySnippets, applyStyleSettings, communityThemes, installCommunityTheme, CommunityTheme, CUSTOM_SNIPPET } from '../appearance';
+import { getScheme, setScheme, getZoom, setZoom, appearance, saveAppearance, applyAll, applyAccent, applyFonts, applyTheme, applySnippets, applyStyleSettings, communityThemes, installCommunityTheme, CommunityTheme, CUSTOM_SNIPPET, LINE_WIDTH, applyLineWidth } from '../appearance';
 import { executeCommand, getCommands, hotkeysFor, displayHotkey, setHotkey, eventCombo, Hotkey, Modifier } from '../commands';
 import { TagRuleModal } from './tagRule';
 import { SortAllModal } from './sortAll';
@@ -168,6 +168,15 @@ export class SettingsModal extends Modal {
         r.addEventListener('change', () => setZoom(+r.value));
         return h('div', { cls: 'ordo-row' }, out, r);
       })()),
+      setting(t('Textbreite'), t('Breite der Textspalte – kleiner heißt mehr Rand links und rechts. ⌘+ / ⌘− zoomen trotzdem alles.'), (() => {
+        const px = () => appearance.lineWidth ?? LINE_WIDTH.def;
+        const r = h('input', { type: 'range', min: String(LINE_WIDTH.min), max: String(LINE_WIDTH.max), step: '10', value: String(px()), cls: 'slider' });
+        const out = h('span', { cls: 'ordo-zoom-value', text: px() + ' px' });
+        r.addEventListener('input', () => { appearance.lineWidth = +r.value; out.textContent = r.value + ' px'; applyLineWidth(); });
+        r.addEventListener('change', persist);
+        const reset = iconButton('reset', t('Zurücksetzen'), () => { delete appearance.lineWidth; applyLineWidth(); persist(); this.refresh(); });
+        return h('div', { cls: 'ordo-row' }, reset, out, r);
+      })()),
       setting(t('Akzentfarbe'), t('Farbe für Links, Auswahl, Buttons.'), (() => {
         const c = h('input', { type: 'color', value: appearance.accentColor || '#7c5cff' });
         c.addEventListener('input', () => { appearance.accentColor = c.value; applyAccent(); });
@@ -315,7 +324,7 @@ export class SettingsModal extends Modal {
 const CUSTOM_CSS_TEMPLATE = `/* Eigenes CSS – gilt für diesen Vault, nach Theme und Snippets. */
 
 body {
-  --file-line-width: 700px;   /* Breite der Textspalte */
+  /* --file-line-width: 700px;   Breite der Textspalte – sonst gilt der Slider „Textbreite“ */
   --file-margins: 32px;       /* Rand links/rechts, mindestens */
 }
 
@@ -346,7 +355,7 @@ class CustomCSSModal extends Modal {
     area.addEventListener('input', show); show();
     area.addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); area.setRangeText('  ', area.selectionStart, area.selectionEnd, 'end'); show(); } });
     this.contentEl.append(
-      h('div', { cls: 'setting-item-description', text: t('Tipp: --file-line-width ändert die Breite der Textspalte, ⌘+ / ⌘− zoomt alles.') }),
+      h('div', { cls: 'setting-item-description', text: t('Tipp: Die Textbreite stellst du einfacher mit dem Slider oben ein; --file-line-width hier hat Vorrang.') }),
       area,
       h('div', { cls: 'modal-button-container' },
         h('button', { text: t('Abbrechen'), onclick: () => this.close() }),

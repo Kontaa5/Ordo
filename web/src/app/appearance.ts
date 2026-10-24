@@ -14,6 +14,8 @@ export interface Appearance {
   textFontFamily: string;
   monospaceFontFamily: string;
   baseFontSize: number;
+  /** Width of the text column in px (Darstellung › Textbreite); unset = theme / Ordo default. */
+  lineWidth?: number;
   hotkeys?: Record<string, Hotkey[]>;
   importedFromObsidian?: boolean;
   [k: string]: unknown;
@@ -79,6 +81,7 @@ export async function applyAll() {
   applyAccent();
   applyFonts();
   await applyTheme();
+  applyLineWidth();
   await applySnippets();
   await applyStyleSettings();
   emit('appearance-changed');
@@ -128,6 +131,15 @@ export async function applyTheme() {
   const css = await request<string | null>('themeCSS', { name: appearance.cssTheme }).catch(() => null);
   el.textContent = css ?? '';
   document.body.dataset.theme = appearance.cssTheme;
+}
+
+export const LINE_WIDTH = { min: 500, max: 1200, def: 700 };
+
+/** The slider value as its own stylesheet, placed after the theme and before the snippets:
+ *  it beats a theme's width, while "Eigenes CSS" can still override it. Zoom (⌘+/⌘−) scales it like everything else. */
+export function applyLineWidth() {
+  const w = appearance.lineWidth;
+  styleEl('ordo-line-width').textContent = w ? `body { --file-line-width: ${Math.round(Math.max(LINE_WIDTH.min, Math.min(LINE_WIDTH.max, w)))}px; }` : '';
 }
 
 /** The snippet edited under Einstellungen › Darstellung › Eigenes CSS; always applied last. */
