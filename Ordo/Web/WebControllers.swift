@@ -71,7 +71,9 @@ class WebController: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDele
         super.init()
         proxy.target = self
         webView.navigationDelegate = self
+        #if DEBUG
         if #available(macOS 13.3, iOS 16.4, *) { webView.isInspectable = true }
+        #endif
         #if os(macOS)
         webView.hideBackground()
         webView.allowsMagnification = false

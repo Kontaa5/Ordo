@@ -91,7 +91,7 @@ final class ShellController: WebController {
             return nil
         case "fetchText":
             // community theme browser: download a stylesheet / list
-            guard let url = URL(string: str("url")), url.scheme == "https" else { throw HostError(message: "Ungültige Adresse") }
+            guard let url = URL(string: str("url")), url.scheme == "https", url.host == "raw.githubusercontent.com" else { throw HostError(message: "Ungültige Adresse") }
             let (data, _) = try await URLSession.shared.data(from: url)
             return String(decoding: data, as: UTF8.self)
         default: break

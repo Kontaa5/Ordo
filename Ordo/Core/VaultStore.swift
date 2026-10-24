@@ -88,9 +88,12 @@ final class VaultStore {
     /// Paths come from the web side and from vault data (links, folder rules), so
     /// `..`, `.` and leading `/` are dropped: nothing can point outside the vault.
     /// A symlink in the vault (shared folder, git pull) never leads out of it: such paths are blocked.
+    /// Hidden folders (.obsidian, .git, .ordo, .trash …) are never a target either: Obsidian runs plugin
+    /// code from .obsidian, so a note action (or a tampered trash record) must not write there.
     func url(_ rel: String) -> URL {
         let safe = FolderRules.insideVault(rel)
         guard !safe.isEmpty else { return root }
+        guard !safe.split(separator: "/").contains(where: { $0.hasPrefix(".") }) else { return FolderRules.blocked }
         let u = root.appendingPathComponent(safe, isDirectory: false)
         return FolderRules.isInside(u, root: root) ? u : FolderRules.blocked
     }
@@ -357,8 +360,9 @@ final class VaultStore {
 
     func write(_ path: String, text: String) {
         guard contents[path] != text || notes[path] == nil else { return }
-        contents[path] = text
         let url = url(path)
+        guard url != FolderRules.blocked else { return }   // outside the vault or into a hidden folder
+        contents[path] = text
         Self.coordinatedWrite(Data(text.utf8), to: url)
         let vals = try? url.resourceValues(forKeys: [.contentModificationDateKey, .creationDateKey, .fileSizeKey])
         mtimes[path] = vals?.contentModificationDate ?? Date()

@@ -272,4 +272,29 @@ final class TrashTests: XCTestCase {
         let names = VaultStore(root: root).listTrash().compactMap { $0["name"] as? String }
         XCTAssertEqual(names, ["Versteckt.md"])
     }
+
+    /// Note actions never reach hidden folders – above all .obsidian, where Obsidian runs plugin code.
+    @MainActor
+    func testHiddenFoldersAreNoTarget() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ordo-dot-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root.appendingPathComponent(".obsidian/plugins/x"), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = VaultStore(root: root)
+        for bad in [".obsidian/plugins/x/main.js", "Ordner/.git/config", ".trash/a.md", "../.obsidian/app.json"] {
+            XCTAssertEqual(store.url(bad), FolderRules.blocked, bad)
+        }
+        XCTAssertEqual(store.url("Ordner/Notiz.md").path, root.appendingPathComponent("Ordner/Notiz.md").path)
+        // a tampered trash record cannot restore into .obsidian
+        let trash = root.appendingPathComponent(".trash")
+        try FileManager.default.createDirectory(at: trash, withIntermediateDirectories: true)
+        try "evil".write(to: trash.appendingPathComponent("main.js"), atomically: true, encoding: .utf8)
+        try #"{"main.js":{"from":".obsidian/plugins/x/main.js","date":0}}"#.write(to: trash.appendingPathComponent(".ordo-trash.json"), atomically: true, encoding: .utf8)
+        let restored = expectation(description: "restore")
+        Task { @MainActor in
+            _ = try? await store.restoreFromTrash("main.js")
+            restored.fulfill()
+        }
+        wait(for: [restored], timeout: 5)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent(".obsidian/plugins/x/main.js").path))
+    }
 }

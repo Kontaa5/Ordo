@@ -27,12 +27,11 @@ final class GitSync {
     var lastPull: Date? { get { UserDefaults.standard.object(forKey: defaultsKey + ":pull") as? Date } set { UserDefaults.standard.set(newValue, forKey: defaultsKey + ":pull") } }
     private var lastAutoUpload: Date? { get { UserDefaults.standard.object(forKey: defaultsKey + ":auto") as? Date } set { UserDefaults.standard.set(newValue, forKey: defaultsKey + ":auto") } }
 
-    /// "Einmal am Tag hochladen": when the last upload is more than a day ago. At most one try a day,
+    /// "Einmal am Tag hochladen": no upload yet today → back up and upload. At most one try a day,
     /// so a declined Touch ID or a missing network doesn't come back every minute.
     func dailyUploadIfDue() async {
-        let day: TimeInterval = 86_400
-        guard !busy, lastPush.map({ Date().timeIntervalSince($0) > day }) ?? true,
-              lastAutoUpload.map({ Date().timeIntervalSince($0) > day }) ?? true else { return }
+        let today = { (d: Date?) in d.map { Calendar.current.isDateInToday($0) } ?? false }
+        guard !busy, !today(lastPush), !today(lastAutoUpload) else { return }
         lastAutoUpload = Date()
         await commit()
         _ = await push()

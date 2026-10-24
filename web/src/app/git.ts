@@ -30,7 +30,7 @@ export async function gitPullNow() {
   notice(ok ? t('Änderungen geholt.') : (gitStatus.message || t('Holen hat nicht geklappt.')));
 }
 
-/** Status dot: green = uploaded within the last day, orange = longer ago, red = never uploaded or a problem. */
+/** Status dot: green = uploaded today, orange = not today, red = never uploaded or a problem. */
 export function gitStatusItem(): HTMLElement {
   const dot = h('span', { cls: 'ordo-git-dot' });
   const label = h('span', { cls: 'ordo-git-label' });
@@ -39,7 +39,7 @@ export function gitStatusItem(): HTMLElement {
     const s = gitStatus;
     item.style.display = !isMac || s.state === 'off' ? 'none' : '';
     const pending = (s.uncommitted ?? 0) > 0 || (s.unpushed ?? 0) > 0;
-    const stale = !!s.lastPush && Date.now() / 1000 - s.lastPush > 86_400;
+    const stale = !!s.lastPush && new Date(s.lastPush * 1000).toDateString() !== new Date().toDateString();
     const cls = s.state === 'error' || s.state === 'nogit' || !s.lastPush ? 'is-error' : s.state === 'working' ? 'is-working' : stale ? 'is-pending' : 'is-ok';
     dot.className = 'ordo-git-dot ' + cls;
     label.textContent = s.state === 'working' ? (s.message ?? '') : '';
