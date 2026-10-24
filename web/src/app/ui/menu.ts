@@ -35,6 +35,13 @@ export class Menu {
     return this.showAtPosition(r.left, r.bottom + 4);
   }
 
+  /** Opens above the element (e.g. in the status bar), measured, so there is no gap at any font size. */
+  showAboveElement(el: HTMLElement, gap = 6) {
+    const r = el.getBoundingClientRect();
+    this.showAtPosition(r.left, r.top);
+    if (this.el) this.el.style.top = Math.max(4, r.top - gap - this.el.offsetHeight) + 'px';
+  }
+
   showAtPosition(x: number, y: number, isSub = false) {
     if (!isSub) { open?.hide(); open = this; }
     while (this.items[this.items.length - 1] === 'separator') this.items.pop();

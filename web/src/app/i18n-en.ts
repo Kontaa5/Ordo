@@ -274,7 +274,9 @@ export const EN: Record<string, string> = {
   'Gelöschte Notizen und Bilder bleiben so lange im Papierkorb (Symbol unten neben ⚙) und kommen dann in den System-Papierkorb (Mac: Papierkorb, iCloud: „Zuletzt gelöscht“).': 'Deleted notes and pictures stay in the trash (icon at the bottom next to ⚙) this long, then they go to the system trash (Mac: Trash, iCloud: “Recently Deleted”).',
   '7 Tagen': '7 days', '30 Tagen': '30 days', '90 Tagen': '90 days', 'nie': 'never',
 
-  'Ordo lädt nie von selbst hoch oder herunter – nur mit „Sichern & hochladen“ bzw. „Holen“ (hier oder über den Punkt unten in der Statusleiste). Gleich geänderte Notizen gehen beim Holen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.': 'Ordo never uploads or downloads on its own – only with “Back up & upload” or “Fetch” (here or via the dot in the status bar). Notes changed on both sides are not lost when fetching: the other version is saved next to it as “Name (Konflikt)”.',
+  'Einmal am Tag hochladen': 'Upload once a day',
+  'Ist der letzte Upload länger als einen Tag her, sichert Ordo von selbst und lädt hoch (Touch ID kommt dann von allein, höchstens einmal am Tag).': 'If the last upload is more than a day ago, Ordo backs up and uploads on its own (Touch ID then appears by itself, at most once a day).',
+  'Sonst lädt Ordo nie von selbst hoch oder herunter – nur mit „Sichern & hochladen“ bzw. „Holen“ (hier oder über den Punkt unten in der Statusleiste). Der Punkt ist grün, wenn der letzte Upload höchstens einen Tag her ist, orange, wenn länger, rot, wenn noch nie. Gleich geänderte Notizen gehen beim Holen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.': 'Otherwise Ordo never uploads or downloads on its own – only with “Back up & upload” or “Fetch” (here or via the dot in the status bar). The dot is green if the last upload was at most a day ago, orange if longer, red if never. Notes changed on both sides are not lost when fetching: the other version is saved next to it as “Name (Konflikt)”.',
 
   'Demo-Vault – genug gesehen?': 'Demo vault – seen enough?',
   'Demo löschen & loslegen': 'Delete demo & get started',

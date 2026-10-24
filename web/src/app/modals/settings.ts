@@ -278,7 +278,9 @@ export class SettingsModal extends Modal {
       result.classList.toggle('is-error', !r.ok);
     } });
     el.append(setting(t('Repository-Adresse'), t('Leeres, privates Repository anlegen und die SSH-Adresse hier eintragen.'), h('div', { cls: 'ordo-git-remote' }, remote, test)), result);
-    el.append(h('p', { cls: 'setting-item-description', text: t('Ordo lädt nie von selbst hoch oder herunter – nur mit „Sichern & hochladen“ bzw. „Holen“ (hier oder über den Punkt unten in der Statusleiste). Gleich geänderte Notizen gehen beim Holen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.') }));
+    el.append(setting(t('Einmal am Tag hochladen'), t('Ist der letzte Upload länger als einen Tag her, sichert Ordo von selbst und lädt hoch (Touch ID kommt dann von allein, höchstens einmal am Tag).'),
+      this.toggle(!!s.gitDailyUpload, v => this.save({ gitDailyUpload: v }))));
+    el.append(h('p', { cls: 'setting-item-description', text: t('Sonst lädt Ordo nie von selbst hoch oder herunter – nur mit „Sichern & hochladen“ bzw. „Holen“ (hier oder über den Punkt unten in der Statusleiste). Der Punkt ist grün, wenn der letzte Upload höchstens einen Tag her ist, orange, wenn länger, rot, wenn noch nie. Gleich geänderte Notizen gehen beim Holen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.') }));
     const status = h('div', { cls: 'setting-item-description' });
     const show = (st: GitStatus) => {
       status.textContent = st.state === 'nogit' ? t('Git ist auf diesem Mac nicht installiert. Im Terminal „xcode-select --install“ ausführen.')

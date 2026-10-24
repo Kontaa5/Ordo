@@ -56,6 +56,8 @@ struct VaultSettings: Codable, Equatable, Sendable {
 
     var gitEnabled: Bool = false
     var gitRemote: String = ""
+    /// Upload once a day on its own (Touch ID then comes by itself, at most once a day).
+    var gitDailyUpload: Bool = false
 
     var defaultMode: EditorMode = .edit
     var editorFontSize: Double = 16
@@ -89,6 +91,7 @@ struct VaultSettings: Codable, Equatable, Sendable {
         trashDays = (try? c.decode(Int.self, forKey: .trashDays)) ?? d.trashDays
         gitEnabled = (try? c.decode(Bool.self, forKey: .gitEnabled)) ?? d.gitEnabled
         gitRemote = (try? c.decode(String.self, forKey: .gitRemote)) ?? d.gitRemote
+        gitDailyUpload = (try? c.decode(Bool.self, forKey: .gitDailyUpload)) ?? d.gitDailyUpload
         exportPresets = (try? c.decode([ExportPreset].self, forKey: .exportPresets)) ?? d.exportPresets
         newNoteFolder = (try? c.decode(String.self, forKey: .newNoteFolder)) ?? d.newNoteFolder
         defaultMode = (try? c.decode(EditorMode.self, forKey: .defaultMode)) ?? d.defaultMode

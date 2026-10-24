@@ -3,6 +3,9 @@ import SwiftUI
 @main
 struct OrdoApp: App {
     @State private var model = AppModel()
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    #endif
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -20,6 +23,7 @@ struct OrdoApp: App {
                 .task {
                     model.openLastVaultIfPossible()
                     #if os(macOS)
+                    appDelegate.model = model
                     DockIcon.follow()
                     #endif
                     #if DEBUG
@@ -43,6 +47,33 @@ struct OrdoApp: App {
 }
 
 #if os(macOS)
+/// Asks before quitting while Git-Sync is backing up or uploading – quitting would cut it off.
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    weak var model: AppModel?
+
+    @MainActor
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard let model, let git = model.git, git.isBusy else { return .terminateNow }
+        let alert = NSAlert()
+        alert.messageText = model.L("Upload läuft noch", "Upload in progress")
+        alert.informativeText = model.L("Ordo sichert gerade deinen Vault bzw. lädt ihn hoch. Wenn du jetzt beendest, wird das abgebrochen.",
+                                        "Ordo is backing up or uploading your vault. Quitting now cancels it.")
+        alert.addButton(withTitle: model.L("Nach dem Upload beenden", "Quit when done"))
+        alert.addButton(withTitle: model.L("Nicht beenden", "Don't quit"))
+        alert.addButton(withTitle: model.L("Sofort beenden", "Quit now"))
+        switch alert.runModal() {
+        case .alertFirstButtonReturn:
+            Task { @MainActor in
+                while git.isBusy { try? await Task.sleep(for: .milliseconds(500)) }
+                sender.reply(toApplicationShouldTerminate: true)
+            }
+            return .terminateLater
+        case .alertThirdButtonReturn: return .terminateNow
+        default: return .terminateCancel
+        }
+    }
+}
+
 /// Menu bar entries (German/English); each runs the same command as the web app's hotkeys.
 struct OrdoCommands: Commands {
     let model: AppModel

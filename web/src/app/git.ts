@@ -30,7 +30,7 @@ export async function gitPullNow() {
   notice(ok ? t('Änderungen geholt.') : (gitStatus.message || t('Holen hat nicht geklappt.')));
 }
 
-/** Status dot: green = everything on the server, orange = changes not uploaded yet, red = problem. */
+/** Status dot: green = uploaded within the last day, orange = longer ago, red = never uploaded or a problem. */
 export function gitStatusItem(): HTMLElement {
   const dot = h('span', { cls: 'ordo-git-dot' });
   const label = h('span', { cls: 'ordo-git-label' });
@@ -39,7 +39,8 @@ export function gitStatusItem(): HTMLElement {
     const s = gitStatus;
     item.style.display = !isMac || s.state === 'off' ? 'none' : '';
     const pending = (s.uncommitted ?? 0) > 0 || (s.unpushed ?? 0) > 0;
-    const cls = s.state === 'error' || s.state === 'nogit' ? 'is-error' : s.state === 'working' ? 'is-working' : pending ? 'is-pending' : 'is-ok';
+    const stale = !!s.lastPush && Date.now() / 1000 - s.lastPush > 86_400;
+    const cls = s.state === 'error' || s.state === 'nogit' || !s.lastPush ? 'is-error' : s.state === 'working' ? 'is-working' : stale ? 'is-pending' : 'is-ok';
     dot.className = 'ordo-git-dot ' + cls;
     label.textContent = s.state === 'working' ? (s.message ?? '') : '';
     const tip = s.state === 'nogit' ? t('Git ist auf diesem Mac nicht installiert.')
@@ -55,8 +56,7 @@ export function gitStatusItem(): HTMLElement {
     m.addItem({ title: t('Änderungen holen'), icon: 'download', onClick: () => gitPullNow() });
     m.addSeparator();
     m.addItem({ title: t('Git-Sync einstellen …'), icon: 'settings', onClick: () => emit('open-settings', 'git') });
-    const r = item.getBoundingClientRect();
-    m.showAtPosition(r.left, r.top - 8 - 36 * 3.4);
+    m.showAboveElement(item);
   });
   on('git-status', (s: GitStatus) => { gitStatus = s; render(); });
   render();

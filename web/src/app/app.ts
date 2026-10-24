@@ -189,7 +189,7 @@ function buildVaultProfile(ws: Workspace) {
     if (boot.recent.length > 1) m.addSeparator();
     m.addItem({ title: t('Vaults verwalten …'), icon: 'settings', onClick: () => showVaultPicker() });
     m.addItem({ title: t('Ordner als Vault öffnen …'), icon: 'folder-open', onClick: () => request('pickVault') });
-    m.showAtPosition(switcher.getBoundingClientRect().left, switcher.getBoundingClientRect().top - 8 - 36 * (Math.min(8, boot.recent.length) + 2));
+    m.showAboveElement(switcher);
   });
   tooltip(switcher, vault.path, 'top');
   ws.vaultProfile.replaceChildren(switcher,

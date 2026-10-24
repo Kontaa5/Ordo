@@ -82,7 +82,8 @@ final class AppModel {
     @ObservationIgnored private var gitTask: Task<Void, Never>?
 
     /// (Re)starts Git-Sync for the open vault. Nothing is uploaded or fetched on its own:
-    /// every network step (and so every Touch-ID prompt) comes from "Jetzt sichern" / "Holen".
+    /// every network step (and so every Touch-ID prompt) comes from "Jetzt sichern" / "Holen" –
+    /// or, if switched on, from the daily upload (at most one try a day).
     /// Only the local status (for the dot in the status bar) is refreshed once a minute.
     func startGit() {
         gitTask?.cancel(); gitTask = nil; git = nil
@@ -93,6 +94,7 @@ final class AppModel {
         gitTask = Task { [weak self] in
             guard await g.prepare(remote: store.settings.gitRemote) else { return }
             while !Task.isCancelled {
+                if store.settings.gitDailyUpload { await g.dailyUploadIfDue() }
                 await g.refreshStatus()
                 try? await Task.sleep(for: .seconds(60))
                 guard let self, self.vault === store, store.settings.gitEnabled else { return }

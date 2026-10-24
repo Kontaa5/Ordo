@@ -18,11 +18,25 @@ final class GitSync {
     private(set) var unpushed = 0
     var onChange: (() -> Void)?
     private var busy = false
+    /// Backing up, uploading or fetching right now (quitting would cut it off).
+    var isBusy: Bool { busy }
 
     private var defaultsKey: String { "git:" + root.path }
     var lastCommit: Date? { get { UserDefaults.standard.object(forKey: defaultsKey + ":commit") as? Date } set { UserDefaults.standard.set(newValue, forKey: defaultsKey + ":commit") } }
     var lastPush: Date? { get { UserDefaults.standard.object(forKey: defaultsKey + ":push") as? Date } set { UserDefaults.standard.set(newValue, forKey: defaultsKey + ":push") } }
     var lastPull: Date? { get { UserDefaults.standard.object(forKey: defaultsKey + ":pull") as? Date } set { UserDefaults.standard.set(newValue, forKey: defaultsKey + ":pull") } }
+    private var lastAutoUpload: Date? { get { UserDefaults.standard.object(forKey: defaultsKey + ":auto") as? Date } set { UserDefaults.standard.set(newValue, forKey: defaultsKey + ":auto") } }
+
+    /// "Einmal am Tag hochladen": when the last upload is more than a day ago. At most one try a day,
+    /// so a declined Touch ID or a missing network doesn't come back every minute.
+    func dailyUploadIfDue() async {
+        let day: TimeInterval = 86_400
+        guard !busy, lastPush.map({ Date().timeIntervalSince($0) > day }) ?? true,
+              lastAutoUpload.map({ Date().timeIntervalSince($0) > day }) ?? true else { return }
+        lastAutoUpload = Date()
+        await commit()
+        _ = await push()
+    }
 
     init(root: URL) {
         self.root = root
@@ -146,16 +160,21 @@ final class GitSync {
         guard !left.isEmpty else { return [] }
         set(.working, "Lade \(left.count) \(left.count == 1 ? "Datei" : "Dateien") aus iCloud …")
         for u in left { try? FileManager.default.startDownloadingUbiquitousItem(at: u) }
-        for _ in 0..<60 where !left.isEmpty {
+        // wait while files keep arriving (at most a minute); give up after 10 s without progress
+        var idle = 0
+        for _ in 0..<60 where !left.isEmpty && idle < 10 {
             try? await Task.sleep(for: .seconds(1))
-            left = await Task.detached(priority: .utility) { Self.notDownloaded(root) }.value
+            let now = await Task.detached(priority: .utility) { Self.notDownloaded(root) }.value
+            idle = now.count < left.count ? 0 : idle + 1
+            left = now
         }
         set(.working, "Sichern …")
         let base = root.standardizedFileURL.path + "/"
         return left.map { String($0.standardizedFileURL.path.dropFirst(base.count)) }
     }
 
-    /// Files in the vault that iCloud has not downloaded to this Mac.
+    /// Files in the vault that are only in iCloud, not on this Mac. (".downloaded" – a local copy
+    /// with a newer one in iCloud – is readable for git, so it does not count.)
     nonisolated static func notDownloaded(_ root: URL) -> [URL] {
         let keys: [URLResourceKey] = [.isDirectoryKey, .ubiquitousItemDownloadingStatusKey]
         guard let en = FileManager.default.enumerator(at: root, includingPropertiesForKeys: keys, options: [], errorHandler: { _, _ in true }) else { return [] }
@@ -163,7 +182,7 @@ final class GitSync {
         for case let u as URL in en {
             let v = try? u.resourceValues(forKeys: Set(keys))
             if v?.isDirectory == true { if u.lastPathComponent == ".trash" { en.skipDescendants() }; continue }
-            if let st = v?.ubiquitousItemDownloadingStatus, st != .current { out.append(u) }
+            if v?.ubiquitousItemDownloadingStatus == .notDownloaded { out.append(u) }
         }
         return out
     }
