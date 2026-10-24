@@ -137,13 +137,46 @@ final class GitSync {
 
     // MARK: commit / push / pull
 
+    /// iCloud keeps some files only in the cloud; git cannot read them ("short read while indexing").
+    /// Asks iCloud to download them and waits up to a minute. Returns what is still missing –
+    /// those files are left out of this backup and come along next time.
+    private func downloadFromICloud() async -> [String] {
+        let root = self.root
+        var left = await Task.detached(priority: .utility) { Self.notDownloaded(root) }.value
+        guard !left.isEmpty else { return [] }
+        set(.working, "Lade \(left.count) \(left.count == 1 ? "Datei" : "Dateien") aus iCloud …")
+        for u in left { try? FileManager.default.startDownloadingUbiquitousItem(at: u) }
+        for _ in 0..<60 where !left.isEmpty {
+            try? await Task.sleep(for: .seconds(1))
+            left = await Task.detached(priority: .utility) { Self.notDownloaded(root) }.value
+        }
+        set(.working, "Sichern …")
+        let base = root.standardizedFileURL.path + "/"
+        return left.map { String($0.standardizedFileURL.path.dropFirst(base.count)) }
+    }
+
+    /// Files in the vault that iCloud has not downloaded to this Mac.
+    nonisolated static func notDownloaded(_ root: URL) -> [URL] {
+        let keys: [URLResourceKey] = [.isDirectoryKey, .ubiquitousItemDownloadingStatusKey]
+        guard let en = FileManager.default.enumerator(at: root, includingPropertiesForKeys: keys, options: [], errorHandler: { _, _ in true }) else { return [] }
+        var out: [URL] = []
+        for case let u as URL in en {
+            let v = try? u.resourceValues(forKeys: Set(keys))
+            if v?.isDirectory == true { if u.lastPathComponent == ".trash" { en.skipDescendants() }; continue }
+            if let st = v?.ubiquitousItemDownloadingStatus, st != .current { out.append(u) }
+        }
+        return out
+    }
+
     /// Commits what changed. Files iCloud only has as placeholders are never committed as deleted.
     @discardableResult
     func commit() async -> Int {
         guard !busy else { return 0 }
         busy = true; defer { busy = false }
         set(.working, "Sichern …")
-        _ = await git(["add", "-A"])
+        let missing = await downloadFromICloud()
+        let add = await git(["add", "-A", "--", "."] + missing.map { ":(exclude,literal)" + $0 })
+        if !add.ok { set(.error, Self.explain(add.err)); return 0 }
         let deleted = await git(["diff", "--cached", "--name-only", "--diff-filter=D", "-z"])
         for path in deleted.out.split(separator: "\0").map(String.init) where !path.isEmpty {
             let u = root.appendingPathComponent(path)

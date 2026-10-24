@@ -411,13 +411,18 @@ body.mod-macos .workspace:not(.is-left-sidedock-open) .mod-root .workspace-tab-h
   overflow-x: hidden; user-select: text; -webkit-user-select: text;
 }
 .markdown-source-view .cm-scroller { flex-direction: column; align-items: stretch; }
-.markdown-source-view .cm-content { padding: 0; caret-color: var(--text-normal); width: 100%; margin: 0 auto; flex-grow: 1; }
+/* never shrink: in the column flexbox a long note would be squeezed to the window height,
+   CodeMirror then measures it wrong and leaves the lower part of the note blank */
+.markdown-source-view .cm-content { padding: 0; caret-color: var(--text-normal); width: 100%; margin: 0 auto; flex: 1 0 auto; }
 .markdown-source-view .cm-scroller > .inline-title { width: 100%; margin-left: auto; margin-right: auto; flex: 0 0 auto; }
 /* readable line width: title and text share one centred column. !important because Obsidian themes
    (Minimal …) put the width on .cm-sizer, which Ordo doesn't have, and set .cm-content to 100%. */
 .markdown-source-view.is-readable-line-width .cm-scroller > .inline-title,
 .markdown-source-view.is-readable-line-width .cm-content { width: 100% !important; max-width: var(--file-line-width) !important; margin-left: auto !important; margin-right: auto !important; }
 .markdown-source-view .cm-line { padding: 0; }
+/* indentation guides in lists, like Obsidian: a thin line at the start of every tab, stretched to the full line height */
+.markdown-source-view .cm-indent { position: relative; }
+.markdown-source-view .cm-indent::before { content: ''; position: absolute; top: -0.25em; bottom: -0.25em; inset-inline-start: 0.35em; border-inline-start: var(--indentation-guide-width, 1px) solid var(--indentation-guide-color, rgba(var(--mono-rgb-100), 0.12)); }
 .markdown-source-view .cm-cursor { border-left: 1.5px solid var(--text-normal); }
 .markdown-source-view .cm-selectionBackground, .markdown-source-view .cm-focused .cm-selectionBackground { background-color: var(--text-selection) !important; }
 .markdown-source-view .cm-gutters { display: none; }

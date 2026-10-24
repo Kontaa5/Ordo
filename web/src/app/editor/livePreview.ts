@@ -185,6 +185,8 @@ function build(view: EditorView): DecorationSet {
     }
   }
 
+  const listLines = new Set<number>(), markLines = new Set<number>(), codeLines = new Set<number>();   // for the indentation guides
+
   for (const { from, to } of view.visibleRanges) {
     const startLine = state.doc.lineAt(from).number, endLine = state.doc.lineAt(to).number;
 
@@ -359,6 +361,7 @@ function build(view: EditorView): DecorationSet {
             const info = node.node.getChild('CodeInfo');
             const lang = info ? state.doc.sliceString(info.from, info.to).trim() : '';
             for (let i = a.number; i <= b.number; i++) {
+              codeLines.add(i);
               const l = state.doc.line(i);
               let cls = 'HyperMD-codeblock HyperMD-codeblock-bg';
               if (i === a.number) cls += ' HyperMD-codeblock-begin HyperMD-codeblock-begin-bg';
@@ -379,7 +382,7 @@ function build(view: EditorView): DecorationSet {
           }
           case 'CodeBlock': {
             const a = state.doc.lineAt(node.from).number, b = state.doc.lineAt(node.to).number;
-            for (let i = a; i <= b; i++) decos.push(lineCls('HyperMD-codeblock HyperMD-codeblock-bg cm-hmd-indented-code').range(state.doc.line(i).from));
+            for (let i = a; i <= b; i++) { codeLines.add(i); decos.push(lineCls('HyperMD-codeblock HyperMD-codeblock-bg cm-hmd-indented-code').range(state.doc.line(i).from)); }
             return false;
           }
           case 'Blockquote': {
@@ -398,6 +401,8 @@ function build(view: EditorView): DecorationSet {
             return;
           case 'ListItem': {
             const line = state.doc.lineAt(node.from);
+            markLines.add(line.number);
+            for (let i = Math.max(line.number, startLine), last = Math.min(state.doc.lineAt(node.to).number, endLine); i <= last; i++) listLines.add(i);   // visible lines only
             const depth = (() => { let d = 0; for (let p: any = node.node.parent; p; p = p.parent) if (p.name === 'BulletList' || p.name === 'OrderedList') d++; return d; })();
             const isTask = !!node.node.getChild('Task');
             const indent = /^\s*/.exec(line.text)![0].replace(/\t/g, '    ').length;
@@ -441,6 +446,20 @@ function build(view: EditorView): DecorationSet {
         }
       },
     });
+  }
+  // indentation guides (like Obsidian): every tab or 4 spaces at the start of a list line gets a thin vertical line
+  for (const ln of listLines) {
+    if (codeLines.has(ln)) continue;
+    const line = state.doc.line(ln);
+    const ws = /^[\t ]*/.exec(line.text)![0];
+    // indented text below a list item: wrapped lines continue under the text, not at the left edge
+    const indent = ws.replace(/\t/g, '    ').length;
+    if (indent && !markLines.has(ln)) decos.push(lineCls('', { style: `text-indent:-${indent * 0.5}ch;padding-inline-start:${indent * 0.5}ch` }).range(line.from));
+    let spaces = 0;
+    for (let i = 0; i < ws.length; i++) {
+      if (ws[i] === '\t') { spaces = 0; decos.push(mark('cm-indent').range(line.from + i, line.from + i + 1)); }
+      else if (++spaces === 4) { spaces = 0; decos.push(mark('cm-indent').range(line.from + i - 3, line.from + i + 1)); }
+    }
   }
   return Decoration.set(decos, true);
 }

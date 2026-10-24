@@ -258,11 +258,11 @@ export const EN: Record<string, string> = {
   'Eigenes CSS': 'Custom CSS', 'Spaltenbreite, Ränder, Überschriften … selbst festlegen. Wirkt sofort, nach Theme und Snippets.': 'Set column width, margins, headings … yourself. Applies instantly, after theme and snippets.', 'Bearbeiten …': 'Edit …', 'Eigenes CSS gespeichert.': 'Custom CSS saved.',
   'Unterstützen': 'Support', 'Ordo ist kostenlos. Wenn es dir hilft, freue ich mich über einen Kaffee.': 'Ordo is free. If it helps you, I\'d be happy about a coffee.',
   'Papierkorb': 'Trash', 'Papierkorb öffnen': 'Open trash', 'Der Papierkorb ist leer.': 'The trash is empty.',
-  'Wiederherstellen': 'Restore', '„{name}“ ist wieder da.': '“{name}” is back.', 'Endgültig löschen': 'Delete permanently', 'Endgültig löschen?': 'Delete permanently?',
-  '„{name}“ wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.': '“{name}” will be deleted permanently. This cannot be undone.',
-  'Bleibt hier, bis du den Papierkorb leerst.': 'Stays here until you empty the trash.', 'Wird nach {n} Tagen endgültig gelöscht.': 'Deleted permanently after {n} days.',
+  'Wiederherstellen': 'Restore', '„{name}“ ist wieder da.': '“{name}” is back.', 'In den System-Papierkorb': 'Move to system trash', 'In den System-Papierkorb?': 'Move to system trash?', 'Verschieben': 'Move',
+  '„{name}“ kommt in den Papierkorb des Systems (Mac: Papierkorb, iCloud: „Zuletzt gelöscht“) und lässt sich dort wiederherstellen.': '“{name}” goes to the system trash (Mac: Trash, iCloud: “Recently Deleted”) and can be restored there.',
+  'Bleibt hier, bis du den Papierkorb leerst.': 'Stays here until you empty the trash.', 'Kommt nach {n} Tagen in den System-Papierkorb.': 'Moves to the system trash after {n} days.',
   'noch 1 Tag': '1 day left', 'noch {n} Tage': '{n} days left', 'Gelöscht {when}': 'Deleted {when}',
-  'Papierkorb leeren': 'Empty trash', 'Papierkorb leeren?': 'Empty trash?', 'Element': 'item', 'Elemente': 'items', 'werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.': 'will be deleted permanently. This cannot be undone.', 'wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.': 'will be deleted permanently. This cannot be undone.', 'Leeren': 'Empty',
+  'Papierkorb leeren': 'Empty trash', 'Papierkorb leeren?': 'Empty trash?', 'Element': 'item', 'Elemente': 'items', 'kommen in den System-Papierkorb und lassen sich dort wiederherstellen.': 'go to the system trash and can be restored there.', 'kommt in den System-Papierkorb und lässt sich dort wiederherstellen.': 'goes to the system trash and can be restored there.', 'Leeren': 'Empty',
   'Bist du sicher?': 'Are you sure?', '„{name}“ mit {n} Notizen in den Papierkorb verschieben?': 'Move “{name}” with {n} notes to the trash?', '„{name}“ in den Papierkorb verschieben?': 'Move “{name}” to the trash?',
   'Du kannst es dort wiederherstellen.': 'You can restore it there.', 'In den Papierkorb verschoben.': 'Moved to the trash.',
 
@@ -271,7 +271,7 @@ export const EN: Record<string, string> = {
   'Das Bild ist schon so klein, dass es ohne Qualitätsverlust nicht weiter geht.': 'The picture is already so small that it can’t shrink further without losing quality.',
 
   'Papierkorb leeren nach': 'Empty trash after',
-  'Gelöschte Notizen und Bilder bleiben so lange im Papierkorb (Symbol unten neben ⚙) und werden dann endgültig gelöscht.': 'Deleted notes and pictures stay in the trash (icon at the bottom next to ⚙) this long, then they are deleted permanently.',
+  'Gelöschte Notizen und Bilder bleiben so lange im Papierkorb (Symbol unten neben ⚙) und kommen dann in den System-Papierkorb (Mac: Papierkorb, iCloud: „Zuletzt gelöscht“).': 'Deleted notes and pictures stay in the trash (icon at the bottom next to ⚙) this long, then they go to the system trash (Mac: Trash, iCloud: “Recently Deleted”).',
   '7 Tagen': '7 days', '30 Tagen': '30 days', '90 Tagen': '90 days', 'nie': 'never',
 
   'Ordo lädt nie von selbst hoch oder herunter – nur mit „Sichern & hochladen“ bzw. „Holen“ (hier oder über den Punkt unten in der Statusleiste). Gleich geänderte Notizen gehen beim Holen nicht verloren: die andere Version landet als „Name (Konflikt)“ daneben.': 'Ordo never uploads or downloads on its own – only with “Back up & upload” or “Fetch” (here or via the dot in the status bar). Notes changed on both sides are not lost when fetching: the other version is saved next to it as “Name (Konflikt)”.',

@@ -525,7 +525,6 @@ final class VaultStore {
         }
     }
 
-    /// Moves into the vault's `.trash` folder (like Obsidian), nothing is deleted for good.
     // MARK: trash (.trash, like Obsidian; remembers where things came from)
 
     struct TrashEntry: Codable { var from: String; var date: Date }
@@ -542,7 +541,9 @@ final class VaultStore {
     /// What is in the trash: name in .trash, original path, when it was deleted.
     func listTrash() -> [[String: Any]] {
         let record = trashRecords()
-        let items = (try? FileManager.default.contentsOfDirectory(at: trashDir, includingPropertiesForKeys: [.isDirectoryKey, .contentModificationDateKey, .fileSizeKey], options: [.skipsHiddenFiles])) ?? []
+        // only names starting with "." count as hidden: iCloud sets the hidden flag on items it has moved
+        let items = ((try? FileManager.default.contentsOfDirectory(at: trashDir, includingPropertiesForKeys: [.isDirectoryKey, .contentModificationDateKey, .fileSizeKey])) ?? [])
+            .filter { !$0.lastPathComponent.hasPrefix(".") }
         return items.map { u -> [String: Any] in
             let v = try? u.resourceValues(forKeys: [.isDirectoryKey, .contentModificationDateKey, .fileSizeKey])
             let rec = record[u.lastPathComponent]
@@ -567,22 +568,32 @@ final class VaultStore {
         return target
     }
 
-    /// Deletes an item from the trash for good.
+    /// Takes an item out of Ordo's trash into the system trash (Mac: Papierkorb,
+    /// iCloud Drive: „Zuletzt gelöscht“) – never deleted for good by Ordo.
     func deleteFromTrash(_ name: String) throws {
         guard !name.contains("/"), !name.hasPrefix(".") else { return }
-        try FileManager.default.removeItem(at: trashDir.appendingPathComponent(name))
+        try FileManager.default.trashItem(at: trashDir.appendingPathComponent(name), resultingItemURL: nil)
         var record = trashRecords(); record[name] = nil; saveTrashRecords(record)
     }
 
-    /// Removes everything that has been in the trash longer than `trashDays` (0 = keep forever).
+    /// Moves everything that has been in the trash longer than `trashDays` (0 = keep forever)
+    /// on to the system trash. Only the recorded deletion date counts: items without one
+    /// (e.g. put there by Obsidian) start their clock now, never by their old file date.
     @discardableResult
     func purgeTrash() -> Int {
         let days = settings.trashDays
         guard days > 0 else { return 0 }
-        let cutoff = Date().addingTimeInterval(-Double(days) * 86_400).timeIntervalSince1970
+        let cutoff = Date().addingTimeInterval(-Double(days) * 86_400)
+        var record = trashRecords()
+        let names = ((try? FileManager.default.contentsOfDirectory(atPath: trashDir.path)) ?? []).filter { !$0.hasPrefix(".") }
+        let unknown = names.filter { record[$0] == nil }
+        if !unknown.isEmpty {
+            for n in unknown { record[n] = TrashEntry(from: n, date: Date()) }
+            saveTrashRecords(record)
+        }
         var removed = 0
-        for item in listTrash() where (item["date"] as? Double ?? .infinity) < cutoff {
-            if let n = item["name"] as? String, (try? deleteFromTrash(n)) != nil { removed += 1 }
+        for n in names where (record[n]?.date ?? Date()) < cutoff {
+            if (try? deleteFromTrash(n)) != nil { removed += 1 }
         }
         return removed
     }
@@ -591,8 +602,14 @@ final class VaultStore {
         for item in listTrash() { if let n = item["name"] as? String { try deleteFromTrash(n) } }
     }
 
+    /// Deletes into the vault's `.trash`, so it can be restored with Ordo's trash button.
     func trash(_ path: String) throws {
         guard !FolderRules.insideVault(path).isEmpty else { return }   // never the vault itself
+        try moveToLocalTrash(path)
+        forget(path)
+    }
+
+    private func moveToLocalTrash(_ path: String) throws {
         guard trashDir != FolderRules.blocked else { throw HostError(message: "„.trash“ ist ein Verweis (Symlink) – Ordo verschiebt nichts dorthin.") }
         try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
         var dest = trashDir.appendingPathComponent(Paths.file(path))
@@ -606,6 +623,10 @@ final class VaultStore {
         var record = trashRecords()
         record[dest.lastPathComponent] = TrashEntry(from: path, date: Date())
         saveTrashRecords(record)
+    }
+
+    /// Drops a deleted note or folder from what Ordo has in memory.
+    private func forget(_ path: String) {
         if notes[path] != nil {
             notes[path] = nil; contents[path] = nil; mtimes[path] = nil; state.notes[path] = nil
             onDelete?(path)

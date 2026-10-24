@@ -1,5 +1,5 @@
 // Papierkorb: everything deleted in Ordo (and Obsidian) lands in the vault's
-// .trash folder. Here it can be put back where it was or deleted for good.
+// .trash folder. Here it can be put back where it was or moved on to the system trash.
 
 import { Modal, confirmDialog } from '../ui/modal';
 import { h, icon, iconButton, dirname, debounce } from '../dom';
@@ -63,19 +63,19 @@ export class TrashModal extends Modal {
           emit('trash-changed');
           this.load();
         }),
-        iconButton('trash', t('Endgültig löschen'), async () => {
-          if (!(await confirmDialog(t('Endgültig löschen?'), t('„{name}“ wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.', { name }), t('Endgültig löschen'), true))) return;
+        iconButton('trash', t('In den System-Papierkorb'), async () => {
+          if (!(await confirmDialog(t('In den System-Papierkorb?'), t('„{name}“ kommt in den Papierkorb des Systems (Mac: Papierkorb, iCloud: „Zuletzt gelöscht“) und lässt sich dort wiederherstellen.', { name }), t('Verschieben'), true))) return;
           await request('trashDelete', { name: it.name }).catch(e => notice(String(e)));
           emit('trash-changed');
           this.load();
         }, 'ordo-trash-delete'));
     });
     this.contentEl.replaceChildren(
-      h('div', { cls: 'setting-item-description', text: days > 0 ? t('Wird nach {n} Tagen endgültig gelöscht.', { n: days }) : t('Bleibt hier, bis du den Papierkorb leerst.') }),
+      h('div', { cls: 'setting-item-description', text: days > 0 ? t('Kommt nach {n} Tagen in den System-Papierkorb.', { n: days }) : t('Bleibt hier, bis du den Papierkorb leerst.') }),
       h('div', { cls: 'ordo-sort-list' }, ...rows),
       h('div', { cls: 'modal-button-container' },
         h('button', { cls: 'mod-warning', text: t('Papierkorb leeren'), onclick: async () => {
-          if (!(await confirmDialog(t('Papierkorb leeren?'), tn(items.length, 'Element', 'Elemente') + ' ' + (items.length === 1 ? t('wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.') : t('werden endgültig gelöscht. Das lässt sich nicht rückgängig machen.')), t('Leeren'), true))) return;
+          if (!(await confirmDialog(t('Papierkorb leeren?'), tn(items.length, 'Element', 'Elemente') + ' ' + (items.length === 1 ? t('kommt in den System-Papierkorb und lässt sich dort wiederherstellen.') : t('kommen in den System-Papierkorb und lassen sich dort wiederherstellen.')), t('Leeren'), true))) return;
           await request('trashEmpty').catch(e => notice(String(e)));
           emit('trash-changed');
           this.load();

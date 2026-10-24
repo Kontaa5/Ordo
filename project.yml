@@ -53,10 +53,7 @@ targets:
     platform: macOS
     sources:
       - path: OrdoTests
-      - path: Ordo/Core/MarkdownParsing.swift
-      - path: Ordo/Core/FolderRules.swift
-      - path: Ordo/Core/ImageProcessing.swift
-      - path: Ordo/Core/GitSync.swift
+      - path: Ordo/Core
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: at.ordo.notes.tests

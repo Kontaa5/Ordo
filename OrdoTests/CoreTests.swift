@@ -224,3 +224,52 @@ final class SecurityTests: XCTestCase {
         }
     }
 }
+
+final class TrashTests: XCTestCase {
+    /// An old note in the trash without Ordo's record (e.g. moved there by Obsidian) must not be purged right away.
+    @MainActor
+    func testOldFileWithoutRecordIsNotPurged() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ordo-trash-\(UUID().uuidString)")
+        let trash = root.appendingPathComponent(".trash")
+        try FileManager.default.createDirectory(at: trash, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = trash.appendingPathComponent("Alt.md")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-90 * 86_400)], ofItemAtPath: file.path)
+        let store = VaultStore(root: root)
+        XCTAssertEqual(store.purgeTrash(), 0)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
+    }
+
+    /// Deleting an old note in Ordo, then the start-up clean-up: the note must stay in the trash.
+    @MainActor
+    func testDeletedOldNoteSurvivesPurge() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ordo-trash-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("Alt.md")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-90 * 86_400)], ofItemAtPath: file.path)
+        let store = VaultStore(root: root)
+        await store.refresh()
+        try store.trash("Alt.md")
+        XCTAssertEqual(store.purgeTrash(), 0)
+        XCTAssertEqual(VaultStore(root: root).purgeTrash(), 0)   // e.g. the app started again
+        XCTAssertTrue(FileManager.default.fileExists(atPath: root.appendingPathComponent(".trash/Alt.md").path))
+    }
+
+    /// iCloud marks moved files as hidden – they must still show up in the trash.
+    @MainActor
+    func testHiddenFlagStillListed() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ordo-trash-\(UUID().uuidString)")
+        let trash = root.appendingPathComponent(".trash")
+        try FileManager.default.createDirectory(at: trash, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        var file = trash.appendingPathComponent("Versteckt.md")
+        try "x".write(to: file, atomically: true, encoding: .utf8)
+        var v = URLResourceValues(); v.isHidden = true
+        try file.setResourceValues(v)
+        let names = VaultStore(root: root).listTrash().compactMap { $0["name"] as? String }
+        XCTAssertEqual(names, ["Versteckt.md"])
+    }
+}

@@ -51,7 +51,7 @@ struct VaultSettings: Codable, Equatable, Sendable {
     var tagSpellings: [String: String] = [:]
 
     // Git-Sync (Mac): backup of the vault to a git remote, history kept outside iCloud
-    /// Days deleted items stay in .trash before they are removed for good (0 = never).
+    /// Days deleted items stay in Ordo's trash before they go to the system trash (0 = never).
     var trashDays: Int = 30
 
     var gitEnabled: Bool = false

@@ -8,16 +8,21 @@
 
 /* Begin PBXBuildFile section */
 		021587C4EE4778EA33687C66 /* WebControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A4DC4EDF2B9333A912A0C87 /* WebControllers.swift */; };
+		05B53709DFC6F1258B116EB3 /* VaultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EDD942D0D847832387D39 /* VaultStore.swift */; };
+		05CFEB43845894FF4B569448 /* HostError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07D30447D2338BC59A341C2 /* HostError.swift */; };
 		0F4ABD53ED13E65DC2F53027 /* VaultAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = E280EC14107B95AFEBB19047 /* VaultAccess.swift */; };
 		173EBB935E2F8F7E58D11167 /* HostError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A07D30447D2338BC59A341C2 /* HostError.swift */; };
 		1B228352B8DF8152621AC52F /* MarkdownParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B677B6C49092CB164F6E72 /* MarkdownParsing.swift */; };
 		24361FD84CE9BE1326614F50 /* FolderRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8916296DF2BCA68D1D6D0B8E /* FolderRules.swift */; };
 		367724F6EF04E69FF4B1CA04 /* ImageProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D5A9BA0180979CFA203A7E /* ImageProcessing.swift */; };
+		3710CA9018993AEFFE62A65C /* ObsidianImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAD25C4D6AD8EA74E605AB5 /* ObsidianImport.swift */; };
 		48B74DC65AD573806057D7B6 /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FDA751C2B16B30D751EA0 /* FileWatcher.swift */; };
 		5BD3D22B4629630330AA8DE1 /* MarkdownParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B677B6C49092CB164F6E72 /* MarkdownParsing.swift */; };
+		5D9B8F989E6508852420A618 /* VaultSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7830E50B09790482ECC4C432 /* VaultSettings.swift */; };
 		60580B6FCF778840EBD1FDF2 /* ShellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42103208F49AEAF32308DF0B /* ShellController.swift */; };
 		60AF283D95E606C9D8E4A494 /* GitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313737E0E5E4CE7DC7206BB /* GitSync.swift */; };
 		6757DD794F18E9CBCEE3B525 /* VaultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EDD942D0D847832387D39 /* VaultStore.swift */; };
+		6ED714651D1A573E8226BCA4 /* VaultStore+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */; };
 		71BCA2111BB05975E6FC4831 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C74341FCE1F2DC3211AE7233 /* AppModel.swift */; };
 		7F65BEAB26425C59E2D2CE4A /* DebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE52032C282D1C04E5CA48A3 /* DebugSnapshot.swift */; };
 		8C1F174602B2EFC63C7FBC02 /* Platform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D14055BE10C4CB0614DE810 /* Platform.swift */; };
@@ -29,6 +34,7 @@
 		A27F9AECCEB90C62E9F87110 /* VaultStore+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */; };
 		A2FF68899518ED8298E20AE2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35FF15D5FB22B8664A5A4D89 /* Assets.xcassets */; };
 		A34D38E50052C17AB5D79868 /* CoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BF9024F1E0EFFB4619EAFBF /* CoreTests.swift */; };
+		B01404F58846288CCE063C6C /* VaultAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = E280EC14107B95AFEBB19047 /* VaultAccess.swift */; };
 		B535704721851CAE0E67B16F /* DockIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A48EC24EE6E5CC167ED7B29 /* DockIcon.swift */; };
 		BF97E820972BCBEA536EA3EB /* GitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313737E0E5E4CE7DC7206BB /* GitSync.swift */; };
 		DF7F1126D4B205A93332F455 /* ImageProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D5A9BA0180979CFA203A7E /* ImageProcessing.swift */; };
@@ -304,8 +310,14 @@
 				A34D38E50052C17AB5D79868 /* CoreTests.swift in Sources */,
 				F0B7C64288003D2D423D8B0E /* FolderRules.swift in Sources */,
 				60AF283D95E606C9D8E4A494 /* GitSync.swift in Sources */,
+				05CFEB43845894FF4B569448 /* HostError.swift in Sources */,
 				367724F6EF04E69FF4B1CA04 /* ImageProcessing.swift in Sources */,
 				5BD3D22B4629630330AA8DE1 /* MarkdownParsing.swift in Sources */,
+				3710CA9018993AEFFE62A65C /* ObsidianImport.swift in Sources */,
+				B01404F58846288CCE063C6C /* VaultAccess.swift in Sources */,
+				5D9B8F989E6508852420A618 /* VaultSettings.swift in Sources */,
+				6ED714651D1A573E8226BCA4 /* VaultStore+Bridge.swift in Sources */,
+				05B53709DFC6F1258B116EB3 /* VaultStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
