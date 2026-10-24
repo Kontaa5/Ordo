@@ -323,6 +323,11 @@ function build(view: EditorView): DecorationSet {
             for (const m of marks) decos.push(show ? mark(`cm-formatting ${fmt} ${cls}`).range(m.from, m.to) : hide.range(m.from, m.to));
             return name === 'InlineCode' ? false : undefined;
           }
+          case 'Escape': {
+            // \- \* \# …: like Obsidian, only the character shows; the backslash returns when the cursor is there
+            if (free(node.from, node.to) && !touches(state, node.from, node.to)) decos.push(hide.range(node.from, node.from + 1));
+            return;
+          }
           case 'Link': {
             if (!free(node.from, node.to)) return false;
             if (state.doc.sliceString(node.from, node.from + 2) === '[!') return false;
@@ -411,7 +416,9 @@ function build(view: EditorView): DecorationSet {
             if (isTask && !active) {
               decos.push(hide.range(node.from, Math.min(node.to + 1, state.doc.lineAt(node.from).to)));
             } else if (!ordered && !active) {
-              decos.push(Decoration.replace({ widget: new BulletWidget() }).range(node.from, node.to));
+              // the bullet takes "-" and the space after it (2ch, like the hanging indent): wrapped lines start under the text
+              const end = state.sliceDoc(node.to, node.to + 1) === ' ' ? node.to + 1 : node.to;
+              decos.push(Decoration.replace({ widget: new BulletWidget() }).range(node.from, end));
             } else {
               decos.push(mark(`cm-formatting cm-formatting-list cm-formatting-list-${ordered ? 'ol' : 'ul'} cm-list-1`).range(node.from, node.to));
             }

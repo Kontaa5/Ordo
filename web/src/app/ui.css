@@ -472,7 +472,7 @@ body.mod-macos .workspace:not(.is-left-sidedock-open) .mod-root .workspace-tab-h
 
 .HyperMD-quote { border-inline-start: var(--blockquote-border-thickness) solid var(--blockquote-border-color); padding-inline-start: var(--size-4-4) !important; color: var(--blockquote-color); font-style: var(--blockquote-font-style); }
 .cm-quote.cm-formatting { color: var(--text-faint); }
-.list-bullet { display: inline-block; width: 1.25em; text-align: center; color: var(--list-marker-color); }
+.list-bullet { display: inline-block; width: 2ch; padding-right: 0.5em; text-align: right; box-sizing: border-box; color: var(--list-marker-color); }   /* replaces "- " exactly (2ch = the hanging indent): text lines up with wrapped lines */
 .cm-formatting-list { color: var(--list-marker-color); }
 .HyperMD-list-line { padding-top: var(--list-spacing) !important; }
 .task-list-label { display: inline; }
