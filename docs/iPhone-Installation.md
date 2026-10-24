@@ -17,11 +17,13 @@ eigenen Apple-ID, also die 7-Tage-Variante unten.
 ## Einmalig vorbereiten
 
 1. **iOS-Plattform in Xcode installieren:** Xcode › Settings › Components ›
-   iOS 26.x › Get. (Fehlt aktuell – ohne sie kann nichts fürs iPhone gebaut werden.)
+   iOS › Get (ohne sie kann nichts fürs iPhone gebaut werden).
 2. **Apple-ID in Xcode:** Xcode › Settings › Accounts › „+“ › Apple ID.
 3. **Vault in iCloud Drive:** Dein Vault-Ordner muss in iCloud Drive liegen
-   (z. B. `iCloud Drive/Obsidian/Schule`). Auf dem iPhone wählst du in Ordo
-   „Vault öffnen“ und dann genau diesen Ordner.
+   (z. B. `iCloud Drive/Notizen`). Auf dem iPhone tippst du in Ordo auf
+   „Öffnen“ und wählst genau diesen Ordner.
+4. **Ordo holen:** `git clone https://github.com/Kontaa5/Ordo.git ~/Ordo`
+   (alle Befehle unten im Ordner `~/Ordo` ausführen).
 
 ---
 
@@ -35,7 +37,8 @@ Hintergrund**, solange dein Mac läuft und im selben WLAN ist.
 2. iPhone per Kabel anschließen › AltServer-Symbol › *Install AltStore* › iPhone wählen.
 3. Am iPhone: Einstellungen › Allgemein › VPN & Geräteverwaltung › deiner Apple-ID vertrauen.
    Außerdem Einstellungen › Datenschutz & Sicherheit › **Entwicklermodus** einschalten.
-4. Ordo als Datei bauen – im Projektordner:
+4. Ordo als Datei bauen – im Projektordner (einmalig vorher: `brew install node xcodegen`
+   und `cd web && npm ci && cd ..`):
    ```bash
    tools/build-ipa.sh
    ```

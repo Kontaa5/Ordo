@@ -53,7 +53,31 @@ Auch die Einstellungen löschen: `brew uninstall --zap --cask ordo`.
 - Graph nach Hashtags, Spalten, Themes, Hell/Dunkel, Deutsch/Englisch
 - iCloud für Mac und iPhone, optional Git-Backup
 
-iPhone: [docs/iPhone-Installation.md](docs/iPhone-Installation.md) · Entwicklung: [docs/Entwicklung.md](docs/Entwicklung.md)
+## iPhone
+
+Ordo gibt es nicht im App Store. Du installierst es mit deinem Mac und einer kostenlosen Apple-ID selbst aufs iPhone. Deine Notizen liegen in iCloud Drive und sind auf Mac und iPhone gleich.
+
+1. **Xcode** aus dem App Store installieren, öffnen, unter Xcode › Settings › Components die **iOS-Plattform** laden und unter Settings › Accounts deine **Apple-ID** hinzufügen.
+2. **Ordo holen und öffnen** – im Terminal:
+
+   ```bash
+   git clone https://github.com/Kontaa5/Ordo.git ~/Ordo
+   ```
+
+   ```bash
+   open ~/Ordo/Ordo.xcodeproj
+   ```
+
+3. In Xcode links **Ordo** anklicken › Target **Ordo** › **Signing & Capabilities** › Team: *dein Name (Personal Team)*. Meldet Xcode, dass die Bundle-ID vergeben ist: `at.ordo.notes` um deinen Namen ergänzen, z. B. `at.ordo.notes.max`.
+4. **iPhone per Kabel** anschließen, oben in Xcode als Ziel auswählen und **▶︎** drücken.
+5. Am iPhone einmalig:
+   - Einstellungen › Datenschutz & Sicherheit › **Entwicklermodus** einschalten (iPhone startet neu).
+   - Einstellungen › Allgemein › VPN & Geräteverwaltung › deiner Apple-ID **vertrauen**.
+6. Ordo öffnen › **Öffnen** › deinen Notizen-Ordner in **iCloud Drive** wählen.
+
+**Wichtig:** Mit kostenloser Apple-ID läuft die App **7 Tage**, danach Schritt 4 wiederholen (Notizen bleiben). Automatisch erneuern lassen geht mit AltStore: [docs/iPhone-Installation.md](docs/iPhone-Installation.md).
+
+Entwicklung: [docs/Entwicklung.md](docs/Entwicklung.md)
 
 ## Datenschutz
 
