@@ -29,7 +29,7 @@ final class PDFExporter: NSObject, WKNavigationDelegate {
         let web = WKWebView(frame: CGRect(x: 0, y: 0, width: contentW, height: contentH), configuration: config)
         web.navigationDelegate = self
         #if os(macOS)
-        web.setValue(false, forKey: "drawsBackground")
+        web.hideBackground()
         #endif
         webView = web
         defer { webView = nil }

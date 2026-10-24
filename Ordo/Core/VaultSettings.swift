@@ -123,7 +123,7 @@ struct PageSettings: Codable, Equatable, Hashable, Sendable {
         let s = paper.size
         return landscape ? CGSize(width: s.height, height: s.width) : s
     }
-    var marginPt: Double { marginMM * 72 / 25.4 }
+    var marginPt: Double { max(0, min(marginMM, 60)) * 72 / 25.4 }
 
     /// Geometry for the web paginator (1 CSS px == 1 pt).
     var webGeom: [String: Double] {

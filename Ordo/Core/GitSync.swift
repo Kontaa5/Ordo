@@ -98,6 +98,8 @@ final class GitSync {
         """
         try? FileManager.default.createDirectory(at: gitDir.appendingPathComponent("info"), withIntermediateDirectories: true)
         try? exclude.write(to: gitDir.appendingPathComponent("info/exclude"), atomically: true, encoding: .utf8)
+        // a pulled symlink (e.g. ".trash → ~/Documents") is checked out as a plain text file
+        _ = await git(["config", "core.symlinks", "false"])
         // commits need a name; use the global git identity if there is one
         if !(await git(["config", "user.name"])).ok { _ = await git(["config", "user.name", "Ordo"]) }
         if !(await git(["config", "user.email"])).ok { _ = await git(["config", "user.email", "ordo@localhost"]) }
@@ -203,7 +205,8 @@ final class GitSync {
                 let theirs = await git(["show", ":3:\(path)"])
                 let ns = path as NSString
                 let copy = ns.deletingPathExtension + " (Konflikt)" + (ns.pathExtension.isEmpty ? "" : "." + ns.pathExtension)
-                if theirs.ok { try? theirs.out.write(to: root.appendingPathComponent(copy), atomically: true, encoding: .utf8) }
+                let dest = root.appendingPathComponent(copy)
+                if theirs.ok, FolderRules.isInside(dest, root: root) { try? theirs.out.write(to: dest, atomically: true, encoding: .utf8) }
                 _ = await git(["checkout", "--ours", "--", path])
                 _ = await git(["add", "--", path, copy])
             }

@@ -55,6 +55,26 @@ Auch die Einstellungen löschen: `brew uninstall --zap --cask ordo`.
 
 iPhone: [docs/iPhone-Installation.md](docs/iPhone-Installation.md) · Entwicklung: [docs/Entwicklung.md](docs/Entwicklung.md)
 
+## Datenschutz
+
+- **Ordo sammelt keine Daten:** keine Konten, keine Telemetrie, keine Analyse. Notizen bleiben in deinem Ordner (und in deiner iCloud, falls er dort liegt).
+- **Verbindungen ins Internet** gibt es nur in diesen Fällen:
+  - beim Öffnen einer Notiz, die Bilder aus dem Web verlinkt (der jeweilige Server sieht deine IP-Adresse),
+  - wenn du die Theme-Liste unter Einstellungen › Darstellung öffnest (lädt von GitHub),
+  - Git-Backup zu dem Server, den du selbst einträgst.
+- Fotos, die du einfügst, verlieren ihren GPS-Standort.
+- **Buy Me a Coffee:** Der Knopf öffnet die Seite im Browser; dort gelten deren Datenschutzregeln.
+
+## Unterstützen
+
+Ordo ist kostenlos. Wenn es dir hilft: [Buy Me a Coffee](https://buymeacoffee.com/suntinger).
+
 ## Lizenz
 
-MIT – siehe [LICENSE](LICENSE).
+MIT – siehe [LICENSE](LICENSE). Ohne Gewährleistung und Haftung. Eingebaute Open-Source-Bibliotheken: [THIRD-PARTY-LICENSES.txt](THIRD-PARTY-LICENSES.txt).
+
+## Impressum
+
+Offenlegung gemäß § 25 MedienG: Gabriel Suntinger, Villach (Österreich). Privates, nicht kommerzielles Open-Source-Projekt. Kontakt: [GitHub-Issues](https://github.com/Kontaa5/Ordo/issues).
+
+Ordo ist ein privates Projekt ohne Verbindung zu Obsidian (Dynalist Inc.) oder Apple. Obsidian, Apple, macOS, iPhone und iCloud sind Marken ihrer Inhaber; sie werden hier nur beschreibend genannt.

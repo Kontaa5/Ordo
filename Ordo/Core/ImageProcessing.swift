@@ -21,7 +21,10 @@ enum ImageProcessing {
         let isHEIC = ext == "heic" || ext == "heif"
         let tooBig = maxDim > 0 && max(w, h) > maxDim
         let heavy = compress && data.count > compressThreshold
-        guard tooBig || heavy || (isHEIC && convertHEIC) || orientation != 1 else { return (data, ext) }
+        guard tooBig || heavy || (isHEIC && convertHEIC) || orientation != 1 else {
+            // untouched picture: only the location goes (re-encoding below drops all metadata anyway)
+            return props[kCGImagePropertyGPSDictionary] != nil ? (withoutGPS(src) ?? data, ext) : (data, ext)
+        }
         let opts: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
@@ -47,6 +50,16 @@ enum ImageProcessing {
         // never make a file bigger, unless the format had to change (HEIC) or the picture was rotated/scaled
         if r.0.count >= data.count && !(isHEIC && convertHEIC) && !tooBig && orientation == 1 { return (data, ext) }
         return r
+    }
+
+    /// The same picture, bit for bit the same pixels, without its GPS position
+    /// (a vault may end up on a git server or be shared).
+    static func withoutGPS(_ src: CGImageSource) -> Data? {
+        let out = NSMutableData()
+        guard let type = CGImageSourceGetType(src),
+              let dest = CGImageDestinationCreateWithData(out, type, 1, nil),
+              CGImageDestinationCopyImageSource(dest, src, [kCGImageMetadataShouldExcludeGPS: true] as CFDictionary, nil) else { return nil }
+        return out as Data
     }
 
     /// Result of shrinking a picture that is already in the vault.

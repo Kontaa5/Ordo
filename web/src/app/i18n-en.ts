@@ -254,6 +254,7 @@ export const EN: Record<string, string> = {
   'Anmeldung bei GitHub einrichten': 'Set up GitHub login',
   'Ordo nutzt die Git-Anmeldung deines Macs und speichert selbst keine Passwörter. Am einfachsten mit der GitHub CLI: im Terminal „brew install gh“ und „gh auth login“ (SSH wählen). Danach ein privates, leeres Repository anlegen und dessen SSH-Adresse oben eintragen.': 'Ordo uses your Mac\'s git login and stores no passwords itself. Easiest with the GitHub CLI: in Terminal run "brew install gh" and "gh auth login" (choose SSH). Then create an empty private repository and enter its SSH address above.',
 
+  'Unterstützen': 'Support', 'Ordo ist kostenlos. Wenn es dir hilft, freue ich mich über einen Kaffee.': 'Ordo is free. If it helps you, I\'d be happy about a coffee.',
   'Papierkorb': 'Trash', 'Papierkorb öffnen': 'Open trash', 'Der Papierkorb ist leer.': 'The trash is empty.',
   'Wiederherstellen': 'Restore', '„{name}“ ist wieder da.': '“{name}” is back.', 'Endgültig löschen': 'Delete permanently', 'Endgültig löschen?': 'Delete permanently?',
   '„{name}“ wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.': '“{name}” will be deleted permanently. This cannot be undone.',

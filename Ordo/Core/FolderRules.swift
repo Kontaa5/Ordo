@@ -94,10 +94,36 @@ enum FolderRules {
     /// False for anything that leaves the vault through a symlink (e.g. `note.md → ~/.ssh/id_ed25519`,
     /// which a shared vault or a git pull could bring in).
     static func isInside(_ url: URL, root: URL) -> Bool {
-        let base = root.resolvingSymlinksInPath().path
-        let real = url.resolvingSymlinksInPath().path
+        let base = realPath(root), real = realPath(url)
         return real == base || real.hasPrefix(base.hasSuffix("/") ? base : base + "/")
     }
+
+    /// Like realpath(3), but also for paths that don't exist yet: the deepest existing
+    /// folder is resolved, the rest is appended (so a new file below a symlinked folder counts as outside).
+    static func realPath(_ url: URL) -> String {
+        var existing = url.standardizedFileURL.path
+        var rest: [String] = []
+        while existing.count > 1 {
+            if let r = realpath(existing, nil) {
+                defer { free(r) }
+                return ([String(cString: r)] + rest.reversed()).joined(separator: "/")
+            }
+            rest.append((existing as NSString).lastPathComponent)
+            existing = (existing as NSString).deletingLastPathComponent
+        }
+        return url.standardizedFileURL.path
+    }
+
+    /// A folder Ordo writes into (`.ordo`, `.trash`) – unusable if it is a symlink,
+    /// so nothing is written to or deleted from wherever it points.
+    static func ownFolder(_ root: URL, _ name: String) -> URL {
+        let u = root.appendingPathComponent(name, isDirectory: true)
+        let link = (try? u.resourceValues(forKeys: [.isSymbolicLinkKey]).isSymbolicLink) ?? false
+        return link ? blocked : u
+    }
+
+    /// Where blocked paths point: every read, write, move and delete there fails.
+    static let blocked = URL(fileURLWithPath: "/dev/null/ordo-blocked", isDirectory: true)
 
     /// Case-insensitive comparison of folder paths.
     static func same(_ a: String, _ b: String) -> Bool {

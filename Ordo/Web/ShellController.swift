@@ -85,7 +85,7 @@ final class ShellController: WebController {
             return nil
         case "dragRegions":
             #if os(macOS)
-            let rects = (body["rects"] as? [[Double]] ?? []).map { CGRect(x: $0[0], y: $0[1], width: $0[2], height: $0[3]) }
+            let rects = (body["rects"] as? [[Double]] ?? []).filter { $0.count == 4 }.map { CGRect(x: $0[0], y: $0[1], width: $0[2], height: $0[3]) }
             (webView as? OrdoWebView)?.dragRects = rects
             #endif
             return nil
@@ -379,7 +379,7 @@ final class ShellController: WebController {
         options.tableOfContents = o["toc"] as? Bool ?? true
         options.titleHeadings = o["titles"] as? Bool ?? true
         let combined = o["combined"] as? Bool ?? true
-        let name = (o["name"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? v.name
+        let name = ((o["name"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? v.name).replacingOccurrences(of: "/", with: "-")
 
         var files: [(String, Data)] = []
         if combined {

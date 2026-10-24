@@ -152,12 +152,8 @@ final class AppModel {
         if let rec = VaultAccess.recent.first(where: { $0.path == root.path }) { VaultAccess.forget(rec) }
         let scoped = root.startAccessingSecurityScopedResource()
         defer { if scoped { root.stopAccessingSecurityScopedResource() }; shell.callJSON("ordo.host.vaultClosed", bootInfo()) }
-        #if os(macOS)
-        try FileManager.default.trashItem(at: root, resultingItemURL: nil)   // never delete for good on the Mac
-        #else
-        do { try FileManager.default.trashItem(at: root, resultingItemURL: nil) }
-        catch { try FileManager.default.removeItem(at: root) }
-        #endif
+        // only ever into the trash, never deleted for good (a vault could carry a stray demo marker)
+        try FileManager.default.trashItem(at: root, resultingItemURL: nil)
     }
 
     func bootInfo() -> [String: Any] {

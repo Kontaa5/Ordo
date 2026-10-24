@@ -73,7 +73,7 @@ class WebController: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDele
         webView.navigationDelegate = self
         if #available(macOS 13.3, iOS 16.4, *) { webView.isInspectable = true }
         #if os(macOS)
-        webView.setValue(false, forKey: "drawsBackground")
+        webView.hideBackground()
         webView.allowsMagnification = false
         #else
         webView.isOpaque = false
@@ -211,6 +211,17 @@ struct WebViewHost: UIViewRepresentable {
         container.addSubview(webView)
         webView.frame = container.bounds
         container.setNeedsLayout()
+    }
+}
+#endif
+
+#if os(macOS)
+extension WKWebView {
+    /// Transparent background. There is no public API for it on the Mac; the private setter is
+    /// checked first, so a future macOS without it only loses the transparency instead of crashing.
+    func hideBackground() {
+        guard responds(to: NSSelectorFromString("_setDrawsBackground:")) else { return }
+        setValue(false, forKey: "drawsBackground")
     }
 }
 #endif

@@ -8,3 +8,6 @@ xcuserdata/
 Ordo Demo/.ordo/state.json
 Ordo Demo/.ordo/appearance.json
 build.noindex/
+.env*
+*.pem
+*.p12

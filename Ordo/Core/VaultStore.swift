@@ -87,21 +87,28 @@ final class VaultStore {
 
     /// Paths come from the web side and from vault data (links, folder rules), so
     /// `..`, `.` and leading `/` are dropped: nothing can point outside the vault.
+    /// A symlink in the vault (shared folder, git pull) never leads out of it: such paths are blocked.
     func url(_ rel: String) -> URL {
         let safe = FolderRules.insideVault(rel)
-        return safe.isEmpty ? root : root.appendingPathComponent(safe, isDirectory: false)
+        guard !safe.isEmpty else { return root }
+        let u = root.appendingPathComponent(safe, isDirectory: false)
+        return FolderRules.isInside(u, root: root) ? u : FolderRules.blocked
     }
 
 
-    private var ordoDir: URL { root.appendingPathComponent(".ordo", isDirectory: true) }
+    private var ordoDir: URL { FolderRules.ownFolder(root, ".ordo") }
 
     // MARK: - settings & state
 
     private func loadSettingsAndState() {
         let dec = JSONDecoder()
         let settingsURL = ordoDir.appendingPathComponent("settings.json")
-        if let data = Self.coordinatedRead(settingsURL), let s = try? dec.decode(VaultSettings.self, from: data) {
+        let data = Self.coordinatedRead(settingsURL)
+        if let data, let s = try? dec.decode(VaultSettings.self, from: data) {
             settings = s
+        } else if let data, !data.isEmpty {
+            // unreadable settings: keep a copy instead of overwriting them with defaults
+            Self.coordinatedWrite(data, to: ordoDir.appendingPathComponent("settings.broken.json"))
         } else if let imported = ObsidianImport.settings(vault: root) {
             settings = imported
             importedFromObsidian = true
@@ -293,9 +300,7 @@ final class VaultStore {
 
     func text(_ path: String) -> String? {
         if let t = contents[path] { return t }
-        let u = url(path)
-        guard FolderRules.isInside(u, root: root) else { return nil }
-        let t = Self.readText(u)
+        let t = Self.readText(url(path))
         if let t { contents[path] = t }
         return t
     }
@@ -524,7 +529,7 @@ final class VaultStore {
     // MARK: trash (.trash, like Obsidian; remembers where things came from)
 
     struct TrashEntry: Codable { var from: String; var date: Date }
-    private var trashDir: URL { root.appendingPathComponent(".trash", isDirectory: true) }
+    private var trashDir: URL { FolderRules.ownFolder(root, ".trash") }
     private var trashRecordURL: URL { trashDir.appendingPathComponent(".ordo-trash.json") }
     private func trashRecords() -> [String: TrashEntry] {
         guard let d = Self.coordinatedRead(trashRecordURL) else { return [:] }
@@ -588,7 +593,7 @@ final class VaultStore {
 
     func trash(_ path: String) throws {
         guard !FolderRules.insideVault(path).isEmpty else { return }   // never the vault itself
-        let trashDir = root.appendingPathComponent(".trash", isDirectory: true)
+        guard trashDir != FolderRules.blocked else { throw HostError(message: "„.trash“ ist ein Verweis (Symlink) – Ordo verschiebt nichts dorthin.") }
         try FileManager.default.createDirectory(at: trashDir, withIntermediateDirectories: true)
         var dest = trashDir.appendingPathComponent(Paths.file(path))
         var i = 1

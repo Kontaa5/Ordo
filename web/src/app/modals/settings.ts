@@ -16,6 +16,9 @@ import { setting } from './tagRule';
 import { t, lang, setLang, Lang } from '../i18n';
 type Tab = { id: string; name: string; group: string; render: (el: HTMLElement) => void | Promise<void> };
 
+/** Opens in the browser; Ordo itself sends nothing there. */
+const COFFEE_URL = 'https://buymeacoffee.com/suntinger';
+
 export class SettingsModal extends Modal {
   private nav = h('div', { cls: 'vertical-tab-header' });
   private content = h('div', { cls: 'vertical-tab-content' });
@@ -88,6 +91,8 @@ export class SettingsModal extends Modal {
       ...(isIOS ? [] : [setting(t('Im Finder zeigen'), t('Öffnet den Vault-Ordner.'), h('button', { text: t('Öffnen'), onclick: () => request('reveal', { path: '' }) }))]),
       setting(t('Parallel mit Obsidian'), t('Ordo liest dieselben Markdown-Dateien wie Obsidian und schreibt nie in den .obsidian-Ordner. Themes, Snippets und Darstellung werden von Obsidian übernommen.')),
       setting(t('Ordo'), t('Notizen in Markdown, die sich nach Hashtags selbst einsortieren.')),
+      setting(t('Unterstützen'), t('Ordo ist kostenlos. Wenn es dir hilft, freue ich mich über einen Kaffee.'),
+        h('button', { text: '☕ Buy me a coffee', onclick: () => request('external', { url: COFFEE_URL }) })),
     );
   }
 

@@ -180,6 +180,16 @@ final class SecurityTests: XCTestCase {
         try FileManager.default.createSymbolicLink(at: root.appendingPathComponent("out.md"), withDestinationURL: URL(fileURLWithPath: "/etc/hosts"))
         XCTAssertTrue(FolderRules.isInside(root.appendingPathComponent("ok.md"), root: root))
         XCTAssertFalse(FolderRules.isInside(root.appendingPathComponent("out.md"), root: root))
+        // a new file below a symlinked folder, and a symlinked .trash
+        let outside = FileManager.default.temporaryDirectory.appendingPathComponent("ordo-out-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: outside) }
+        try FileManager.default.createSymbolicLink(at: root.appendingPathComponent("INSY"), withDestinationURL: outside)
+        try FileManager.default.createSymbolicLink(at: root.appendingPathComponent(".trash"), withDestinationURL: outside)
+        XCTAssertFalse(FolderRules.isInside(root.appendingPathComponent("INSY/neu/Notiz.md"), root: root))
+        XCTAssertTrue(FolderRules.isInside(root.appendingPathComponent("Neu/Notiz.md"), root: root))
+        XCTAssertEqual(FolderRules.ownFolder(root, ".trash"), FolderRules.blocked)
+        XCTAssertEqual(FolderRules.ownFolder(root, ".ordo"), root.appendingPathComponent(".ordo", isDirectory: true))
     }
 
     func testGitRemoteMustBeARealAddress() {
@@ -188,6 +198,29 @@ final class SecurityTests: XCTestCase {
         }
         for bad in ["--upload-pack=touch /tmp/x", "-c", "ext::sh -c touch% /tmp/x", "fd::3", "https://a b", "git@host:x;rm", "", "http://insecure"] {
             XCTAssertFalse(GitSync.isValidRemote(bad), bad)
+        }
+    }
+
+    func testInsertedPhotosLoseTheirLocation() {
+        func photo(_ w: Int) -> Data {
+            let ctx = CGContext(data: nil, width: w, height: w, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
+            ctx.setFillColor(CGColor(red: 0.2, green: 0.5, blue: 0.8, alpha: 1)); ctx.fill(CGRect(x: 0, y: 0, width: w, height: w))
+            let out = NSMutableData()
+            let dest = CGImageDestinationCreateWithData(out, UTType.jpeg.identifier as CFString, 1, nil)!
+            let gps: [CFString: Any] = [kCGImagePropertyGPSLatitude: 48.2, kCGImagePropertyGPSLatitudeRef: "N", kCGImagePropertyGPSLongitude: 16.37, kCGImagePropertyGPSLongitudeRef: "E"]
+            CGImageDestinationAddImage(dest, ctx.makeImage()!, [kCGImagePropertyGPSDictionary: gps] as CFDictionary)
+            CGImageDestinationFinalize(dest)
+            return out as Data
+        }
+        func hasGPS(_ d: Data) -> Bool {
+            let src = CGImageSourceCreateWithData(d as CFData, nil)!
+            return (CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any])?[kCGImagePropertyGPSDictionary] != nil
+        }
+        for size in [200, 3000] {   // small (untouched) and big (scaled) picture
+            let original = photo(size)
+            XCTAssertTrue(hasGPS(original), "test photo needs a location")
+            let (out, _) = ImageProcessing.process(original, ext: "jpg", maxDim: 2400, convertHEIC: true)
+            XCTAssertFalse(hasGPS(out), "size \(size)")
         }
     }
 }
