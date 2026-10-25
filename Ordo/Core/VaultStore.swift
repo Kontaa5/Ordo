@@ -70,7 +70,8 @@ final class VaultStore {
     @ObservationIgnored private(set) var contents: [String: String] = [:]
     @ObservationIgnored private var mtimes: [String: Date] = [:]
     @ObservationIgnored private var byBase: [String: [String]] = [:]
-    @ObservationIgnored private var refreshing = false
+    @ObservationIgnored private var refreshing: Task<Void, Never>?
+    @ObservationIgnored private var rescan = false
     @ObservationIgnored var stats: [String: FileStat] = [:]
     @ObservationIgnored var onExternalChange: ((String, String) -> Void)?
     @ObservationIgnored var onRename: ((String, String) -> Void)?
@@ -200,10 +201,25 @@ final class VaultStore {
     }
 
     /// Rescans the vault and reloads notes that changed on disk (e.g. via iCloud).
+    /// A call during a running scan is not dropped: it waits, and the scan runs once more
+    /// (files that arrive while the first scan runs – iCloud right after launch – would otherwise
+    /// only show up with the 30-second safety net).
     func refresh() async {
-        guard !refreshing else { return }
-        refreshing = true
-        defer { refreshing = false }
+        if let running = refreshing { rescan = true; await running.value; return }
+        let task = Task {
+            repeat { rescan = false; await scanOnce() } while rescan
+            refreshing = nil
+        }
+        refreshing = task
+        await task.value
+    }
+
+    /// Waits for the first scan, so the web side never builds its workspace on an empty index.
+    func untilLoaded() async {
+        while isLoading { await refresh() }
+    }
+
+    private func scanOnce() async {
         let root = self.root
         let result = await Task.detached(priority: .utility) { Self.scan(root: root) }.value
 

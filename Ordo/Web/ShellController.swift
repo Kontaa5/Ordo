@@ -100,6 +100,7 @@ final class ShellController: WebController {
         guard let v = app.vault else { throw HostError(message: "Kein Vault geöffnet") }
         switch type {
         case "index":
+            await v.untilLoaded()
             return v.indexSnapshot()
         case "read":
             return v.text(str("path")) ?? ""
