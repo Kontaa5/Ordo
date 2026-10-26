@@ -39,8 +39,8 @@ export function gitStatusItem(): HTMLElement {
     const s = gitStatus;
     item.style.display = !isMac || s.state === 'off' ? 'none' : '';
     const pending = (s.uncommitted ?? 0) > 0 || (s.unpushed ?? 0) > 0;
-    const stale = !!s.lastPush && new Date(s.lastPush * 1000).toDateString() !== new Date().toDateString();
-    const cls = s.state === 'error' || s.state === 'nogit' || !s.lastPush ? 'is-error' : s.state === 'working' ? 'is-working' : stale ? 'is-pending' : 'is-ok';
+    // green whenever everything is on the server – however long ago the last upload was
+    const cls = s.state === 'error' || s.state === 'nogit' || !s.lastPush ? 'is-error' : s.state === 'working' ? 'is-working' : pending ? 'is-pending' : 'is-ok';
     dot.className = 'ordo-git-dot ' + cls;
     label.textContent = s.state === 'working' ? (s.message ?? '') : '';
     const tip = s.state === 'nogit' ? t('Git ist auf diesem Mac nicht installiert.')

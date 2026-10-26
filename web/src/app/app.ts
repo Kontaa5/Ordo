@@ -211,8 +211,7 @@ function buildStatusBar(ws: Workspace) {
   const mode = h('div', { cls: 'status-bar-item plugin-editor-status mod-clickable', onclick: () => executeCommand('markdown:toggle-preview') });
   const pages = h('div', { cls: 'status-bar-item plugin-ordo-pages mod-clickable', onclick: () => executeCommand('ordo:toggle-page-breaks') });
   const words = h('div', { cls: 'status-bar-item plugin-word-count' });
-  const sort = h('div', { cls: 'status-bar-item plugin-ordo-sort mod-clickable', onclick: () => workspace.showSidePane('right', 'automation') });
-  ws.statusBar.append(gitStatusItem(), sort, backlinks, mode, pages, words);
+  ws.statusBar.append(gitStatusItem(), backlinks, mode, pages, words);
   tooltip(mode, t('Lesen / Bearbeiten'), 'top');
   on('editor-stats', (s: { words: number; chars: number; selection: boolean; pages: number | null; path: string; mode: string }) => {
     words.replaceChildren(
@@ -223,9 +222,6 @@ function buildStatusBar(ws: Workspace) {
     pages.style.display = s.pages ? '' : 'none';
     const n = vault.backlinks(s.path).length;
     backlinks.textContent = `${n} ${n === 1 ? t('Rückverweis') : t('Rückverweise')}`;
-    const meta = vault.notes.get(s.path);
-    sort.textContent = meta?.pinned ? t('📌 festgepinnt') : '';
-    sort.style.display = meta?.pinned ? '' : 'none';
     ws.statusBar.style.display = '';
   });
   on('active-leaf-change', ({ leaf }: any) => {
