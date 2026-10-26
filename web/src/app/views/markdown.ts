@@ -203,7 +203,7 @@ export class MarkdownView extends View {
       wrapOnType,
       keymap.of([...closeBracketsKeymap, ...completionKeymap, ...searchKeymap, ...historyKeymap, ...defaultKeymap, indentWithTab]),
       EditorView.updateListener.of(u => {
-        if (u.docChanged && this.loaded) { this.dirty = true; this.scheduleSave(); this.schedulePages(); }
+        if (u.docChanged && this.loaded) { this.dirty = true; this.scheduleSave(); this.scheduleSort(); this.schedulePages(); }
         if (u.docChanged || u.selectionSet) this.emitStatsSoon();   // counting words of a long note on every key would slow typing
       }),
       EditorView.domEventHandlers({
@@ -239,11 +239,27 @@ export class MarkdownView extends View {
     } catch (e) { notice(t('Speichern fehlgeschlagen: ') + e); this.dirty = true; }
   }
 
+  /** A few seconds after the last keystroke the note moves where its hashtags say – even with
+   *  the cursor still right behind a just-typed tag (saving alone leaves such a note in place). */
+  private scheduleSort = debounce(() => this.sortNow(), 3000);
+
+  private async sortNow() {
+    if (!this.path || !this.loaded) return;
+    this.scheduleSave.cancel();
+    await this.save();
+    if (this.dirty || !this.path) return;
+    try {
+      const res = await request<{ path: string; moved: boolean; from: string }>('sort', { path: this.path });
+      if (res?.moved) announceMove(res.from, res.path);
+    } catch { /* closed vault */ }
+  }
+
   flush() { if (this.dirty) { this.scheduleSave.cancel(); this.save(); } }
 
   private async leave() {
     if (!this.path) return;
     this.scheduleSave.cancel();
+    this.scheduleSort.cancel();
     const text = this.editor.state.doc.toString();
     try {
       if (text !== this.lastSaved) { this.lastSaved = text; await request('write', { path: this.path, text, typingTag: true }); }

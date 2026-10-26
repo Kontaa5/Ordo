@@ -110,6 +110,11 @@ final class ShellController: WebController {
             let dest = (body["typingTag"] as? Bool ?? false) ? nil : v.autoSort(path)
             app.pushIndexIfNeeded()
             return ["path": dest ?? path, "moved": dest != nil, "from": path]
+        case "sort":
+            let path = str("path")
+            let dest = v.autoSort(path)
+            app.pushIndexIfNeeded()
+            return ["path": dest ?? path, "moved": dest != nil, "from": path]
         case "leave":
             let path = str("path")
             let dest = v.autoSort(path, leaving: true)

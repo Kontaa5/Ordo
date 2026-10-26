@@ -453,7 +453,8 @@ final class VaultStore {
         renameIndexEntry(from: path, to: dest)
         var st = state.notes[path] ?? .init(tagKey: currentTagKey(dest))
         state.notes[path] = nil
-        if manual { st.pinned = true; st.tagKey = currentTagKey(dest) }
+        // moved by hand: not pinned, but it stays put until its hashtags change
+        if manual { st.tagKey = currentTagKey(dest) }
         state.notes[dest] = st
         saveState()
         updatePathLinks(from: path, to: dest)
