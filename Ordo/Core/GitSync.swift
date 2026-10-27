@@ -28,13 +28,22 @@ final class GitSync {
     private var lastAutoUpload: Date? { get { UserDefaults.standard.object(forKey: defaultsKey + ":auto") as? Date } set { UserDefaults.standard.set(newValue, forKey: defaultsKey + ":auto") } }
 
     /// "Einmal am Tag hochladen": no upload yet today → back up and upload. At most one try a day,
-    /// so a declined Touch ID or a missing network doesn't come back every minute.
+    /// so a declined Touch ID or a missing network doesn't come back every time Ordo is opened.
     func dailyUploadIfDue() async {
         let today = { (d: Date?) in d.map { Calendar.current.isDateInToday($0) } ?? false }
         guard !busy, !today(lastPush), !today(lastAutoUpload) else { return }
         lastAutoUpload = Date()
+        _ = await backupAndUpload()
+    }
+
+    /// Commits, then pushes only if there is something the server doesn't have yet –
+    /// no push (and so no Touch-ID prompt) when everything is already uploaded.
+    /// nil: nothing to upload.
+    func backupAndUpload() async -> Bool? {
         await commit()
-        _ = await push()
+        if state == .error { return false }
+        guard unpushed > 0 else { return nil }
+        return await push()
     }
 
     init(root: URL) {

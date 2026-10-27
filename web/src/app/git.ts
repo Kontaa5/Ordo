@@ -21,8 +21,8 @@ export function when(ts?: number): string {
 
 export async function gitSyncNow() {
   notice(t('Sichern und hochladen …'));
-  const ok = await request<boolean>('gitSync').catch(() => false);
-  notice(ok ? t('Gesichert und hochgeladen.') : (gitStatus.message || t('Hochladen hat nicht geklappt.')));
+  const ok = await request<boolean | 'nothing'>('gitSync').catch(() => false);
+  notice(ok === 'nothing' ? t('Nichts Neues – alles ist schon hochgeladen.') : ok ? t('Gesichert und hochgeladen.') : (gitStatus.message || t('Hochladen hat nicht geklappt.')));
 }
 
 export async function gitPullNow() {
@@ -30,7 +30,7 @@ export async function gitPullNow() {
   notice(ok ? t('Änderungen geholt.') : (gitStatus.message || t('Holen hat nicht geklappt.')));
 }
 
-/** Status dot: green = uploaded today, orange = not today, red = never uploaded or a problem. */
+/** Status dot: green = everything uploaded, orange = changes not uploaded yet, red = never uploaded or a problem. */
 export function gitStatusItem(): HTMLElement {
   const dot = h('span', { cls: 'ordo-git-dot' });
   const label = h('span', { cls: 'ordo-git-label' });

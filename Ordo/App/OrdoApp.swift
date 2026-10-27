@@ -52,6 +52,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     weak var model: AppModel?
 
     @MainActor
+    func applicationDidBecomeActive(_ notification: Notification) { model?.appBecameActive() }
+
+    @MainActor
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard let model, let git = model.git, git.isBusy else { return .terminateNow }
         let alert = NSAlert()

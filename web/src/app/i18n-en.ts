@@ -240,7 +240,7 @@ export const EN: Record<string, string> = {
   'Mit dieser Größe wird das Bild kaum kleiner – nichts zu tun.': 'At this size the picture hardly gets smaller – nothing to do.', 'scharf': 'sharp', 'gut': 'good', 'unscharf beim Drucken': 'blurry when printed',
   'Druck über die Textbreite: {a} → {b} dpi': 'Printed across the text width: {a} → {b} dpi',
 
-  'noch nie': 'never', 'heute {time}': 'today {time}', 'Sichern und hochladen …': 'Backing up and uploading …', 'Gesichert und hochgeladen.': 'Backed up and uploaded.',
+  'noch nie': 'never', 'heute {time}': 'today {time}', 'Sichern und hochladen …': 'Backing up and uploading …', 'Gesichert und hochgeladen.': 'Backed up and uploaded.', 'Nichts Neues – alles ist schon hochgeladen.': 'Nothing new – everything is already uploaded.',
   'Hochladen hat nicht geklappt.': 'Upload failed.', 'Änderungen geholt.': 'Changes fetched.', 'Holen hat nicht geklappt.': 'Fetching failed.',
   'Git ist auf diesem Mac nicht installiert.': 'Git is not installed on this Mac.', 'Noch nicht hochgeladen · zuletzt hochgeladen: {w}': 'Not uploaded yet · last upload: {w}',
   'Alles gesichert · zuletzt hochgeladen: {w}': 'All backed up · last upload: {w}', 'Jetzt sichern & hochladen': 'Back up & upload now', 'Änderungen holen': 'Fetch changes',

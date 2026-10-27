@@ -84,22 +84,46 @@ final class AppModel {
     /// (Re)starts Git-Sync for the open vault. Nothing is uploaded or fetched on its own:
     /// every network step (and so every Touch-ID prompt) comes from "Jetzt sichern" / "Holen" –
     /// or, if switched on, from the daily upload (at most one try a day).
-    /// Only the local status (for the dot in the status bar) is refreshed once a minute.
+    /// There is no polling: the local status (the dot in the status bar) is checked again when
+    /// a file changes and when Ordo comes to the front; the daily upload is due-checked then, too.
     func startGit() {
-        gitTask?.cancel(); gitTask = nil; git = nil
+        gitTask?.cancel(); gitTask = nil; gitCheck?.cancel(); git = nil
         guard let store = vault, store.settings.gitEnabled, GitSync.gitAvailable() else { pushGitStatus(); return }
         let g = GitSync(root: store.root)
         git = g
         g.onChange = { [weak self] in self?.pushGitStatus() }
-        gitTask = Task { [weak self] in
+        gitTask = Task {
             guard await g.prepare(remote: store.settings.gitRemote) else { return }
-            while !Task.isCancelled {
-                if store.settings.gitDailyUpload { await g.dailyUploadIfDue() }
-                await g.refreshStatus()
-                try? await Task.sleep(for: .seconds(60))
-                guard let self, self.vault === store, store.settings.gitEnabled else { return }
+            if store.settings.gitDailyUpload { await g.dailyUploadIfDue() }
+            await g.refreshStatus()
+        }
+    }
+
+    @ObservationIgnored private var gitCheck: Task<Void, Never>?
+
+    /// Checks the git status a moment after something happened (a burst of saves becomes one `git status`).
+    func gitStatusSoon() {
+        guard let g = git else { return }
+        gitCheck?.cancel()
+        gitCheck = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(2))
+            await self?.gitTask?.value           // the repository must be set up first
+            guard !Task.isCancelled, let self, self.git === g, !g.isBusy else { return }   // a backup refreshes the status itself
+            await g.refreshStatus()
+        }
+    }
+
+    /// Ordo came to the front: is today's upload due (Ordo may have stayed open overnight), and is the dot current?
+    func appBecameActive() {
+        guard let g = git, let store = vault else { return }
+        if store.settings.gitDailyUpload {
+            Task { [weak self] in
+                await self?.gitTask?.value
+                guard self?.git === g else { return }
+                await g.dailyUploadIfDue()
             }
         }
+        gitStatusSoon()
     }
 
     func pushGitStatus() {
@@ -110,7 +134,7 @@ final class AppModel {
     func closeVault(notify: Bool = true) {
         #if os(macOS)
         watcher = nil
-        gitTask?.cancel(); gitTask = nil; git = nil
+        gitTask?.cancel(); gitTask = nil; gitCheck?.cancel(); git = nil
         #endif
         refreshTask?.cancel()
         if let v = vault { v.root.stopAccessingSecurityScopedResource() }
@@ -123,6 +147,9 @@ final class AppModel {
     func refreshNow() {
         guard let v = vault else { return }
         Task { await v.refresh(); pushIndexIfNeeded() }
+        #if os(macOS)
+        gitStatusSoon()
+        #endif
     }
 
     func pushIndexIfNeeded() {

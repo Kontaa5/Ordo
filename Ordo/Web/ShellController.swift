@@ -268,8 +268,7 @@ final class ShellController: WebController {
         case "gitSync":
             #if os(macOS)
             guard let g = app.git else { return false }
-            await g.commit()
-            let ok = await g.push()
+            guard let ok = await g.backupAndUpload() else { return "nothing" }
             return ok
             #else
             return false
