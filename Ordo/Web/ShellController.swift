@@ -26,6 +26,11 @@ final class ShellController: WebController {
     /// Runs a command of the web app (used by the native menu bar).
     func command(_ id: String) { callJSON("ordo.host.command", id) }
 
+    /// Where a note ended up after a save / sort (the web side announces a move).
+    static func moveResult(_ path: String, _ dest: String?) -> [String: Any] {
+        ["path": dest ?? path, "moved": dest != nil, "from": path]
+    }
+
     override func handle(_ type: String, _ body: [String: Any]) async throws -> Any? {
         guard let app else { return nil }
         let str = { (k: String) in body[k] as? String ?? "" }
@@ -109,17 +114,17 @@ final class ShellController: WebController {
             v.write(path, text: str("text"))
             let dest = (body["typingTag"] as? Bool ?? false) ? nil : v.autoSort(path)
             app.pushIndexIfNeeded()
-            return ["path": dest ?? path, "moved": dest != nil, "from": path]
+            return Self.moveResult(path, dest)
         case "sort":
             let path = str("path")
             let dest = v.autoSort(path)
             app.pushIndexIfNeeded()
-            return ["path": dest ?? path, "moved": dest != nil, "from": path]
+            return Self.moveResult(path, dest)
         case "leave":
             let path = str("path")
             let dest = v.autoSort(path, leaving: true)
             app.pushIndexIfNeeded()
-            return ["path": dest ?? path, "moved": dest != nil, "from": path]
+            return Self.moveResult(path, dest)
         case "noteOpened":
             v.noteOpened(str("path"))
             return nil
@@ -204,7 +209,7 @@ final class ShellController: WebController {
             let path = str("path")
             let dest = v.setPinned(path, body["pinned"] as? Bool ?? true)
             app.pushIndexIfNeeded()
-            return ["path": dest ?? path, "moved": dest != nil, "from": path]
+            return Self.moveResult(path, dest)
         case "sortInfo":
             let path = str("path")
             return [

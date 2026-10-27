@@ -49,7 +49,7 @@ final class AppModel {
         vault = store
         Task {
             await store.refresh()
-            store.purgeTrash()   // old trash goes at start …
+            lastPurge = Date(); store.purgeTrash()   // old trash goes at start (and once a day after)
             lastRevision = store.revision
             shell.callJSON("ordo.host.vaultOpened", vaultInfo(store))
             #if os(macOS)
@@ -57,22 +57,29 @@ final class AppModel {
             #endif
         }
         #if os(macOS)
-        // the Mac reports changes itself; the loop below is only a slow safety net
+        // the Mac reports every change itself: no polling – unless the watcher can't start
         watcher = FileWatcher(path: url.path) { [weak self] in Task { @MainActor in self?.refreshNow() } }
-        let interval: Duration = .seconds(30)
+        let poll: Duration? = watcher == nil ? .seconds(30) : nil
         #else
-        let interval: Duration = .seconds(3)
+        let poll: Duration? = .seconds(3)   // iOS gets no file events for the iCloud folder
         #endif
+        guard let poll else { return }
         refreshTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: interval)
+                try? await Task.sleep(for: poll)
                 guard let self, let v = self.vault, v === store else { return }
                 await v.refresh()
-                // … and once a day while Ordo stays open
-                if Date().timeIntervalSince(self.lastPurge) > 86_400 { self.lastPurge = Date(); v.purgeTrash() }
                 self.pushIndexIfNeeded()
+                self.purgeTrashIfDue()
             }
         }
+    }
+
+    /// Old trash also goes while Ordo stays open for days – checked on activity, not on a timer.
+    private func purgeTrashIfDue() {
+        guard let v = vault, Date().timeIntervalSince(lastPurge) > 86_400 else { return }
+        lastPurge = Date()
+        v.purgeTrash()
     }
 
     #if os(macOS)
@@ -147,6 +154,7 @@ final class AppModel {
     func refreshNow() {
         guard let v = vault else { return }
         Task { await v.refresh(); pushIndexIfNeeded() }
+        purgeTrashIfDue()
         #if os(macOS)
         gitStatusSoon()
         #endif

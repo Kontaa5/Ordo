@@ -216,7 +216,8 @@ final class VaultStore {
 
     /// Waits for the first scan, so the web side never builds its workspace on an empty index.
     func untilLoaded() async {
-        while isLoading { await refresh() }
+        // join the running scan instead of asking for another one
+        while isLoading { if let running = refreshing { await running.value } else { await refresh() } }
     }
 
     private func scanOnce() async {
@@ -592,7 +593,7 @@ final class VaultStore {
     /// Takes an item out of Ordo's trash into the system trash (Mac: Papierkorb,
     /// iCloud Drive: „Zuletzt gelöscht“) – never deleted for good by Ordo.
     func deleteFromTrash(_ name: String) throws {
-        guard !name.contains("/"), !name.hasPrefix(".") else { return }
+        guard !name.isEmpty, !name.contains("/"), !name.hasPrefix(".") else { return }   // "" would be the whole .trash
         try FileManager.default.trashItem(at: trashDir.appendingPathComponent(name), resultingItemURL: nil)
         var record = trashRecords(); record[name] = nil; saveTrashRecords(record)
     }
