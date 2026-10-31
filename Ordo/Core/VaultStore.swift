@@ -102,6 +102,13 @@ final class VaultStore {
 
     private var ordoDir: URL { FolderRules.ownFolder(root, ".ordo") }
 
+    /// Writes one of Ordo's own files (.ordo, .trash) – not if a symlinked folder
+    /// on the way (e.g. `.ordo/snippets → ~/…`) would put it outside the vault.
+    func writeOwn(_ data: Data, to url: URL) {
+        guard FolderRules.isInside(url, root: root) else { return }
+        Self.coordinatedWrite(data, to: url)
+    }
+
     // MARK: - settings & state
 
     private func loadSettingsAndState() {
@@ -112,7 +119,7 @@ final class VaultStore {
             settings = s
         } else if let data, !data.isEmpty {
             // unreadable settings: keep a copy instead of overwriting them with defaults
-            Self.coordinatedWrite(data, to: ordoDir.appendingPathComponent("settings.broken.json"))
+            writeOwn(data, to: ordoDir.appendingPathComponent("settings.broken.json"))
         } else if let imported = ObsidianImport.settings(vault: root) {
             settings = imported
             importedFromObsidian = true
@@ -129,7 +136,7 @@ final class VaultStore {
         enc.outputFormatting = [.prettyPrinted, .sortedKeys]
         guard let data = try? enc.encode(settings) else { return }
         try? FileManager.default.createDirectory(at: ordoDir, withIntermediateDirectories: true)
-        Self.coordinatedWrite(data, to: ordoDir.appendingPathComponent("settings.json"))
+        writeOwn(data, to: ordoDir.appendingPathComponent("settings.json"))
     }
 
     @ObservationIgnored private var stateSaveTask: Task<Void, Never>?
@@ -142,7 +149,7 @@ final class VaultStore {
             enc.outputFormatting = [.sortedKeys]
             guard let data = try? enc.encode(self.state) else { return }
             try? FileManager.default.createDirectory(at: self.ordoDir, withIntermediateDirectories: true)
-            Self.coordinatedWrite(data, to: self.ordoDir.appendingPathComponent("state.json"))
+            self.writeOwn(data, to: self.ordoDir.appendingPathComponent("state.json"))
         }
     }
 
@@ -557,7 +564,7 @@ final class VaultStore {
         return (try? JSONDecoder().decode([String: TrashEntry].self, from: d)) ?? [:]
     }
     private func saveTrashRecords(_ r: [String: TrashEntry]) {
-        if let d = try? JSONEncoder().encode(r) { Self.coordinatedWrite(d, to: trashRecordURL) }
+        if let d = try? JSONEncoder().encode(r) { writeOwn(d, to: trashRecordURL) }
     }
 
     /// What is in the trash: name in .trash, original path, when it was deleted.

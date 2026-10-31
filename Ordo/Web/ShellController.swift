@@ -27,6 +27,14 @@ final class ShellController: WebController {
     func command(_ id: String) { callJSON("ordo.host.command", id) }
 
     /// Where a note ended up after a save / sort (the web side announces a move).
+    /// "Name.pdf", or "Name 2.pdf" … if that is taken – an export never replaces a file that is already there.
+    static func freeName(in dir: URL, _ base: String, ext: String) -> URL {
+        var url = dir.appendingPathComponent(base + "." + ext)
+        var i = 2
+        while FileManager.default.fileExists(atPath: url.path) { url = dir.appendingPathComponent("\(base) \(i).\(ext)"); i += 1 }
+        return url
+    }
+
     static func moveResult(_ path: String, _ dest: String?) -> [String: Any] {
         ["path": dest ?? path, "moved": dest != nil, "from": path]
     }
@@ -50,11 +58,14 @@ final class ShellController: WebController {
             #endif
             return nil
         case "openVault":
+            // only folders the user picked before or Obsidian knows – never any path the page names
             let url = URL(fileURLWithPath: str("path"), isDirectory: true)
             if let rec = VaultAccess.recent.first(where: { $0.path == url.path }), let resolved = VaultAccess.resolve(rec) {
                 app.openVault(resolved)
-            } else {
+            } else if ObsidianImport.knownVaults().contains(where: { $0.standardizedFileURL.path == url.standardizedFileURL.path }) {
                 app.openVault(url)
+            } else {
+                throw HostError(message: "Unbekannter Ordner – bitte über „Ordner öffnen“ wählen.")
             }
             return nil
         case "closeVault":
@@ -419,7 +430,7 @@ final class ShellController: WebController {
         var target: URL?
         Platform.chooseFolder(prompt: "Hier speichern", message: "Ordner für \(files.count) PDFs wählen") { target = $0 }
         guard let dir = target else { return false }
-        for (n, data) in files { try data.write(to: dir.appendingPathComponent(FolderRules.sanitize(n) + ".pdf")) }
+        for (n, data) in files { try data.write(to: Self.freeName(in: dir, FolderRules.sanitize(n), ext: "pdf"), options: .withoutOverwriting) }
         return true
         #else
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("Ordo-Export-\(UUID().uuidString.prefix(6))")

@@ -192,6 +192,24 @@ final class SecurityTests: XCTestCase {
         XCTAssertEqual(FolderRules.ownFolder(root, ".ordo"), root.appendingPathComponent(".ordo", isDirectory: true))
     }
 
+    /// `.ordo/snippets → somewhere else` (a shared or copied vault): Ordo must not write or read there.
+    @MainActor
+    func testOwnFilesNotThroughSymlinkedSubfolder() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("ordo-sec-\(UUID().uuidString)")
+        let outside = FileManager.default.temporaryDirectory.appendingPathComponent("ordo-out-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root.appendingPathComponent(".ordo"), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root); try? FileManager.default.removeItem(at: outside) }
+        try FileManager.default.createSymbolicLink(at: root.appendingPathComponent(".ordo/snippets"), withDestinationURL: outside)
+        try "body{}".write(to: outside.appendingPathComponent("fremd.css"), atomically: true, encoding: .utf8)
+        let store = VaultStore(root: root)
+        store.saveCustomCSS("a{}")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: outside.appendingPathComponent("eigenes.css").path))
+        XCTAssertNil(store.snippetCSS("fremd"))
+        store.writeOwn(Data("x".utf8), to: root.appendingPathComponent(".ordo/ok.json"))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: root.appendingPathComponent(".ordo/ok.json").path))
+    }
+
     func testGitRemoteMustBeARealAddress() {
         for ok in ["git@github.com:Kontaa5/Ordo.git", "https://github.com/a/b.git", "ssh://git@host/x.git", "/Volumes/USB/vault.git"] {
             XCTAssertTrue(GitSync.isValidRemote(ok), ok)
@@ -296,5 +314,31 @@ final class TrashTests: XCTestCase {
         }
         wait(for: [restored], timeout: 5)
         XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent(".obsidian/plugins/x/main.js").path))
+    }
+}
+
+/// Git with a local remote only (never SSH): a conflicting picture is kept byte for byte, an older conflict copy stays.
+final class GitConflictTests: XCTestCase {
+    @MainActor
+    func testBinaryConflictCopyIntact() async throws {
+        let fm = FileManager.default
+        let base = fm.temporaryDirectory.appendingPathComponent("ordo-git-\(UUID().uuidString)")
+        let bare = base.appendingPathComponent("remote.git"), a = base.appendingPathComponent("A"), b = base.appendingPathComponent("B")
+        try fm.createDirectory(at: a, withIntermediateDirectories: true); try fm.createDirectory(at: b, withIntermediateDirectories: true)
+        func sh(_ args: [String]) { let p = Process(); p.executableURL = URL(fileURLWithPath: "/usr/bin/git"); p.arguments = args; try? p.run(); p.waitUntilExit() }
+        sh(["init", "--bare", "-b", "main", bare.path])
+        let ga = GitSync(root: a), gb = GitSync(root: b)
+        defer { try? fm.removeItem(at: base); try? fm.removeItem(at: ga.gitDir); try? fm.removeItem(at: gb.gitDir) }
+        let img: (UInt8) -> Data = { v in Data([0x89, 0x50, 0x4E, 0x47, 0xFF, 0x00, 0xC3, v, 0x80]) }
+        try img(1).write(to: a.appendingPathComponent("bild.png"))
+        _ = await ga.prepare(remote: bare.path); _ = await ga.backupAndUpload()
+        _ = await gb.prepare(remote: bare.path); _ = await gb.pull()
+        try img(2).write(to: a.appendingPathComponent("bild.png")); _ = await ga.backupAndUpload()
+        try img(3).write(to: b.appendingPathComponent("bild.png")); try "alt".write(to: b.appendingPathComponent("bild (Konflikt).png"), atomically: true, encoding: .utf8)
+        let ok = await gb.pull()
+        XCTAssertTrue(ok)
+        XCTAssertEqual(try Data(contentsOf: b.appendingPathComponent("bild.png")), img(3))
+        XCTAssertEqual(try Data(contentsOf: b.appendingPathComponent("bild (Konflikt 2).png")), img(2))
+        XCTAssertEqual(try String(contentsOf: b.appendingPathComponent("bild (Konflikt).png"), encoding: .utf8), "alt")
     }
 }

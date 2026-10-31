@@ -55,7 +55,7 @@ final class GitSync {
 
     // MARK: running git
 
-    struct Result { var code: Int32; var out: String; var err: String; var ok: Bool { code == 0 } }
+    struct Result { var code: Int32; var out: String; var err: String; var data = Data(); var ok: Bool { code == 0 } }
 
     nonisolated static func gitAvailable() -> Bool {
         // /usr/bin/git is only a stub until the command line tools are installed
@@ -82,7 +82,7 @@ final class GitSync {
             do { try p.run() } catch { return Result(code: -1, out: "", err: error.localizedDescription) }
             let o = out.fileHandleForReading.readDataToEndOfFile(), e = err.fileHandleForReading.readDataToEndOfFile()
             p.waitUntilExit()
-            return Result(code: p.terminationStatus, out: String(decoding: o, as: UTF8.self), err: String(decoding: e, as: UTF8.self))
+            return Result(code: p.terminationStatus, out: String(decoding: o, as: UTF8.self), err: String(decoding: e, as: UTF8.self), data: o)
         }.value
     }
 
@@ -114,6 +114,7 @@ final class GitSync {
         .*.icloud
         .trash/
         .ordo/state.json
+        .ordo/demo
         .obsidian/workspace*.json
         .obsidian/cache
 
@@ -270,9 +271,15 @@ final class GitSync {
             for path in files {
                 let theirs = await git(["show", ":3:\(path)"])
                 let ns = path as NSString
-                let copy = ns.deletingPathExtension + " (Konflikt)" + (ns.pathExtension.isEmpty ? "" : "." + ns.pathExtension)
+                // raw bytes (pictures stay intact); an older conflict copy is never overwritten
+                let ext = ns.pathExtension.isEmpty ? "" : "." + ns.pathExtension
+                var copy = ns.deletingPathExtension + " (Konflikt)" + ext
+                var i = 2
+                while FileManager.default.fileExists(atPath: root.appendingPathComponent(copy).path) {
+                    copy = ns.deletingPathExtension + " (Konflikt \(i))" + ext; i += 1
+                }
                 let dest = root.appendingPathComponent(copy)
-                if theirs.ok, FolderRules.isInside(dest, root: root) { try? theirs.out.write(to: dest, atomically: true, encoding: .utf8) }
+                if theirs.ok, FolderRules.isInside(dest, root: root) { try? theirs.data.write(to: dest, options: .atomic) }
                 _ = await git(["checkout", "--ours", "--", path])
                 _ = await git(["add", "--", path, copy])
             }

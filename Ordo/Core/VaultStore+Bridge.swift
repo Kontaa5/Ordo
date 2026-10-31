@@ -119,14 +119,19 @@ extension VaultStore {
     // MARK: appearance (Obsidian-compatible)
 
     private var ordoDir: URL { FolderRules.ownFolder(root, ".ordo") }
-    private var obsidianDir: URL { root.appendingPathComponent(".obsidian", isDirectory: true) }
+    private var obsidianDir: URL { FolderRules.ownFolder(root, ".obsidian") }
+
+    /// Themes, snippets, settings: only from inside the vault, never through a symlinked subfolder.
+    private func readOwn(_ url: URL) -> Data? {
+        FolderRules.isInside(url, root: root) ? Self.coordinatedRead(url) : nil
+    }
 
     /// Appearance settings; imported once from Obsidian's appearance.json.
     func appearance() -> [String: Any] {
         let own = ordoDir.appendingPathComponent("appearance.json")
-        if let data = Self.coordinatedRead(own), let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] { return obj }
+        if let data = readOwn(own), let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] { return obj }
         var out: [String: Any] = [:]
-        if let data = Self.coordinatedRead(obsidianDir.appendingPathComponent("appearance.json")),
+        if let data = readOwn(obsidianDir.appendingPathComponent("appearance.json")),
            let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
             out = obj
             out["importedFromObsidian"] = true
@@ -136,7 +141,7 @@ extension VaultStore {
 
     func saveAppearance(_ obj: [String: Any]) {
         guard let data = try? JSONSerialization.data(withJSONObject: obj, options: [.prettyPrinted, .sortedKeys]) else { return }
-        Self.coordinatedWrite(data, to: ordoDir.appendingPathComponent("appearance.json"))
+        writeOwn(data, to: ordoDir.appendingPathComponent("appearance.json"))
     }
 
     private func subfolders(_ dir: URL) -> [String] {
@@ -166,14 +171,14 @@ extension VaultStore {
     func themeCSS(_ name: String) -> String? {
         for dir in [ordoDir.appendingPathComponent("themes"), obsidianDir.appendingPathComponent("themes")] {
             let url = dir.appendingPathComponent(FolderRules.sanitize(Paths.file(name))).appendingPathComponent("theme.css")   // name comes from appearance.json: no ../
-            if let data = Self.coordinatedRead(url) { return String(decoding: data, as: UTF8.self) }
+            if let data = readOwn(url) { return String(decoding: data, as: UTF8.self) }
         }
         return nil
     }
 
     func installTheme(name: String, css: String) {
         let safe = FolderRules.sanitize(name.replacingOccurrences(of: "/", with: "-"))
-        Self.coordinatedWrite(Data(css.utf8), to: ordoDir.appendingPathComponent("themes").appendingPathComponent(safe).appendingPathComponent("theme.css"))
+        writeOwn(Data(css.utf8), to: ordoDir.appendingPathComponent("themes").appendingPathComponent(safe).appendingPathComponent("theme.css"))
     }
 
     func snippets() -> [String] {
@@ -182,7 +187,7 @@ extension VaultStore {
 
     func snippetCSS(_ name: String) -> String? {
         for dir in [ordoDir.appendingPathComponent("snippets"), obsidianDir.appendingPathComponent("snippets")] {
-            if let data = Self.coordinatedRead(dir.appendingPathComponent(FolderRules.sanitize(Paths.file(name)) + ".css")) { return String(decoding: data, as: UTF8.self) }
+            if let data = readOwn(dir.appendingPathComponent(FolderRules.sanitize(Paths.file(name)) + ".css")) { return String(decoding: data, as: UTF8.self) }
         }
         return nil
     }
@@ -192,7 +197,7 @@ extension VaultStore {
         let own = ordoDir.appendingPathComponent("style-settings.json")
         let obs = obsidianDir.appendingPathComponent("plugins/obsidian-style-settings/data.json")
         for url in [own, obs] {
-            if let data = Self.coordinatedRead(url), let obj = try? JSONSerialization.jsonObject(with: data) { return obj }
+            if let data = readOwn(url), let obj = try? JSONSerialization.jsonObject(with: data) { return obj }
         }
         return nil
     }
@@ -201,6 +206,6 @@ extension VaultStore {
 
     /// "Eigenes CSS" from the settings: an ordinary snippet in .ordo/snippets.
     func saveCustomCSS(_ css: String) {
-        Self.coordinatedWrite(Data(css.utf8), to: folderSnippetsPath().appendingPathComponent("eigenes.css"))
+        writeOwn(Data(css.utf8), to: folderSnippetsPath().appendingPathComponent("eigenes.css"))
     }
 }

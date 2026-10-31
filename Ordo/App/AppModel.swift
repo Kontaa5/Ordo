@@ -184,6 +184,8 @@ final class AppModel {
     func endDemo(keep: Bool) throws {
         guard let v = vault else { return }
         let root = v.root
+        // only a vault that really is the demo – never on the web page's word alone
+        guard FileManager.default.fileExists(atPath: Self.demoMarker(root).path) else { throw HostError(message: "Das ist kein Demo-Vault.") }
         if keep { try? FileManager.default.removeItem(at: Self.demoMarker(root)); return }
         closeVault(notify: false)
         if let rec = VaultAccess.recent.first(where: { $0.path == root.path }) { VaultAccess.forget(rec) }
