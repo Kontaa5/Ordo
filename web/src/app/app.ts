@@ -8,7 +8,8 @@ import { request, on, emit, isMac, isIOS } from './host';
 import { vault } from './store';
 import { addCommand, initHotkeys, executeCommand, hotkeyLabel } from './commands';
 import { createWorkspace, workspace, Workspace, setFileMenuProvider } from './workspace';
-import { loadAppearance, applyColorScheme, cycleScheme, applyZoom, getZoom, setZoom } from './appearance';
+import { loadAppearance, applyColorScheme, cycleScheme, applyZoom, getZoom, setZoom, getScheme, setScheme } from './appearance';
+import type { Scheme } from './appearance';
 import { appState } from './state';
 import { Menu } from './ui/menu';
 import { notice } from './ui/notice';
@@ -176,7 +177,16 @@ function buildRibbon(ws: Workspace) {
   add('wand', t('Nach Hashtags einsortieren'), 'ordo:sort-all');
   add('sigma', t('Formel einfügen'), 'ordo:insert-math');
   add('command', t('Befehlspalette öffnen'), 'command-palette:open');
-  add('color-scheme', t('Farbschema wechseln'), 'app:toggle-color-scheme');
+  // colour scheme: a small menu next to the button (like the git button), not a blind toggle
+  const scheme = iconButton('color-scheme', t('Farbschema'), () => {
+    const m = new Menu(), cur = getScheme();
+    for (const [s, label, ic] of [['light', t('Hell'), 'sun'], ['dark', t('Dunkel'), 'moon'], ['system', t('Wie System'), 'monitor']] as [Scheme, string, string][]) {
+      m.addItem({ title: label + (cur === s ? '  ✓' : ''), icon: ic, onClick: () => setScheme(s) });
+    }
+    const r = scheme.getBoundingClientRect();
+    m.showAtPosition(r.right + 6, r.top);
+  }, 'side-dock-ribbon-action');
+  ws.ribbonActions.appendChild(scheme);
 }
 
 function buildVaultProfile(ws: Workspace) {
@@ -223,6 +233,7 @@ function buildStatusBar(ws: Workspace) {
     const n = vault.backlinks(s.path).length;
     backlinks.textContent = `${n} ${n === 1 ? t('Rückverweis') : t('Rückverweise')}`;
     ws.statusBar.style.display = '';
+    ws.statusBar.classList.remove('ordo-no-file');   // stats only come from a note: a new note in an empty tab shows "0 Wörter" right away
   });
   on('active-leaf-change', ({ leaf }: any) => {
     const isMd = leaf?.view?.getViewType() === 'markdown';

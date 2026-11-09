@@ -19,8 +19,19 @@ function wrapSelection(view: EditorView, open: string): boolean {
   return true;
 }
 
+/** A quote that closes an already open one (odd number of " before it on the line) is typed
+ *  alone – closeBrackets would otherwise add a second one at the end of a sentence (`"Satz ""`). */
+function closingQuote(view: EditorView, from: number, to: number, text: string): boolean {
+  if ((text !== '"' && text !== "'") || from !== to || view.state.selection.ranges.length > 1) return false;
+  if (view.state.sliceDoc(from, from + 1) === text) return false;   // closeBrackets steps over its own quote
+  const line = view.state.doc.lineAt(from);
+  if ((line.text.slice(0, from - line.from).split(text).length - 1) % 2 === 0) return false;
+  view.dispatch({ changes: { from, insert: text }, selection: { anchor: from + 1 }, userEvent: 'input.type', scrollIntoView: true });
+  return true;
+}
+
 export const wrapOnType = [
-  Prec.highest(EditorView.inputHandler.of((view, _from, _to, text) => wrapSelection(view, text))),
+  Prec.highest(EditorView.inputHandler.of((view, from, to, text) => wrapSelection(view, text) || closingQuote(view, from, to, text))),
   // German Mac keyboard: Shift + ´ is a dead key for `. macOS would wait for the next key and
   // combine it (a → à) – so wrap right on the key press and tell macOS to forget the key.
   Prec.highest(EditorView.domEventHandlers({

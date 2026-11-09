@@ -67,6 +67,20 @@ export class SettingsModal extends Modal {
     el.addEventListener('click', () => { const v = !el.classList.contains('is-enabled'); el.classList.toggle('is-enabled', v); onChange(v); });
     return el;
   }
+  /** Grammar and autocorrect of macOS (offline, nothing leaves the Mac); WebKit reads them at start. */
+  private textChecking(): HTMLElement {
+    const wrap = h('div');
+    request<{ grammar: boolean; autocorrect: boolean }>('textChecking', {}).then(s => {
+      const set = (k: 'grammar' | 'autocorrect') => (v: boolean) => {
+        request('textChecking', { [k]: v }).catch(() => {});
+        notice(t('Wirkt nach einem Neustart von Ordo.'), { timeout: 2500 });
+      };
+      wrap.replaceChildren(
+        setting(t('Grammatik prüfen'), t('Grammatikprüfung von macOS – offline, kein Text verlässt den Mac.'), this.toggle(s.grammar, set('grammar'))),
+        setting(t('Autokorrektur'), t('Tippfehler korrigiert macOS beim Schreiben automatisch.'), this.toggle(s.autocorrect, set('autocorrect'))));
+    }).catch(() => {});
+    return wrap;
+  }
   private dropdown(options: [string, string][], value: string, onChange: (v: string) => void) {
     const s = h('select', { cls: 'dropdown' }, ...options.map(([v, l]) => h('option', { value: v, text: l, selected: v === value })));
     s.addEventListener('change', () => onChange(s.value));
@@ -103,6 +117,7 @@ export class SettingsModal extends Modal {
         this.dropdown([['edit', t('Bearbeiten (Live-Vorschau)')], ['read', t('Lesen')]], s.defaultMode, v => this.save({ defaultMode: v }))),
       setting(t('Lesbare Zeilenlänge'), t('Begrenzt die Zeilenbreite für bessere Lesbarkeit.'), this.toggle(s.readableLineWidth, v => this.save({ readableLineWidth: v }))),
       setting(t('Rechtschreibprüfung'), t('Wirkt für neu geöffnete Notizen.'), this.toggle(appState.spellcheck, v => { appState.spellcheck = v; })),
+      ...(isMac ? [this.textChecking()] : []),
       setting(t('Seitenumbrüche anzeigen'), t('Zeigt, wo beim PDF-Export eine neue Seite beginnt. Die Linie lässt sich nach oben ziehen; \\pagebreak erzwingt einen Umbruch.'),
         this.toggle(appState.showPageBreaks, v => { appState.showPageBreaks = v; })),
     );

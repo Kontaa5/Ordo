@@ -289,4 +289,13 @@ export const EN: Record<string, string> = {
 
   // hotkey names
   'Leertaste': 'Space', 'Strg': 'Ctrl', 'Umschalt': 'Shift', 'Esc': 'Esc',
+
+  // 0.1.13: search box, heading folding, text checking
+  'Keine Treffer': 'No results', 'Ersetzen durch …': 'Replace with …', 'Ersetzen': 'Replace',
+  'Vorheriger Treffer': 'Previous match', 'Nächster Treffer': 'Next match',
+  'Nur ganze Wörter': 'Whole words only', 'Regulärer Ausdruck': 'Regular expression', 'Ersetzen ein/aus': 'Toggle replace',
+  'Einklappen': 'Fold', 'Ausklappen': 'Unfold',
+  'Grammatik prüfen': 'Check grammar', 'Grammatikprüfung von macOS – offline, kein Text verlässt den Mac.': 'Grammar check by macOS – offline, no text leaves your Mac.',
+  'Autokorrektur': 'Autocorrect', 'Tippfehler korrigiert macOS beim Schreiben automatisch.': 'macOS fixes typos while you type.',
+  'Wirkt nach einem Neustart von Ordo.': 'Takes effect after restarting Ordo.',
 };

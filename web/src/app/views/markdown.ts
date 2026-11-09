@@ -30,6 +30,8 @@ import { mathCompletion } from '../modals/mathPalette';
 import { render, COPY_ICON, CHECK_ICON } from '../../markdown';
 import { paginate, applyGeomVars, contentSize, whenImagesLoaded } from '../../paginate';
 import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD } from '../../clipboard';
+import { createSearchPanel } from '../editor/searchPanel';
+import { headingFold } from '../editor/headingFold';
 import { openLightbox } from '../../lightbox';
 import { openImageEditor } from '../../imageEditor';
 import { blobToBase64 } from '../../bridge';
@@ -188,7 +190,7 @@ export class MarkdownView extends View {
       markdown({ base: markdownLanguage, codeLanguages: codeLanguage, addKeymap: true }),
       syntaxHighlighting(codeHighlightStyle),
       EditorView.lineWrapping,
-      EditorView.contentAttributes.of({ spellcheck: appState.spellcheck ? 'true' : 'false', autocorrect: 'off', autocapitalize: 'sentences' }),
+      EditorView.contentAttributes.of({ spellcheck: appState.spellcheck ? 'true' : 'false', autocorrect: appState.spellcheck ? 'on' : 'off', autocapitalize: 'sentences' }),
       livePreview,
       renderedBlocksField,
       imagesBelowField,
@@ -197,10 +199,11 @@ export class MarkdownView extends View {
       arrows,
       pageBreakField,
       autocompletion({ override: [wikiCompletion, tagCompletion, mathCompletion], icons: false, activateOnTyping: true }),
-      search({ top: true }),
+      search({ top: true, createPanel: createSearchPanel }),
       Prec.high(keymap.of([{ key: 'Tab', run: acceptCompletion }])),   // Tab takes the suggestion; without a list it indents as usual
       tagCase,
       wrapOnType,
+      headingFold,
       keymap.of([...closeBracketsKeymap, ...completionKeymap, ...searchKeymap, ...historyKeymap, ...defaultKeymap, indentWithTab]),
       EditorView.updateListener.of(u => {
         if (u.docChanged && this.loaded) { this.dirty = true; this.scheduleSave(); this.scheduleSort(); this.schedulePages(); }

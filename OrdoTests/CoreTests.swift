@@ -210,6 +210,12 @@ final class SecurityTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: root.appendingPathComponent(".ordo/ok.json").path))
     }
 
+    func testCommitMessageNamesTheNotes() {
+        XCTAssertEqual(GitSync.commitMessage(["Mathe/Integralrechnung.md"]), "Ordo: Integralrechnung")
+        XCTAssertEqual(GitSync.commitMessage(["A.md", "Anhänge/Bild.png"]), "Ordo: A, Bild.png")
+        XCTAssertEqual(GitSync.commitMessage(["a.md", "b.md", "c.md", "d.md", "e.md"]), "Ordo: a, b, c +2 weitere")
+    }
+
     func testGitRemoteMustBeARealAddress() {
         for ok in ["git@github.com:Kontaa5/Ordo.git", "https://github.com/a/b.git", "ssh://git@host/x.git", "/Volumes/USB/vault.git"] {
             XCTAssertTrue(GitSync.isValidRemote(ok), ok)

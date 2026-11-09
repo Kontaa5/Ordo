@@ -15,9 +15,9 @@ body {
   --font-ui-smaller: 11px; --font-ui-small: 12.5px; --font-ui-medium: 13.5px; --font-ui-large: 18px;
   --font-smallest: 0.8em; --font-smaller: 0.875em; --font-small: 0.933em;
   --font-thin: 100; --font-extralight: 200; --font-light: 300; --font-normal: 400; --font-medium: 500; --font-semibold: 600; --font-bold: 700; --font-extrabold: 800; --font-black: 900;
-  --font-weight: var(--font-normal); --bold-weight: var(--font-semibold); --bold-modifier: 200;
+  --font-weight: var(--font-normal); --bold-weight: var(--font-bold); --bold-modifier: 200;
   --line-height-normal: 1.5; --line-height-tight: 1.3;
-  --file-line-width: 700px; --file-margins: 32px; --file-folding-offset: 24px;
+  --file-line-width: 700px; --file-margins: 48px; --file-folding-offset: 24px;
 
   --size-2-1: 2px; --size-2-2: 4px; --size-2-3: 6px; --size-4-1: 4px; --size-4-2: 8px; --size-4-3: 12px; --size-4-4: 16px;
   --size-4-5: 20px; --size-4-6: 24px; --size-4-8: 32px; --size-4-9: 36px; --size-4-12: 48px; --size-4-16: 64px; --size-4-18: 72px;
@@ -75,7 +75,7 @@ body {
   --zoom-factor: 1;
 }
 
-body.theme-light {
+body.theme-light { --bold-color: #000;
   color-scheme: light;
   --highlight-mix-blend-mode: darken;
   --mono-rgb-0: 255, 255, 255; --mono-rgb-100: 0, 0, 0;
@@ -115,7 +115,7 @@ body.theme-light {
   --input-shadow-hover: inset 0 0 0 1px rgba(0, 0, 0, 0.17), 0 2px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 1.5px 0 rgba(0, 0, 0, 0.03), 0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 0 0 0 transparent;
 }
 
-body.theme-dark {
+body.theme-dark { --bold-color: #fff;
   color-scheme: dark;
   --highlight-mix-blend-mode: lighten;
   --mono-rgb-0: 0, 0, 0; --mono-rgb-100: 255, 255, 255;
@@ -421,8 +421,10 @@ body.mod-macos .workspace:not(.is-left-sidedock-open) .mod-root .workspace-tab-h
 .markdown-source-view.is-readable-line-width .cm-content { width: 100% !important; max-width: var(--file-line-width) !important; margin-left: auto !important; margin-right: auto !important; }
 .markdown-source-view .cm-line { padding: 0; }
 /* indentation guides in lists, like Obsidian: a thin line at the start of every tab, stretched to the full line height */
-.markdown-source-view .cm-indent { position: relative; }
-.markdown-source-view .cm-indent::before { content: ''; position: absolute; top: -0.25em; bottom: -0.25em; inset-inline-start: 0.35em; border-inline-start: var(--indentation-guide-width, 1px) solid var(--indentation-guide-color, rgba(var(--mono-rgb-100), 0.12)); }
+.markdown-source-view .ordo-indent { position: relative; display: inline-block; height: 1lh; vertical-align: top; text-indent: 0; }   /* leading whitespace of list lines, as wide as the parent markers */
+.markdown-source-view .ordo-list-mark { display: inline-block; white-space: pre; text-indent: 0; }   /* text-indent is inherited by inline-blocks: without 0 the number would hang out */
+.markdown-source-view .task-list-label { display: inline-block; width: 3ch; text-indent: 0; white-space: nowrap; }   /* checkbox + space = the hanging indent of task lines */
+.markdown-source-view .ordo-indent-guide { position: absolute; top: -0.25em; bottom: -0.25em; border-inline-start: var(--indentation-guide-width, 1px) solid var(--indentation-guide-color, rgba(var(--mono-rgb-100), 0.12)); }
 .markdown-source-view .cm-cursor { border-left: 1.5px solid var(--text-normal); }
 .markdown-source-view .cm-selectionBackground, .markdown-source-view .cm-focused .cm-selectionBackground { background-color: var(--text-selection) !important; }
 .markdown-source-view .cm-gutters { display: none; }
@@ -452,7 +454,7 @@ body.mod-macos .workspace:not(.is-left-sidedock-open) .mod-root .workspace-tab-h
 .cm-header-6 { font-weight: var(--h6-weight); color: var(--h6-color); font-family: var(--h6-font); font-style: var(--h6-style); font-variant: var(--h6-variant); }
 .cm-formatting, .cm-formatting-header { color: var(--text-faint); }
 .cm-formatting-header { font-weight: inherit; }
-.cm-strong { font-weight: var(--bold-weight); }
+.cm-strong { font-weight: var(--bold-weight); color: var(--bold-color, inherit); }
 .cm-em { font-style: italic; }
 .cm-strikethrough { text-decoration: line-through; }
 .cm-highlight { background-color: var(--text-highlight-bg); color: var(--text-normal); }
@@ -477,7 +479,7 @@ body.mod-macos .workspace:not(.is-left-sidedock-open) .mod-root .workspace-tab-h
 
 .HyperMD-quote { border-inline-start: var(--blockquote-border-thickness) solid var(--blockquote-border-color); padding-inline-start: var(--size-4-4) !important; color: var(--blockquote-color); font-style: var(--blockquote-font-style); }
 .cm-quote.cm-formatting { color: var(--text-faint); }
-.list-bullet { display: inline-block; width: 2ch; padding-right: 0.5em; text-align: right; box-sizing: border-box; color: var(--list-marker-color); }   /* replaces "- " exactly (2ch = the hanging indent): text lines up with wrapped lines */
+.list-bullet { display: inline-block; text-indent: 0; width: 2ch; padding-right: 0.5em; text-align: right; box-sizing: border-box; color: var(--list-marker-color); }   /* replaces "- " exactly (2ch = the hanging indent): text lines up with wrapped lines */
 .cm-formatting-list { color: var(--list-marker-color); }
 .HyperMD-list-line { padding-top: var(--list-spacing) !important; }
 .task-list-label { display: inline; }
@@ -496,7 +498,9 @@ input[type="checkbox"].task-list-item-checkbox:checked::after {
 .hr { display: inline-block; width: 100%; vertical-align: middle; } .hr hr, .markdown-rendered hr { border: none; border-top: var(--hr-thickness) solid var(--hr-color); margin: 0.5em 0; }
 
 .HyperMD-codeblock { font-family: var(--font-monospace); font-size: var(--code-size); color: var(--code-normal); }
-.HyperMD-codeblock-bg { background-color: var(--code-background); padding-inline: var(--size-4-4) !important; }
+/* the code background sits below CodeMirror's selection layer (z-index -1): a plain line background would hide the selection */
+.HyperMD-codeblock-bg { position: relative; padding-inline: var(--size-4-4) !important; }
+.HyperMD-codeblock-bg::before { content: ''; position: absolute; inset: 0; z-index: -2; background-color: var(--code-background); border-radius: inherit; pointer-events: none; }
 .HyperMD-codeblock-begin-bg { border-top-left-radius: var(--code-radius); border-top-right-radius: var(--code-radius); padding-top: var(--size-4-2) !important; position: relative; }
 .HyperMD-codeblock-end-bg { border-bottom-left-radius: var(--code-radius); border-bottom-right-radius: var(--code-radius); padding-bottom: var(--size-4-2) !important; }
 .cm-line.ordo-fence-hidden { font-size: 4px; line-height: 4px; padding-top: 6px !important; padding-bottom: 2px !important; }
@@ -596,11 +600,31 @@ body.is-mobile .ordo-image-tools { opacity: 1; }
 .cm-completionDetail { color: var(--text-faint); margin-left: 8px; font-style: normal !important; font-size: 0.85em; }
 .cm-completionInfo { padding: 8px 12px !important; }
 .cm-completionMatchedText { text-decoration: none !important; font-weight: var(--font-semibold); color: var(--text-accent); }
-.cm-panels { background: var(--background-secondary) !important; border-color: var(--background-modifier-border) !important; color: var(--text-normal) !important; font-family: var(--font-interface); }
-.cm-panel.cm-search { padding: 6px 10px !important; font-size: var(--font-ui-small); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.cm-panel.cm-search input, .cm-panel.cm-search button { font-size: var(--font-ui-small); margin: 0; }
-.cm-panel.cm-search label { font-size: var(--font-ui-smaller); color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px; }
-.cm-panel.cm-search [name=close] { position: static; margin-left: auto; background: none; border: none; color: var(--text-muted); font-size: 18px; box-shadow: none; }
+.cm-panels { background: transparent !important; border: 0 !important; color: var(--text-normal) !important; font-family: var(--font-interface); }
+/* heading folding (headingFold.ts): arrow in the left margin, shown on hover or when folded */
+.ordo-heading-fold { position: absolute; margin-left: -22px; margin-top: 0.15em; width: 18px; height: 1.1em; display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint); opacity: 0; cursor: var(--cursor); transition: opacity 120ms; }
+.ordo-heading-fold svg { width: 14px; height: 14px; transition: transform 120ms; }
+.ordo-heading-fold.is-folded svg { transform: rotate(-90deg); }
+.cm-line:hover > .ordo-heading-fold, .ordo-heading-fold.is-folded { opacity: 1; }
+.ordo-heading-fold:hover { color: var(--text-normal); }
+.ordo-fold-placeholder { margin-left: 6px; padding: 0 6px; border: 0 !important; border-radius: var(--radius-s); background: var(--background-modifier-hover) !important; color: var(--text-muted); cursor: var(--cursor); }
+/* ⌘F: compact box in the top right (searchPanel.ts) */
+.cm-panels-top { display: flex; justify-content: flex-end; pointer-events: none; }
+.ordo-search { pointer-events: auto; margin: 8px 16px 4px; padding: 4px; display: flex; flex-direction: column; gap: 4px; width: min(460px, calc(100% - 32px));
+  background: var(--background-secondary); border: 1px solid var(--background-modifier-border); border-radius: var(--radius-m); box-shadow: var(--shadow-s); font-size: var(--font-ui-small); }
+.ordo-search-row { display: flex; align-items: center; gap: 2px; }
+.ordo-search-row[hidden] { display: none; }
+.ordo-search .ordo-search-input { flex: 1; min-width: 0; height: 28px; border: 1px solid transparent; background: var(--background-modifier-form-field); border-radius: var(--radius-s); padding: 0 8px; }
+.ordo-search .ordo-search-input:focus { border-color: var(--interactive-accent); box-shadow: none; }
+.ordo-search .ordo-search-input.is-invalid { border-color: var(--text-error); }
+.ordo-search-count { color: var(--text-faint); font-size: var(--font-ui-smaller); padding: 0 6px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ordo-search button { height: 26px; min-width: 26px; padding: 0 6px; margin: 0; border: 0; box-shadow: none; background: transparent; color: var(--text-muted); border-radius: var(--radius-s); font-size: var(--font-ui-smaller); font-family: var(--font-interface); cursor: var(--cursor); display: inline-flex; align-items: center; justify-content: center; }
+.ordo-search button:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+.ordo-search button svg { width: 15px; height: 15px; }
+.ordo-search .is-up svg { transform: rotate(180deg); }
+.ordo-search .ordo-search-toggle { font-weight: var(--font-semibold); font-family: var(--font-monospace); }
+.ordo-search .ordo-search-toggle[aria-pressed="true"] { background: var(--interactive-accent); color: var(--text-on-accent); }
+.ordo-search .ordo-search-text-btn { padding: 0 10px; color: var(--text-normal); background: var(--interactive-normal); }
 .cm-searchMatch { background-color: var(--text-highlight-bg) !important; } .cm-searchMatch-selected { outline: 1px solid var(--color-orange); }
 
 /* ---------------- reading view ---------------- */
@@ -621,7 +645,7 @@ body.is-mobile .ordo-image-tools { opacity: 1; }
 .markdown-rendered h6 { font-size: var(--h6-size); font-weight: var(--h6-weight); color: var(--h6-color); }
 .markdown-rendered > .inline-title + h1, .markdown-preview-sizer > .inline-title + * { margin-top: 0.4em; }
 .markdown-rendered p { margin: 0 0 var(--p-spacing); }
-.markdown-rendered strong { font-weight: var(--bold-weight); }
+.markdown-rendered strong { font-weight: var(--bold-weight); color: var(--bold-color, inherit); }
 .markdown-rendered mark { background-color: var(--text-highlight-bg); color: var(--text-normal); }
 .markdown-rendered a { color: var(--link-color); text-decoration-line: var(--link-decoration); cursor: var(--cursor-link); }
 .markdown-rendered a.is-unresolved { opacity: var(--link-unresolved-opacity); }

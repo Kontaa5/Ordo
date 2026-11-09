@@ -112,3 +112,4 @@ git add Casks/ordo.rb project.yml Ordo.xcodeproj Ordo/Resources/Web && git commi
 - 0.1.10: Git-Status ereignisgesteuert statt jede Minute, kein Push, wenn nichts hochzuladen ist
 - 0.1.11: Mac ohne Abfrage-Schleife, Skripte nur aus der App (CSP), leerer Papierkorb-Name abgefangen
 - 0.1.12: „Demo löschen“ nur bei echter Demo, `openVault` nur bekannte Ordner, keine Schreib-/Lesezugriffe über Symlink-Unterordner in `.ordo`/`.obsidian`, versteckte Ordner nicht über `ordo://`, Git-Konfliktkopien binär korrekt, PDF-Export überschreibt nichts
+- 0.1.13: GitHub-Issues: Suchfeld wie Obsidian, Überschriften einklappen, Farbschema-Menü, Listen einheitlich eingerückt, Auswahl im Codeblock sichtbar, Code-Einfügen mit Zeilen, Schnellwechsler mit Tags + Tippfehlern, Grammatik/Autokorrektur, Commit-Nachricht mit Notiznamen, fett = schwarz/weiß, breitere Ränder

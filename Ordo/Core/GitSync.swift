@@ -220,17 +220,29 @@ final class GitSync {
                 try? FileManager.default.startDownloadingUbiquitousItem(at: u)
             }
         }
-        let staged = await git(["diff", "--cached", "--name-only"])
-        let n = staged.out.split(separator: "\n").count
+        let staged = await git(["diff", "--cached", "--name-only", "-z"])   // -z: names with umlauts unquoted
+        let paths = staged.out.split(separator: "\0").map(String.init).filter { !$0.isEmpty }
+        let n = paths.count
         if n > 0 {
             let first = !(await git(["rev-parse", "--verify", "-q", "HEAD"])).ok
-            let r = await git(["commit", "-q", "-m", first ? "Ordo: erste Sicherung (\(n) Dateien)" : "Ordo: \(n) \(n == 1 ? "Datei" : "Dateien") geändert"])
+            let r = await git(["commit", "-q", "-m", first ? "Ordo: erste Sicherung (\(n) Dateien)" : Self.commitMessage(paths)])
             if !r.ok { set(.error, Self.explain(r.err)); return 0 }
             lastCommit = Date()
         }
         set(.idle)
         await refreshStatus()
         return n
+    }
+
+    /// "Ordo: Integralrechnung", "Ordo: ACID, Java Basics", "Ordo: ACID, Ideen, Willkommen +4 weitere" –
+    /// the note names instead of only a count, so the history says what changed.
+    nonisolated static func commitMessage(_ paths: [String]) -> String {
+        let names = paths.map { p -> String in
+            let file = (p as NSString).lastPathComponent
+            return file.lowercased().hasSuffix(".md") ? String(file.dropLast(3)) : file
+        }
+        let shown = names.prefix(3).joined(separator: ", ")
+        return "Ordo: " + shown + (names.count > 3 ? " +\(names.count - 3) weitere" : "")
     }
 
     func push() async -> Bool {

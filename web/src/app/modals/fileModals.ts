@@ -1,7 +1,7 @@
 // Quick switcher, command palette, folder picker – Obsidian-style prompts.
 
 import { SuggestModal } from '../ui/modal';
-import { h, fuzzy, highlightMatches, noteName, dirname, basename, icon } from '../dom';
+import { h, fuzzy, wordScore, highlightMatches, noteName, dirname, basename, icon } from '../dom';
 import { vault } from '../store';
 import { workspace } from '../workspace';
 import { request } from '../host';
@@ -33,10 +33,20 @@ export class QuickSwitcher extends SuggestModal<FileItem> {
       return [...rec, ...rest].slice(0, 60).map((p, i) => ({ path: p, name: noteName(p), score: -i, matches: [], recent: i }));
     }
     const out: FileItem[] = [];
+    // every word has to fit the name, a folder or a hashtag of the note (#sew or sew), small typos allowed
+    const words = q.toLowerCase().split(/\s+/).map(w => w.replace(/^#/, '')).filter(Boolean);
     for (const p of all) {
       const name = noteName(p);
       const m = fuzzy(q, name) ?? (() => { const r = fuzzy(q, p); return r ? { score: r.score - 50, matches: [] } : null; })();
-      if (m) out.push({ path: p, name, score: m.score + (recent.includes(p) ? 30 : 0), matches: m.matches, recent: 0 });
+      if (m) { out.push({ path: p, name, score: m.score + (recent.includes(p) ? 30 : 0), matches: m.matches, recent: 0 }); continue; }
+      const keys = [...name.toLowerCase().split(/[\s_.-]+/), ...dirname(p).toLowerCase().split('/'), ...(vault.notes.get(p)?.tags ?? []).flatMap(tg => [tg.toLowerCase(), ...tg.toLowerCase().split('/')])];
+      let total = 0;
+      for (const w of words) {
+        const best = Math.max(0, ...keys.map(k => wordScore(w, k)));
+        if (!best) { total = 0; break; }
+        total += best;
+      }
+      if (total) out.push({ path: p, name, score: total - 200 + (recent.includes(p) ? 30 : 0), matches: [], recent: 0 });
     }
     return out.sort((a, b) => b.score - a.score).slice(0, 60);
   }

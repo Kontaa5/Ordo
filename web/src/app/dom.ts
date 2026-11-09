@@ -82,6 +82,37 @@ export function dirname(p: string) { const i = p.lastIndexOf('/'); return i < 0 
 export function noteName(p: string) { return basename(p).replace(/\.md$/i, ''); }
 export function extname(p: string) { const b = basename(p); const i = b.lastIndexOf('.'); return i < 0 ? '' : b.slice(i + 1).toLowerCase(); }
 
+/** Edit distance (with swapped neighbours) – stops early once it exceeds `max`. */
+export function editDistance(a: string, b: string, max: number): number {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  const d: number[][] = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    let rowMin = Infinity;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      rowMin = Math.min(rowMin, d[i][j]);
+    }
+    if (rowMin > max) return max + 1;
+  }
+  return d[a.length][b.length];
+}
+
+/** How well one search word fits one word of a note (name word, folder, hashtag): exact > prefix > contains > typo. */
+export function wordScore(q: string, w: string): number {
+  if (!q || !w) return 0;
+  if (w === q) return 100;
+  if (w.startsWith(q)) return 80;
+  if (w.includes(q)) return 60;
+  const max = q.length >= 8 ? 2 : q.length >= 4 ? 1 : 0;   // short words must be typed right
+  if (!max) return 0;
+  if (editDistance(q, w, max) <= max) return 40;
+  if (w.length > q.length && editDistance(q, w.slice(0, q.length), max) <= max) return 30;   // typo in a prefix: "5klase" → "5klasse"
+  return 0;
+}
+
 export function fuzzy(query: string, target: string): { score: number; matches: number[] } | null {
   const q = query.toLowerCase(), t = target.toLowerCase();
   if (!q) return { score: 0, matches: [] };

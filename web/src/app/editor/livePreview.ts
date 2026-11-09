@@ -185,6 +185,7 @@ function build(view: EditorView): DecorationSet {
     }
   }
 
+  const geom = new Map<number, Geom>();
   const listLines = new Set<number>(), markLines = new Set<number>(), codeLines = new Set<number>();   // for the indentation guides
 
   for (const { from, to } of view.visibleRanges) {
@@ -405,10 +406,9 @@ function build(view: EditorView): DecorationSet {
             for (let i = Math.max(line.number, startLine), last = Math.min(state.doc.lineAt(node.to).number, endLine); i <= last; i++) listLines.add(i);   // visible lines only
             const depth = (() => { let d = 0; for (let p: any = node.node.parent; p; p = p.parent) if (p.name === 'BulletList' || p.name === 'OrderedList') d++; return d; })();
             const isTask = !!node.node.getChild('Task');
-            const indent = /^\s*/.exec(line.text)![0].replace(/\t/g, '    ').length;
-            const markLen = (/^\s*([-*+]|\d+[.)])\s/.exec(line.text)?.[0].trimStart().length ?? 2) + (isTask ? 4 : 0);
+            const off = itemGeom(state, node.node, geom).offset;
             decos.push(lineCls(`HyperMD-list-line HyperMD-list-line-${depth}` + (isTask ? ' HyperMD-task-line' : ''), {
-              style: `text-indent:-${markLen + indent * 0.5}ch;padding-inline-start:${markLen + indent * 0.5}ch`,
+              style: `text-indent:-${off}ch;padding-inline-start:${off}ch`,
               ...(isTask ? { 'data-task': state.doc.sliceString(line.from, line.to).match(/\[(.)\]/)?.[1] ?? ' ' } : {}),
             }).range(line.from));
             return;
@@ -424,6 +424,10 @@ function build(view: EditorView): DecorationSet {
               // the bullet takes "-" and the space after it (2ch, like the hanging indent): wrapped lines start under the text
               const end = state.sliceDoc(node.to, node.to + 1) === ' ' ? node.to + 1 : node.to;
               decos.push(Decoration.replace({ widget: new BulletWidget() }).range(node.from, end));
+            } else if (!isTask) {
+              // "7. " / "- " exactly as wide as the hanging indent (proportional fonts differ from ch): wrapped lines line up with the text
+              const end = state.sliceDoc(node.to, node.to + 1) === ' ' ? node.to + 1 : node.to;
+              decos.push(mark(`cm-formatting cm-formatting-list cm-formatting-list-${ordered ? 'ol' : 'ul'} cm-list-1 ordo-list-mark`, { style: `width:${ch.length + 1}ch` }).range(node.from, end));
             } else {
               decos.push(mark(`cm-formatting cm-formatting-list cm-formatting-list-${ordered ? 'ol' : 'ul'} cm-list-1`).range(node.from, node.to));
             }
@@ -432,7 +436,8 @@ function build(view: EditorView): DecorationSet {
           case 'TaskMarker': {
             const char = state.doc.sliceString(node.from + 1, node.from + 2);
             const checked = char !== ' ';
-            if (!touches(state, node.from, node.to)) decos.push(Decoration.replace({ widget: new CheckboxWidget(checked, char) }).range(node.from, node.to));
+            // the box takes "[ ]" and the space after it (3ch, see itemGeom): wrapped lines start under the text
+            if (!touches(state, node.from, node.to)) decos.push(Decoration.replace({ widget: new CheckboxWidget(checked, char) }).range(node.from, state.sliceDoc(node.to, node.to + 1) === ' ' ? node.to + 1 : node.to));
             else decos.push(mark('cm-formatting cm-formatting-task').range(node.from, node.to));
             return;
           }
@@ -452,14 +457,12 @@ function build(view: EditorView): DecorationSet {
     if (codeLines.has(ln)) continue;
     const line = state.doc.line(ln);
     const ws = /^[\t ]*/.exec(line.text)![0];
-    // indented text below a list item: wrapped lines continue under the text, not at the left edge
-    const indent = ws.replace(/\t/g, '    ').length;
-    if (indent && !markLines.has(ln)) decos.push(lineCls('', { style: `text-indent:-${indent * 0.5}ch;padding-inline-start:${indent * 0.5}ch` }).range(line.from));
-    let spaces = 0;
-    for (let i = 0; i < ws.length; i++) {
-      if (ws[i] === '\t') { spaces = 0; decos.push(mark('cm-indent').range(line.from + i, line.from + i + 1)); }
-      else if (++spaces === 4) { spaces = 0; decos.push(mark('cm-indent').range(line.from + i - 3, line.from + i + 1)); }
-    }
+    // one indent per enclosing list item, as wide as that item's marker: children and indented text line up
+    // with the parent's text (also under "7. "), wrapped lines continue under the text, not at the left edge
+    if (!ws) continue;
+    const { width, guides } = wsWidth(state, line, ws, geom);
+    if (!markLines.has(ln)) decos.push(lineCls('', { style: `text-indent:-${width}ch;padding-inline-start:${width}ch` }).range(line.from));
+    decos.push(Decoration.replace({ widget: new IndentWidget(width, guides) }).range(line.from, line.from + ws.length));
   }
   return Decoration.set(decos, true);
 }
@@ -498,3 +501,57 @@ export const livePreview = ViewPlugin.fromClass(class {
 });
 
 export { IMAGE_EXT, parseSize };
+
+// ── list indentation ──
+type Geom = { start: number; offset: number };
+const MARK_RE = /^[\t ]*([-*+]|\d+[.)])(\s|$)/;
+const cols = (ws: string) => ws.replace(/\t/g, '    ').length;
+
+/** List items around a position that start on an earlier line, outermost first. */
+function parentItems(state: EditorState, pos: number, lineNo: number) {
+  const out: any[] = [];
+  for (let n: any = syntaxTree(state).resolveInner(pos, 1); n; n = n.parent)
+    if (n.name === 'ListItem' && state.doc.lineAt(n.from).number < lineNo) out.unshift(n);
+  return out;
+}
+
+/** Rendered width (ch) of a line's leading whitespace + where the guides of its parent items go. */
+function wsWidth(state: EditorState, line: { from: number; number: number }, ws: string, memo: Map<number, Geom>) {
+  const parents = parentItems(state, line.from + ws.length, line.number);
+  if (!parents.length) return { width: cols(ws) * 0.5, guides: [] as number[] };
+  const g = parents.map(p => itemGeom(state, p, memo));
+  const last = g[g.length - 1];
+  return { width: last.offset, guides: g.map(x => x.start) };   // 2, 3 or 4 spaces under "- " look the same: uniform
+}
+
+/** start = where the marker is drawn, offset = where the text starts (ch). */
+function itemGeom(state: EditorState, item: any, memo: Map<number, Geom>): Geom {
+  const hit = memo.get(item.from);
+  if (hit) return hit;
+  const line = state.doc.lineAt(item.from);
+  const ws = /^[\t ]*/.exec(line.text)![0];
+  const m = MARK_RE.exec(line.text);
+  const markLen = m ? m[1].length + 1 : 2;
+  const start = wsWidth(state, line, ws, memo).width;
+  const g = { start, offset: start + (item.getChild('Task') ? 3 : markLen) };   // task: "- " hidden, box 3ch
+  memo.set(item.from, g);
+  return g;
+}
+
+class IndentWidget extends WidgetType {
+  constructor(readonly width: number, readonly guides: number[]) { super(); }
+  eq(o: IndentWidget) { return o.width === this.width && o.guides.join() === this.guides.join(); }
+  toDOM() {
+    const s = document.createElement('span');
+    s.className = 'ordo-indent';
+    s.style.width = `${this.width}ch`;
+    for (const g of this.guides) {
+      const d = document.createElement('span');
+      d.className = 'ordo-indent-guide';
+      d.style.insetInlineStart = `calc(${g}ch + 0.35em)`;
+      s.appendChild(d);
+    }
+    return s;
+  }
+  ignoreEvent() { return false; }
+}

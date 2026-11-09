@@ -30,13 +30,30 @@ function langOf(el: Element | null): string {
   return '';
 }
 
+const BLOCK_TAGS = new Set(['DIV', 'P', 'LI', 'TR', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6']);
+
+/** Text of a code block with its line breaks: code viewers (Expressive Code, GitHub, Shiki …)
+ *  often put each line into its own <div> or end it with <br> instead of a newline character. */
+export function codeText(el: Node): string {
+  let out = '';
+  const walk = (n: Node) => {
+    if (n.nodeType === Node.TEXT_NODE) { out += n.nodeValue ?? ''; return; }
+    if (n.nodeName === 'BR') { out += '\n'; return; }
+    if (n.nodeName === 'BUTTON') return;
+    n.childNodes.forEach(walk);
+    if (BLOCK_TAGS.has(n.nodeName) && n !== el && !out.endsWith('\n')) out += '\n';
+  };
+  walk(el);
+  return out;
+}
+
 // <pre> blocks of any shape (ChatGPT, GitHub, docs): keep the code text verbatim
 td.addRule('preBlock', {
   filter: node => node.nodeName === 'PRE',
   replacement: (_content, node) => {
     const pre = node as HTMLElement;
     const code = pre.querySelector('code') ?? pre;
-    const text = cleanSpaces(code.textContent ?? '').replace(/\n$/, '');
+    const text = cleanSpaces(codeText(code)).replace(/\n+$/, '');
     const fence = text.includes('```') ? '~~~' : '```';
     return `\n\n${fence}${langOf(code)}\n${text}\n${fence}\n\n`;
   },

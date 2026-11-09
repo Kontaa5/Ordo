@@ -83,6 +83,13 @@ final class ShellController: WebController {
             #else
             return UIFont.familyNames.sorted()
             #endif
+        case "textChecking":
+            // grammar / autocorrect of macOS (WebKit picks the change up after a restart of Ordo)
+            for (js, key) in [("grammar", "WebGrammarCheckingEnabled"), ("autocorrect", "WebAutomaticSpellingCorrectionEnabled")] {
+                if let v = body[js] as? Bool { UserDefaults.standard.set(v, forKey: key) }
+            }
+            return ["grammar": UserDefaults.standard.bool(forKey: "WebGrammarCheckingEnabled"),
+                    "autocorrect": UserDefaults.standard.bool(forKey: "WebAutomaticSpellingCorrectionEnabled")]
         case "setLanguage":
             app.lang = str("lang") == "en" ? "en" : "de"
             UserDefaults.standard.set(app.lang, forKey: "lang")
