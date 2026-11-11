@@ -91,6 +91,17 @@ final class ShellController: WebController {
             }
             return ["grammar": UserDefaults.standard.bool(forKey: "WebGrammarCheckingEnabled"),
                     "autocorrect": UserDefaults.standard.bool(forKey: "OrdoAutocorrect")]
+        case "spelling":
+            // misspelled words of the visible text (underlined in the editor), languages detected by macOS
+            #if os(macOS)
+            let text = str("text"), ns = text as NSString
+            guard ns.length > 0, ns.length <= 60_000 else { return [] }
+            let results = NSSpellChecker.shared.check(text, range: NSRange(location: 0, length: ns.length), types: NSTextCheckingResult.CheckingType.spelling.rawValue,
+                                                      options: nil, inSpellDocumentWithTag: 0, orthography: nil, wordCount: nil)
+            return results.prefix(2000).map { [$0.range.location, $0.range.length] }
+            #else
+            return []
+            #endif
         case "correct":
             // autocorrect of the word just typed (WebKit's own does not reach the CodeMirror editor):
             // macOS spell checker, language of the sentence, only for a word it marks as misspelled

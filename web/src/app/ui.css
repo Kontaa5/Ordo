@@ -1071,3 +1071,5 @@ body.is-mobile .empty-state-hotkey, body.is-mobile .prompt-instructions { displa
 body:has(.modal-container) .ordo-demo-bar { display: none; }
 body.is-mobile .modal .setting-item { flex-wrap: wrap; gap: 8px; }
 body.is-mobile .modal .setting-item-description { overflow-wrap: anywhere; }
+/* misspelled word (macOS spell checker, see editor/autocorrect.ts) */
+.ordo-misspelled { text-decoration: underline wavy var(--color-red, #e5484d); text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-skip-ink: none; }
