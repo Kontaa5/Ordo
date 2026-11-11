@@ -13,13 +13,13 @@ struct OrdoApp: App {
         // Ordo is a one-window app: quitting with the window closed must not
         // restore "no window" on the next launch.
         UserDefaults.standard.register(defaults: ["ApplePersistenceIgnoreState": true])
-        // macOS spell check, grammar and autocorrect in the editor (WebKit reads these when it starts);
-        // on by default, switchable in Ordo's settings and in Bearbeiten → Rechtschreibung und Grammatik
+        // macOS spell check and grammar in the editor (WebKit reads these when it starts), autocorrect is Ordo's own
+        // (bridge "correct"); on by default, switchable in Ordo's settings
         UserDefaults.standard.register(defaults: [
-            "WebContinuousSpellCheckingEnabled": true, "WebGrammarCheckingEnabled": true, "WebAutomaticSpellingCorrectionEnabled": true,
+            "WebContinuousSpellCheckingEnabled": true, "WebGrammarCheckingEnabled": true, "OrdoAutocorrect": true,
         ])
         // "smart" quotes, dashes and links would change the Markdown itself (" → „, --- → —): always off
-        for key in ["WebAutomaticQuoteSubstitutionEnabled", "WebAutomaticDashSubstitutionEnabled", "WebAutomaticLinkDetectionEnabled", "WebAutomaticTextReplacementEnabled"] {
+        for key in ["WebAutomaticSpellingCorrectionEnabled", "WebAutomaticQuoteSubstitutionEnabled", "WebAutomaticDashSubstitutionEnabled", "WebAutomaticLinkDetectionEnabled", "WebAutomaticTextReplacementEnabled"] {
             UserDefaults.standard.set(false, forKey: key)
         }
         #endif

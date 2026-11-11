@@ -90,3 +90,39 @@ export const headingFold = [
     }
   }, { decorations: v => v.decorations }),
 ];
+
+// ── reading view: the same arrow in front of every heading, hides the section below it ──
+
+const levelOf = (el: Element) => /^H([1-6])$/.exec(el.tagName)?.[1];
+
+/** Hide everything below a folded heading up to the next heading of the same or a higher level (nested folds too). */
+function applyFolds(root: HTMLElement) {
+  let hideBelow = Infinity;   // level of the folded heading that hides the current part, Infinity = visible
+  for (const el of Array.from(root.children) as HTMLElement[]) {
+    const lv = levelOf(el);
+    if (lv && +lv <= hideBelow) hideBelow = Infinity;
+    const hidden = hideBelow !== Infinity;
+    el.classList.toggle('ordo-fold-hidden', hidden);
+    if (lv && !hidden && el.classList.contains('is-collapsed')) hideBelow = +lv;
+  }
+}
+
+export function addReadingFolds(root: HTMLElement) {
+  const heads = (Array.from(root.children) as HTMLElement[]).filter(el => levelOf(el));
+  for (const head of heads) {
+    const next = head.nextElementSibling;
+    if (!next || (levelOf(next) && +levelOf(next)! <= +levelOf(head)!)) continue;   // nothing to fold
+    const b = document.createElement('span');
+    b.className = 'ordo-heading-fold';
+    b.title = t('Einklappen');
+    b.appendChild(icon('chevron-down'));
+    b.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      const folded = head.classList.toggle('is-collapsed');
+      b.classList.toggle('is-folded', folded);
+      b.title = folded ? t('Ausklappen') : t('Einklappen');
+      applyFolds(root);
+    });
+    head.prepend(b);
+  }
+}

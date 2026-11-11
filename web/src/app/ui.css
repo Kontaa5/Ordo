@@ -605,7 +605,11 @@ body.is-mobile .ordo-image-tools { opacity: 1; }
 .ordo-heading-fold { position: absolute; margin-left: -22px; margin-top: 0.15em; width: 18px; height: 1.1em; display: inline-flex; align-items: center; justify-content: center; color: var(--text-faint); opacity: 0; cursor: var(--cursor); transition: opacity 120ms; }
 .ordo-heading-fold svg { width: 14px; height: 14px; transition: transform 120ms; }
 .ordo-heading-fold.is-folded svg { transform: rotate(-90deg); }
-.cm-line:hover > .ordo-heading-fold, .ordo-heading-fold.is-folded { opacity: 1; }
+.cm-content:hover .ordo-heading-fold, .markdown-preview-view:hover .ordo-heading-fold { opacity: 0.35; }   /* faint while the mouse is in the note: easy to find */
+.cm-line:hover > .ordo-heading-fold, .markdown-preview-view :is(h1,h2,h3,h4,h5,h6):hover > .ordo-heading-fold, .ordo-heading-fold.is-folded { opacity: 1; }
+.markdown-preview-view :is(h1,h2,h3,h4,h5,h6) { position: relative; }
+.markdown-preview-view .ordo-heading-fold { left: 0; top: 0; height: 100%; margin-top: 0; }
+.ordo-fold-hidden { display: none !important; }
 .ordo-heading-fold:hover { color: var(--text-normal); }
 .ordo-fold-placeholder { margin-left: 6px; padding: 0 6px; border: 0 !important; border-radius: var(--radius-s); background: var(--background-modifier-hover) !important; color: var(--text-muted); cursor: var(--cursor); }
 /* ⌘F: compact box in the top right (searchPanel.ts) */

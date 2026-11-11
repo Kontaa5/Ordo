@@ -67,13 +67,13 @@ export class SettingsModal extends Modal {
     el.addEventListener('click', () => { const v = !el.classList.contains('is-enabled'); el.classList.toggle('is-enabled', v); onChange(v); });
     return el;
   }
-  /** Grammar and autocorrect of macOS (offline, nothing leaves the Mac); WebKit reads them at start. */
+  /** Grammar (WebKit, read at start) and autocorrect (our own, live) – macOS spell checker, offline, nothing leaves the Mac. */
   private textChecking(): HTMLElement {
     const wrap = h('div');
     request<{ grammar: boolean; autocorrect: boolean }>('textChecking', {}).then(s => {
       const set = (k: 'grammar' | 'autocorrect') => (v: boolean) => {
         request('textChecking', { [k]: v }).catch(() => {});
-        notice(t('Wirkt nach einem Neustart von Ordo.'), { timeout: 2500 });
+        if (k === 'grammar') notice(t('Wirkt nach einem Neustart von Ordo.'), { timeout: 2500 });
       };
       wrap.replaceChildren(
         setting(t('Grammatik prüfen'), t('Grammatikprüfung von macOS – offline, kein Text verlässt den Mac.'), this.toggle(s.grammar, set('grammar'))),

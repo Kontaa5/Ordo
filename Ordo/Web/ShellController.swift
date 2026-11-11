@@ -1,6 +1,7 @@
 import Foundation
 import WebKit
 import UniformTypeIdentifiers
+import NaturalLanguage
 #if os(macOS)
 import AppKit
 #else
@@ -84,12 +85,29 @@ final class ShellController: WebController {
             return UIFont.familyNames.sorted()
             #endif
         case "textChecking":
-            // grammar / autocorrect of macOS (WebKit picks the change up after a restart of Ordo)
-            for (js, key) in [("grammar", "WebGrammarCheckingEnabled"), ("autocorrect", "WebAutomaticSpellingCorrectionEnabled")] {
+            // grammar: WebKit (after a restart of Ordo) · autocorrect: our own, see "correct"
+            for (js, key) in [("grammar", "WebGrammarCheckingEnabled"), ("autocorrect", "OrdoAutocorrect")] {
                 if let v = body[js] as? Bool { UserDefaults.standard.set(v, forKey: key) }
             }
             return ["grammar": UserDefaults.standard.bool(forKey: "WebGrammarCheckingEnabled"),
-                    "autocorrect": UserDefaults.standard.bool(forKey: "WebAutomaticSpellingCorrectionEnabled")]
+                    "autocorrect": UserDefaults.standard.bool(forKey: "OrdoAutocorrect")]
+        case "correct":
+            // autocorrect of the word just typed (WebKit's own does not reach the CodeMirror editor):
+            // macOS spell checker, language of the sentence, only for a word it marks as misspelled
+            #if os(macOS)
+            guard UserDefaults.standard.bool(forKey: "OrdoAutocorrect") else { return nil }
+            let text = str("text"), ns = text as NSString
+            let from = body["from"] as? Int ?? -1, to = body["to"] as? Int ?? -1
+            guard ns.length <= 2000, from >= 0, to > from, to <= ns.length else { return nil }
+            let range = NSRange(location: from, length: to - from)
+            let checker = NSSpellChecker.shared
+            let lang = NLLanguageRecognizer.dominantLanguage(for: text)?.rawValue ?? checker.language()
+            let miss = checker.checkSpelling(of: ns.substring(with: range), startingAt: 0, language: lang, wrap: false, inSpellDocumentWithTag: 0, wordCount: nil)
+            guard miss.location != NSNotFound else { return nil }
+            return checker.correction(forWordRange: range, in: text, language: lang, inSpellDocumentWithTag: 0)
+            #else
+            return nil
+            #endif
         case "setLanguage":
             app.lang = str("lang") == "en" ? "en" : "de"
             UserDefaults.standard.set(app.lang, forKey: "lang")

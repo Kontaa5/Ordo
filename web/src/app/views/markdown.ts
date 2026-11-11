@@ -31,7 +31,8 @@ import { render, COPY_ICON, CHECK_ICON } from '../../markdown';
 import { paginate, applyGeomVars, contentSize, whenImagesLoaded } from '../../paginate';
 import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD } from '../../clipboard';
 import { createSearchPanel } from '../editor/searchPanel';
-import { headingFold } from '../editor/headingFold';
+import { headingFold, addReadingFolds } from '../editor/headingFold';
+import { autocorrect } from '../editor/autocorrect';
 import { openLightbox } from '../../lightbox';
 import { openImageEditor } from '../../imageEditor';
 import { blobToBase64 } from '../../bridge';
@@ -190,7 +191,7 @@ export class MarkdownView extends View {
       markdown({ base: markdownLanguage, codeLanguages: codeLanguage, addKeymap: true }),
       syntaxHighlighting(codeHighlightStyle),
       EditorView.lineWrapping,
-      EditorView.contentAttributes.of({ spellcheck: appState.spellcheck ? 'true' : 'false', autocorrect: appState.spellcheck ? 'on' : 'off', autocapitalize: 'sentences' }),
+      EditorView.contentAttributes.of({ spellcheck: appState.spellcheck ? 'true' : 'false', autocorrect: 'off', autocapitalize: 'sentences' }),
       livePreview,
       renderedBlocksField,
       imagesBelowField,
@@ -204,6 +205,7 @@ export class MarkdownView extends View {
       tagCase,
       wrapOnType,
       headingFold,
+      autocorrect,
       keymap.of([...closeBracketsKeymap, ...completionKeymap, ...searchKeymap, ...historyKeymap, ...defaultKeymap, indentWithTab]),
       EditorView.updateListener.of(u => {
         if (u.docChanged && this.loaded) { this.dirty = true; this.scheduleSave(); this.scheduleSort(); this.schedulePages(); }
@@ -357,6 +359,7 @@ export class MarkdownView extends View {
       sizer.innerHTML = render(text, { path: this.path });
       sizer.prepend(title);
       this.previewEl.replaceChildren(sizer);
+      addReadingFolds(sizer);
       this.fillEmbeds(sizer);
       return;
     }

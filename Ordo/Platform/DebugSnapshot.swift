@@ -23,6 +23,25 @@ enum DebugScript {
                         NSLog("DBG %d %@", i, String(describing: r ?? "nil"))
                     } catch { NSLog("DBG %d ERROR %@", i, String(describing: error)) }
                 }
+                #if os(macOS)
+                // {"type": "text"}: real key events through AppKit (text input, spelling correction), not DOM events
+                if let text = step["type"] as? String, let window = model.shell.webView.window {
+                    NSApp.activate(ignoringOtherApps: true)
+                    window.makeKeyAndOrderFront(nil)
+                    window.makeFirstResponder(model.shell.webView)
+                    for ch in text {
+                        let s = String(ch)
+                        for type in [NSEvent.EventType.keyDown, .keyUp] {
+                            if let e = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                                        windowNumber: window.windowNumber, context: nil, characters: s, charactersIgnoringModifiers: s,
+                                                        isARepeat: false, keyCode: s == " " ? 49 : 0) {
+                                window.sendEvent(e)
+                            }
+                        }
+                        try? await Task.sleep(for: .milliseconds(120))
+                    }
+                }
+                #endif
                 if let w = step["wait"] as? Double { try? await Task.sleep(for: .seconds(w)) }
                 if let name = step["snap"] as? String {
                     #if os(macOS)
