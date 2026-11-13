@@ -25,6 +25,13 @@ final class OrdoWebView: WKWebView {
         super.mouseDown(with: event)
     }
 
+    #if DEBUG
+    /// automated UI checks run in a window behind the user's apps: its clicks must count without activating Ordo
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        ProcessInfo.processInfo.environment["ORDO_DEBUG_SCRIPT"] != nil || super.acceptsFirstMouse(for: event)
+    }
+    #endif
+
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         if event.type == .keyDown, let combo = Self.combo(for: event), boundHotkeys.contains(combo) {
             onHotkey?(combo)

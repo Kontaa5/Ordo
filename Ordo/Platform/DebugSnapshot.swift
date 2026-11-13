@@ -16,6 +16,12 @@ enum DebugScript {
         Task { @MainActor in
             for _ in 0..<100 where !model.shell.isReady { try? await Task.sleep(for: .milliseconds(100)) }
             try? await Task.sleep(for: .seconds(2))
+            #if os(macOS)
+            // never steal the user's focus: give it back; the window stays visible (not key) so WebKit keeps rendering,
+            // events go straight to it via sendEvent (acceptsFirstMouse in debug runs)
+            NSApp.deactivate()
+            model.shell.webView.window?.orderFrontRegardless()
+            #endif
             for (i, step) in steps.enumerated() {
                 if let js = step["js"] as? String {
                     do {
@@ -26,8 +32,6 @@ enum DebugScript {
                 #if os(macOS)
                 // {"type": "text"}: real key events through AppKit (text input, spelling correction), not DOM events
                 if let text = step["type"] as? String, let window = model.shell.webView.window {
-                    NSApp.activate(ignoringOtherApps: true)
-                    window.makeKeyAndOrderFront(nil)
                     window.makeFirstResponder(model.shell.webView)
                     for ch in text {
                         let s = String(ch)
@@ -47,8 +51,6 @@ enum DebugScript {
                     drag = (try? await model.shell.webView.callAsyncJavaScript(js, contentWorld: .page)) as? [Double]
                 }
                 if let d = drag, d.count == 4, let window = model.shell.webView.window {
-                    NSApp.activate(ignoringOtherApps: true)
-                    window.makeKeyAndOrderFront(nil)
                     let web = model.shell.webView
                     func point(_ x: Double, _ y: Double) -> NSPoint {
                         let p = web.convert(NSPoint(x: x * web.pageZoom, y: y * web.pageZoom), to: nil)
