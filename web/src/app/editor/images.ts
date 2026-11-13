@@ -165,7 +165,7 @@ export class ImageWidget extends WidgetType {
 
     const handle = document.createElement('span');
     handle.className = 'ordo-image-handle';
-    handle.title = t('Ziehen zum Skalieren');
+    handle.title = t('Antippen oder ziehen zum Skalieren');
     const label = document.createElement('span');
     label.className = 'ordo-image-source';
 
@@ -174,38 +174,66 @@ export class ImageWidget extends WidgetType {
       if (box.classList.contains('is-resizing') || (e.target as HTMLElement).closest('.ordo-image-handle')) { e.preventDefault(); e.stopPropagation(); }
     }, true);
     handle.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });   // no native drag / text selection from the edge
+    // Resize: drag the right edge – or, on a trackpad, just TAP the edge: then the width follows the pointer
+    // without holding anything, and the next tap / click sets it (Esc cancels). No long press needed.
     handle.addEventListener('pointerdown', e => {
-      if (e.button !== 0 || box.classList.contains('is-resizing')) { e.preventDefault(); e.stopPropagation(); return; }
+      if (e.button !== 0 || box.classList.contains('is-resizing')) return;   // follow mode ends on the document handler
       wrap.draggable = false;
       delete wrap.dataset.grip;
       e.preventDefault();
       e.stopPropagation();
-      handle.setPointerCapture(e.pointerId);
+      try { handle.setPointerCapture(e.pointerId); } catch { /* not capturable */ }
       const startX = e.clientX, startW = img.getBoundingClientRect().width;
       const max = view.contentDOM.clientWidth;
-      let w = Math.round(startW);
+      let w = Math.round(startW), moved = false;
       resizing = true;
       box.classList.add('is-resizing');
       label.textContent = `${w} px`;
-      const move = (ev: PointerEvent) => {
-        if (ev.clientX === 0 && ev.clientY === 0) return;   // no real position (drag session) – ignore, never snap to 40 px
-        w = Math.round(Math.max(40, Math.min(max, startW + ev.clientX - startX)));
+      const apply = (x: number) => {
+        w = Math.round(Math.max(40, Math.min(max, startW + x - startX)));
         img.style.width = w + 'px';
-        wrap.style.flex = `0 1 ${w}px`;   // in an image row the slot follows the drag right away
+        wrap.style.flex = `0 1 ${w}px`;   // in an image row the slot follows right away
         label.textContent = `${w} px`;
+      };
+      const finish = (commit: boolean) => {
+        resizing = false;
+        box.classList.remove('is-resizing');
+        if (!commit) { img.style.width = startW + 'px'; wrap.style.flex = ''; return; }
+        if (Math.abs(w - startW) >= 2) commitWidth(view, this.from, this.to, this.target, w);
+      };
+      // 1) dragging with the button held
+      const move = (ev: PointerEvent) => {
+        if (ev.clientX === 0 && ev.clientY === 0) return;   // no real position – never snap to 40 px
+        if (Math.abs(ev.clientX - startX) > 3) moved = true;
+        apply(ev.clientX);
       };
       let done = false;
       const up = () => {
         if (done) return;
         done = true;
-        resizing = false;
         handle.removeEventListener('pointermove', move);
         handle.removeEventListener('pointerup', up);
         handle.removeEventListener('pointercancel', up);
         handle.removeEventListener('lostpointercapture', up);
-        box.classList.remove('is-resizing');
-        if (Math.abs(w - startW) < 2) return;
-        commitWidth(view, this.from, this.to, this.target, w);
+        if (moved) { finish(true); return; }
+        // 2) only a tap: follow the pointer until the next tap
+        const follow = (ev: PointerEvent | MouseEvent) => { if (ev.clientX || ev.clientY) apply(ev.clientX); };
+        const stop = (ev: Event, commit: boolean) => {
+          ev.preventDefault(); ev.stopPropagation();
+          document.removeEventListener('pointermove', follow, true);
+          document.removeEventListener('mousemove', follow, true);
+          document.removeEventListener('pointerdown', onDown, true);
+          document.removeEventListener('keydown', onKey, true);
+          // swallow the click that belongs to the finishing tap (it would open the picture / move the cursor)
+          if (ev.type === 'pointerdown') document.addEventListener('click', ce => { ce.preventDefault(); ce.stopPropagation(); }, { capture: true, once: true });
+          finish(commit);
+        };
+        const onDown = (ev: PointerEvent) => stop(ev, ev.button === 0);
+        const onKey = (ev: KeyboardEvent) => { if (ev.key === 'Escape') stop(ev, false); else if (ev.key === 'Enter') stop(ev, true); };
+        document.addEventListener('pointermove', follow, true);
+        document.addEventListener('mousemove', follow, true);
+        document.addEventListener('pointerdown', onDown, true);
+        document.addEventListener('keydown', onKey, true);
       };
       handle.addEventListener('pointermove', move);
       handle.addEventListener('pointerup', up);

@@ -219,7 +219,7 @@ export const EN: Record<string, string> = {
 
   'Große Bilder verkleinern': 'Shrink large images', 'Große Bilder verkleinern …': 'Shrink large images …', 'Suche Bilder über 1 MB …': 'Looking for pictures over 1 MB …',
   'Keine großen Bilder gefunden, die sich verkleinern lassen.': 'No large pictures found that can be made smaller.', '{a} → {b}. Dateinamen und Links bleiben gleich.': '{a} → {b}. File names and links stay the same.', 'Bild': 'picture', 'Bilder': 'pictures', 'Bild verkleinert.': 'picture made smaller.', 'Bilder verkleinert.': 'pictures made smaller.',
-  'Verkleinern': 'Shrink', 'Komprimieren': 'Compress', 'Bild komprimieren': 'Compress picture', 'Vorhandene Bilder verkleinern': 'Shrink existing pictures',
+  'Verkleinern': 'Shrink', 'Komprimieren': 'Compress', 'Antippen oder ziehen zum Skalieren': 'Tap or drag to resize', 'Bild komprimieren': 'Compress picture', 'Vorhandene Bilder verkleinern': 'Shrink existing pictures',
   'Bilder über 1 MB, die schon im Vault liegen. Dateinamen und Links bleiben gleich.': 'Pictures over 1 MB already in the vault. File names and links stay the same.', 'Prüfen …': 'Check …',
 
   'Original überschreiben': 'Overwrite original', 'Als Kopie speichern': 'Save as copy', 'In {n} Notizen verwendet – wird als Kopie gespeichert': 'Used in {n} notes – saved as a copy',
