@@ -552,7 +552,8 @@ button.copy-code-button:not(.clickable-icon):hover { background-color: var(--bac
 .ordo-image-row > .image-embed .ordo-image-box { display: block; width: fit-content; max-width: 100%; }
 .internal-embed.is-unresolved { color: var(--text-error); font-size: var(--font-ui-small); padding: 6px 10px; border: 1px dashed currentColor; border-radius: var(--radius-s); display: inline-block; }
 .ordo-image-box { position: relative; display: inline-block; max-width: 100%; line-height: 0; vertical-align: top; }
-.ordo-image-box img { max-width: 100%; height: auto; border-radius: var(--radius-s); cursor: zoom-in; display: block; }
+.ordo-image-box { cursor: zoom-in; -webkit-user-select: none; user-select: none; }
+.ordo-image-box img { max-width: 100%; height: auto; border-radius: var(--radius-s); display: block; pointer-events: none; }   /* Live Text never takes the clicks */
 .ordo-image-handle {
   position: absolute; right: -6px; bottom: -6px; width: 14px; height: 14px; border-radius: 50%; background: var(--interactive-accent); border: 2px solid var(--background-primary);
   cursor: nwse-resize; opacity: 0; transition: opacity 0.15s; touch-action: none; z-index: 2;

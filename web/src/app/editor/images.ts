@@ -136,7 +136,16 @@ export class ImageWidget extends WidgetType {
     img.draggable = false;
     img.alt = this.target.split('|')[0];
     if (this.width) img.style.width = this.width + 'px';
-    img.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); host?.openImage(this.path ?? '', url); });
+    // macOS Live Text: on a picture with text WebKit lays a text layer over the <img> that swallows clicks and drags
+    // (buttons do nothing, dragging selects text). The <img> is never hit (CSS pointer-events: none) – the box takes the clicks.
+    const isControl = (e: Event) => (e.target as HTMLElement).closest('.ordo-image-handle, .ordo-image-tools, .ordo-image-grip');
+    let downAt = [0, 0];
+    box.addEventListener('mousedown', e => { downAt = [e.clientX, e.clientY]; if (!isControl(e)) { e.preventDefault(); e.stopPropagation(); } });   // no text selection from the picture
+    box.addEventListener('click', e => {
+      if (isControl(e) || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;   // a drag is no click
+      e.preventDefault(); e.stopPropagation();
+      host?.openImage(this.path ?? '', url);
+    });
 
     const handle = document.createElement('span');
     handle.className = 'ordo-image-handle';
