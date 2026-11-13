@@ -32,6 +32,12 @@ final class OrdoWebView: WKWebView {
     }
     #endif
 
+    /// Trackpad: holding or pressing a click a bit longer is a Force Click; AppKit then sends "Nachschlagen" (quickLook),
+    /// WebKit zooms the element under the pointer (a picture, a button) and the click / the resize drag is lost.
+    /// Ordo has no use for it – the dictionary stays available from the context menu.
+    override func quickLook(with event: NSEvent) {}
+    override func pressureChange(with event: NSEvent) {}
+
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         if event.type == .keyDown, let combo = Self.combo(for: event), boundHotkeys.contains(combo) {
             onHotkey?(combo)
