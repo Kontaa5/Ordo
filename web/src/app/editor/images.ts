@@ -136,6 +136,9 @@ export class ImageWidget extends WidgetType {
     img.draggable = false;
     img.alt = this.target.split('|')[0];
     if (this.width) img.style.width = this.width + 'px';
+    // the picture is painted as the box background, the <img> only sizes it (invisible): macOS Live Text only analyses
+    // visible <img> elements and otherwise lays its own layer over them, which swallows clicks, drags and the buttons
+    box.style.backgroundImage = `url("${url.replace(/["\\\n\r]/g, c => encodeURIComponent(c))}")`;
     // macOS Live Text: on a picture with text WebKit lays a text layer over the <img> that swallows clicks and drags
     // (buttons do nothing, dragging selects text). The <img> is never hit (CSS pointer-events: none) – the box takes the clicks.
     const isControl = (e: Event) => (e.target as HTMLElement).closest('.ordo-image-handle, .ordo-image-tools, .ordo-image-grip');
