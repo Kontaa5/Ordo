@@ -563,6 +563,22 @@ button.copy-code-button:not(.clickable-icon):hover { background-color: var(--bac
   background: rgba(0, 0, 0, 0.6); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.85);
 }
 .ordo-image-box:hover .ordo-image-handle, .ordo-image-box.is-resizing .ordo-image-handle { opacity: 1; }
+/* Themes with "hold to zoom" (e.g. Minimal: .image-embed:active → position: fixed over a dark backdrop) would take the picture
+   out of the note on every press – resizing then snaps to 40 px and the page goes dark. Ordo has its own picture view. */
+body .image-embed.ordo-image-inline:active, body .image-embed.ordo-image-below:active {
+  position: relative !important; inset: auto !important; transform: none !important; z-index: auto !important; width: auto !important;
+  height: auto !important; max-width: 100% !important; max-height: none !important; margin: 0 !important; cursor: inherit !important; background: none !important;
+}
+body .image-embed.ordo-image-inline:active::after, body .image-embed.ordo-image-below:active::after,
+body .image-embed.ordo-image-inline:active::before, body .image-embed.ordo-image-below:active::before { content: none !important; }
+body .ordo-image-box img:active, body .ordo-image-box:active {
+  position: relative !important; inset: auto !important; transform: none !important; z-index: auto !important; margin: 0 !important; max-height: none !important;
+}
+body .ordo-image-box img:active, body .image-embed:active .ordo-image-box img, body .ordo-image-box:active img {
+  position: static !important; inset: auto !important; transform: none !important; z-index: auto !important; margin: 0 !important;
+  height: auto !important; max-width: 100% !important; max-height: none !important; padding: 0 !important; object-fit: fill !important;
+}
+body .ordo-image-box img:active:not([style*="width"]), body .image-embed:active .ordo-image-box img:not([style*="width"]), body .ordo-image-box:active img:not([style*="width"]) { width: auto !important; }   /* a set width (inline) stays, the theme's 100 % does not */
 .ordo-image-box.is-resizing, .ordo-image-box.is-resizing * { cursor: ew-resize !important; }
 body.is-mobile .ordo-image-handle { opacity: 0.9; width: 26px; }
 .ordo-image-source {
