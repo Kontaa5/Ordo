@@ -102,6 +102,27 @@ final class ShellController: WebController {
             #else
             return []
             #endif
+        case "spellGuesses":
+            // right click on an underlined word: suggestions of macOS (language of the sentence)
+            #if os(macOS)
+            let text = str("text"), ns = text as NSString
+            let from = body["from"] as? Int ?? -1, to = body["to"] as? Int ?? -1
+            guard ns.length <= 2000, from >= 0, to > from, to <= ns.length else { return [] }
+            let lang = NLLanguageRecognizer.dominantLanguage(for: text)?.rawValue ?? NSSpellChecker.shared.language()
+            return Array((NSSpellChecker.shared.guesses(forWordRange: NSRange(location: from, length: to - from), in: text, language: lang, inSpellDocumentWithTag: 0) ?? []).prefix(6))
+            #else
+            return []
+            #endif
+        case "learnWord":
+            // "Zum Wörterbuch hinzufügen": the user's macOS dictionary (same as in other Mac apps); one plain word only
+            #if os(macOS)
+            let word = str("word")
+            guard (1...64).contains(word.count), word.allSatisfy({ $0.isLetter || $0 == "-" || $0 == "'" || $0 == "’" }) else { return false }
+            NSSpellChecker.shared.learnWord(word)
+            return true
+            #else
+            return false
+            #endif
         case "correct":
             // autocorrect of the word just typed (WebKit's own does not reach the CodeMirror editor):
             // macOS spell checker, language of the sentence, only for a word it marks as misspelled

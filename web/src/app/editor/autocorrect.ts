@@ -115,4 +115,27 @@ const underline = ViewPlugin.fromClass(class {
   destroy() { clearTimeout(this.timer); }
 }, { decorations: v => v.decorations });
 
+/** The underlined word at a position (for the context menu). */
+export function misspelledAt(view: EditorView, pos: number): { from: number; to: number; word: string } | null {
+  const marks = view.plugin(underline)?.decorations;
+  let hit: { from: number; to: number; word: string } | null = null;
+  marks?.between(pos, pos, (from, to) => { hit = { from, to, word: view.state.sliceDoc(from, to) }; return false; });
+  return hit;
+}
+
+/** Suggestions of macOS for an underlined word (sentence around it decides the language). */
+export async function spellGuesses(view: EditorView, from: number, to: number): Promise<string[]> {
+  const line = view.state.doc.lineAt(from);
+  const start = Math.max(line.from, from - 300), end = Math.min(line.to, to + 300);
+  const text = view.state.sliceDoc(start, end);
+  return request<string[]>('spellGuesses', { text, from: from - start, to: to - start }).catch(() => []);
+}
+
+/** Keep a word: "ignore" only in Ordo, "learn" in the macOS dictionary – either way no longer underlined. */
+export async function keepWord(view: EditorView, word: string, learn: boolean) {
+  if (learn) await request('learnWord', { word }).catch(() => {});
+  ignore(word);
+  view.plugin(underline)?.schedule(0);
+}
+
 export const spelling = isMac ? [undoCorrection, autocorrect, ...(appState.spellcheck ? [underline] : [])] : [];

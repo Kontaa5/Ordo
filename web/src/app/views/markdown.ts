@@ -32,7 +32,7 @@ import { paginate, applyGeomVars, contentSize, whenImagesLoaded } from '../../pa
 import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD } from '../../clipboard';
 import { createSearchPanel } from '../editor/searchPanel';
 import { headingFold, addReadingFolds } from '../editor/headingFold';
-import { spelling } from '../editor/autocorrect';
+import { spelling, misspelledAt, spellGuesses, keepWord } from '../editor/autocorrect';
 import { openLightbox } from '../../lightbox';
 import { openImageEditor } from '../../imageEditor';
 import { blobToBase64 } from '../../bridge';
@@ -603,12 +603,25 @@ export class MarkdownView extends View {
 
   openSearch() { if (this.mode === 'source') openSearchPanel(this.editor); }
 
-  private contextMenu(e: MouseEvent) {
+  private async contextMenu(e: MouseEvent) {
     if (this.mode !== 'source' || !this.sourceEl.contains(e.target as Node)) return;
     e.preventDefault();
     const v = this.editor;
     const sel = v.state.selection.main;
     const m = new Menu();
+    // underlined word: macOS suggestions first, then "add to dictionary" / "ignore"
+    const clicked = v.posAtCoords({ x: e.clientX, y: e.clientY });
+    const typo = clicked == null ? null : misspelledAt(v, clicked);
+    if (typo) {
+      const guesses = await spellGuesses(v, typo.from, typo.to);
+      if (!guesses.length) m.addItem({ title: t('Keine Vorschläge'), disabled: true, onClick: () => {} });
+      for (const g of guesses) m.addItem({ title: g, icon: 'check', onClick: () => {
+        if (v.state.sliceDoc(typo.from, typo.to) === typo.word) v.dispatch({ changes: { from: typo.from, to: typo.to, insert: g }, userEvent: 'input.spelling' });
+      } });
+      m.addItem({ title: t('Zum Wörterbuch hinzufügen'), icon: 'book-open', onClick: () => keepWord(v, typo.word, true) });
+      m.addItem({ title: t('Ignorieren'), icon: 'eye', onClick: () => keepWord(v, typo.word, false) });
+      m.addSeparator();
+    }
     m.addItem({ title: t('Ausschneiden'), icon: 'scissors', disabled: sel.empty, onClick: () => { navigator.clipboard?.writeText(v.state.sliceDoc(sel.from, sel.to)); v.dispatch({ changes: { from: sel.from, to: sel.to } }); } });
     m.addItem({ title: t('Kopieren'), icon: 'copy', disabled: sel.empty, onClick: () => navigator.clipboard?.writeText(v.state.sliceDoc(sel.from, sel.to)) });
     m.addItem({ title: t('Einfügen'), icon: 'paste', onClick: async () => { const t = await navigator.clipboard?.readText(); if (t) this.insertText(t); } });

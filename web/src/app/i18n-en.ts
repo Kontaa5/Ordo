@@ -298,4 +298,7 @@ export const EN: Record<string, string> = {
   'Grammatik prüfen': 'Check grammar', 'Grammatikprüfung von macOS – offline, kein Text verlässt den Mac.': 'Grammar check by macOS – offline, no text leaves your Mac.',
   'Autokorrektur': 'Autocorrect', 'Tippfehler korrigiert macOS beim Schreiben automatisch.': 'macOS fixes typos while you type.',
   'Wirkt nach einem Neustart von Ordo.': 'Takes effect after restarting Ordo.',
+  'Keine Vorschläge': 'No suggestions',
+  'Zum Wörterbuch hinzufügen': 'Add to dictionary',
+  'Ignorieren': 'Ignore',
 };
