@@ -99,6 +99,18 @@ export function withWidth(src: string, w: number | null): string {
   return w == null ? `![${alt}](${md[2]})` : `![${alt}|${w}](${md[2]})`;
 }
 
+
+// While a picture is resized (or pressed anywhere but its grip) no native drag may start – not of the picture,
+// not of the editor text around it. Otherwise WebKit drags a snapshot over the page (it goes dark),
+// the pointer events turn to nonsense and the width snaps to a few pixels.
+let resizing = false;
+let gripHeld = false;
+document.addEventListener('dragstart', e => {
+  const t = e.target instanceof Element ? e.target : null;
+  if (resizing || (!gripHeld && t?.closest('.ordo-image-box, .image-embed'))) e.preventDefault();
+}, true);
+const EDGE = 30;   // px at the right edge of a picture that resize it (easy to hit with the trackpad)
+
 export class ImageWidget extends WidgetType {
   readonly version: number;
   constructor(readonly target: string, readonly path: string | null, readonly width: number | undefined,
@@ -146,6 +158,7 @@ export class ImageWidget extends WidgetType {
     box.addEventListener('mousedown', e => { downAt = [e.clientX, e.clientY]; if (!isControl(e)) { e.preventDefault(); e.stopPropagation(); } });   // no text selection from the picture
     box.addEventListener('click', e => {
       if (isControl(e) || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;   // a drag is no click
+      if (e.clientX > box.getBoundingClientRect().right - EDGE) return;   // the resize edge never opens the picture
       e.preventDefault(); e.stopPropagation();
       host?.openImage(this.path ?? '', url);
     });
@@ -171,9 +184,11 @@ export class ImageWidget extends WidgetType {
       const startX = e.clientX, startW = img.getBoundingClientRect().width;
       const max = view.contentDOM.clientWidth;
       let w = Math.round(startW);
+      resizing = true;
       box.classList.add('is-resizing');
       label.textContent = `${w} px`;
       const move = (ev: PointerEvent) => {
+        if (ev.clientX === 0 && ev.clientY === 0) return;   // no real position (drag session) – ignore, never snap to 40 px
         w = Math.round(Math.max(40, Math.min(max, startW + ev.clientX - startX)));
         img.style.width = w + 'px';
         wrap.style.flex = `0 1 ${w}px`;   // in an image row the slot follows the drag right away
@@ -183,6 +198,7 @@ export class ImageWidget extends WidgetType {
       const up = () => {
         if (done) return;
         done = true;
+        resizing = false;
         handle.removeEventListener('pointermove', move);
         handle.removeEventListener('pointerup', up);
         handle.removeEventListener('pointercancel', up);
@@ -224,7 +240,8 @@ export class ImageWidget extends WidgetType {
     grip.addEventListener('mousedown', () => {
       wrap.draggable = true;
       wrap.dataset.grip = '1';
-      const off = () => { wrap.draggable = false; delete wrap.dataset.grip; };
+      gripHeld = true;
+      const off = () => { wrap.draggable = false; delete wrap.dataset.grip; gripHeld = false; };
       document.addEventListener('mouseup', off, { once: true, capture: true });
       wrap.addEventListener('dragend', off, { once: true });
     });
