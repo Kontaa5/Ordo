@@ -536,7 +536,10 @@ button.copy-code-button:not(.clickable-icon):hover { background-color: var(--bac
 .cm-embed-block { position: relative; margin: 4px 0; }
 .ordo-image-inline { display: block; }
 .cm-line.ordo-image-row, .ordo-image-row.ordo-image-below { display: flex; gap: 8px; align-items: flex-start; }
-.image-embed[draggable=true] { cursor: grab; }
+.ordo-image-grip { position: absolute; left: 6px; top: 6px; z-index: 2; line-height: 1; font-size: 14px; padding: 4px 5px; border-radius: var(--radius-s); background: rgba(0, 0, 0, 0.6); color: white; cursor: grab; opacity: 0; transition: opacity 0.15s; }
+.ordo-image-box:hover .ordo-image-grip { opacity: 1; }
+.ordo-image-box.is-resizing .ordo-image-grip { display: none; }
+.cm-embed-block.ordo-image-below { padding-block: 10px; }   /* room between picture and text */
 .image-embed.is-dragging { opacity: 0.4; }
 .image-embed.drop-before, .image-embed.drop-after { position: relative; }
 .image-embed.drop-before::before, .image-embed.drop-after::after { content: ""; position: absolute; top: 0; bottom: 0; width: 3px; border-radius: 2px; background: var(--interactive-accent); z-index: 4; }

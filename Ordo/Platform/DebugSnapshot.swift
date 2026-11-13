@@ -41,6 +41,36 @@ enum DebugScript {
                         try? await Task.sleep(for: .milliseconds(120))
                     }
                 }
+                // {"drag": [x1, y1, x2, y2]} in page coordinates: real mouse down / drag / up through AppKit
+                var drag = step["drag"] as? [Double]
+                if let js = step["dragjs"] as? String {   // {"dragjs": "return [x1, y1, x2, y2]"}: coordinates computed in the page
+                    drag = (try? await model.shell.webView.callAsyncJavaScript(js, contentWorld: .page)) as? [Double]
+                }
+                if let d = drag, d.count == 4, let window = model.shell.webView.window {
+                    NSApp.activate(ignoringOtherApps: true)
+                    window.makeKeyAndOrderFront(nil)
+                    let web = model.shell.webView
+                    func point(_ x: Double, _ y: Double) -> NSPoint {
+                        let p = web.convert(NSPoint(x: x * web.pageZoom, y: y * web.pageZoom), to: nil)
+                        return web.isFlipped ? p : NSPoint(x: p.x, y: web.convert(NSPoint(x: 0, y: web.bounds.height - y * web.pageZoom), to: nil).y)
+                    }
+                    func send(_ type: NSEvent.EventType, _ p: NSPoint) {
+                        if let e = NSEvent.mouseEvent(with: type, location: p, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                                      windowNumber: window.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: type == .leftMouseUp ? 0 : 1) {
+                            window.sendEvent(e)
+                        }
+                    }
+                    send(.mouseMoved, point(d[0], d[1]))
+                    try? await Task.sleep(for: .milliseconds(150))
+                    send(.leftMouseDown, point(d[0], d[1]))
+                    for i in 1...12 {
+                        try? await Task.sleep(for: .milliseconds(40))
+                        let f = Double(i) / 12
+                        send(.leftMouseDragged, point(d[0] + (d[2] - d[0]) * f, d[1] + (d[3] - d[1]) * f))
+                    }
+                    try? await Task.sleep(for: .milliseconds(100))
+                    send(.leftMouseUp, point(d[2], d[3]))
+                }
                 #endif
                 if let w = step["wait"] as? Double { try? await Task.sleep(for: .seconds(w)) }
                 if let name = step["snap"] as? String {

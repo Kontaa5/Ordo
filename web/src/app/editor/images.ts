@@ -150,15 +150,14 @@ export class ImageWidget extends WidgetType {
       handle.setPointerCapture(e.pointerId);
       const startX = e.clientX, startW = img.getBoundingClientRect().width;
       const max = view.contentDOM.clientWidth;
-      const src = view.state.sliceDoc(this.from, this.to);
       let w = Math.round(startW);
       box.classList.add('is-resizing');
-      label.textContent = withWidth(src, w);
+      label.textContent = `${w} px`;
       const move = (ev: PointerEvent) => {
         w = Math.round(Math.max(40, Math.min(max, startW + ev.clientX - startX)));
         img.style.width = w + 'px';
         wrap.style.flex = `0 1 ${w}px`;   // in an image row the slot follows the drag right away
-        label.textContent = withWidth(src, w);
+        label.textContent = `${w} px`;
       };
       const up = () => {
         handle.removeEventListener('pointermove', move);
@@ -184,7 +183,14 @@ export class ImageWidget extends WidgetType {
     if (this.width) mk(t('Originalgröße'), () => commitWidth(view, this.from, this.to, this.target, null));
     mk(t('Link zeigen'), () => { view.dispatch({ selection: { anchor: this.to } }); view.focus(); });
 
-    box.append(img, handle, label, tools);
+    // moving a picture (next to another one) only from this grip: a click on the picture never starts a drag
+    const grip = document.createElement('span');
+    grip.className = 'ordo-image-grip';
+    grip.textContent = '⠿';
+    grip.title = t('Ziehen, um das Bild zu verschieben');
+    grip.addEventListener('mousedown', () => { wrap.draggable = true; });
+    grip.addEventListener('mouseup', () => { wrap.draggable = false; });
+    box.append(img, handle, label, tools, grip);
     wrap.appendChild(box);
     return wrap;
   }
@@ -192,7 +198,7 @@ export class ImageWidget extends WidgetType {
 
   /** Drag the picture onto another one (left/right half) to place them side by side. */
   private makeDraggable(view: EditorView, wrap: HTMLElement) {
-    wrap.draggable = true;
+    wrap.draggable = false;   // switched on by the grip
     wrap.addEventListener('dragstart', e => {
       if ((e.target as HTMLElement).closest?.('.ordo-image-handle, .ordo-image-tools')) { e.preventDefault(); return; }
       const src = view.state.sliceDoc(this.from, this.to);
@@ -201,7 +207,7 @@ export class ImageWidget extends WidgetType {
       if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
       wrap.classList.add('is-dragging');
     });
-    wrap.addEventListener('dragend', () => wrap.classList.remove('is-dragging'));
+    wrap.addEventListener('dragend', () => { wrap.classList.remove('is-dragging'); wrap.draggable = false; });
     const side = (e: DragEvent) => { const r = wrap.getBoundingClientRect(); return e.clientX < r.left + r.width / 2 ? 'before' : 'after'; };
     const clear = () => wrap.classList.remove('drop-before', 'drop-after');
     wrap.addEventListener('dragover', e => {

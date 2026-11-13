@@ -301,4 +301,5 @@ export const EN: Record<string, string> = {
   'Keine Vorschläge': 'No suggestions',
   'Zum Wörterbuch hinzufügen': 'Add to dictionary',
   'Ignorieren': 'Ignore',
+  'Ziehen, um das Bild zu verschieben': 'Drag to move the picture',
 };
