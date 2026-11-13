@@ -171,15 +171,22 @@ export class ImageWidget extends WidgetType {
         wrap.style.flex = `0 1 ${w}px`;   // in an image row the slot follows the drag right away
         label.textContent = `${w} px`;
       };
+      let done = false;
       const up = () => {
+        if (done) return;
+        done = true;
         handle.removeEventListener('pointermove', move);
         handle.removeEventListener('pointerup', up);
+        handle.removeEventListener('pointercancel', up);
+        handle.removeEventListener('lostpointercapture', up);
         box.classList.remove('is-resizing');
         if (Math.abs(w - startW) < 2) return;
         commitWidth(view, this.from, this.to, this.target, w);
       };
       handle.addEventListener('pointermove', move);
       handle.addEventListener('pointerup', up);
+      handle.addEventListener('pointercancel', up);
+      handle.addEventListener('lostpointercapture', up);
     });
 
     const tools = document.createElement('span');
@@ -191,7 +198,7 @@ export class ImageWidget extends WidgetType {
       tools.appendChild(b);
     };
     if (this.path) mk(t('Bearbeiten'), () => host?.editImage(this.path!, url));
-    if (this.path && /\.(jpe?g|png)$/i.test(this.path)) mk(t('Verkleinern'), () => emit('compress-image', this.path));
+    if (this.path && /\.(jpe?g|png)$/i.test(this.path)) mk(t('Komprimieren'), () => emit('compress-image', this.path));
     if (this.width) mk(t('Originalgröße'), () => commitWidth(view, this.from, this.to, this.target, null));
     mk(t('Link zeigen'), () => { view.dispatch({ selection: { anchor: this.to } }); view.focus(); });
 
@@ -200,8 +207,12 @@ export class ImageWidget extends WidgetType {
     grip.className = 'ordo-image-grip';
     grip.textContent = '⠿';
     grip.title = t('Ziehen, um das Bild zu verschieben');
-    grip.addEventListener('mousedown', () => { wrap.draggable = true; });
-    grip.addEventListener('mouseup', () => { wrap.draggable = false; });
+    // draggable only while the grip is held: released anywhere (not only on the grip) ends it,
+    // otherwise the next press on the picture or a button would start moving the picture
+    grip.addEventListener('mousedown', () => {
+      wrap.draggable = true;
+      document.addEventListener('mouseup', () => { wrap.draggable = false; }, { once: true, capture: true });
+    });
     box.append(img, handle, label, tools, grip);
     wrap.appendChild(box);
     return wrap;

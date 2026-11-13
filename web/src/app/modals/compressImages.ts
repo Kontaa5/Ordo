@@ -34,7 +34,7 @@ export class CompressImagesModal extends Modal {
   private maxDim: number;
   constructor(private paths?: string[]) {
     super('ordo-sort-all');
-    this.setTitle(paths?.length === 1 ? t('Bild verkleinern') : t('Große Bilder verkleinern'));
+    this.setTitle(paths?.length === 1 ? t('Bild komprimieren') : t('Große Bilder verkleinern'));
     this.maxDim = AUTO;   // default: only as small as stays sharp in print
   }
 
@@ -80,7 +80,7 @@ export class CompressImagesModal extends Modal {
     this.contentEl.replaceChildren(head, count, list, h('div', { cls: 'modal-button-container' },
       h('button', { text: t('Abbrechen'), onclick: () => this.close() }),
       h('button', {
-        cls: 'mod-cta', text: t('Verkleinern'), onclick: async () => {
+        cls: 'mod-cta', text: t('Komprimieren'), onclick: async () => {
           const paths = plan.filter((_, i) => boxes[i].checked).map(p => p.path);
           if (!paths.length) { this.close(); return; }
           await request('applyCompress', { paths });
