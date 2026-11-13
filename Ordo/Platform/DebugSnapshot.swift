@@ -19,8 +19,13 @@ enum DebugScript {
             #if os(macOS)
             // never steal the user's focus: give it back; the window stays visible (not key) so WebKit keeps rendering,
             // events go straight to it via sendEvent (acceptsFirstMouse in debug runs)
-            NSApp.deactivate()
-            model.shell.webView.window?.orderFrontRegardless()
+            if ProcessInfo.processInfo.environment["ORDO_DEBUG_FOCUS"] == "1" {   // only when the user allows it: real clicks need a key window
+                NSApp.activate(ignoringOtherApps: true)
+                model.shell.webView.window?.makeKeyAndOrderFront(nil)
+            } else {
+                NSApp.deactivate()
+                model.shell.webView.window?.orderFrontRegardless()
+            }
             #endif
             for (i, step) in steps.enumerated() {
                 if let js = step["js"] as? String {
