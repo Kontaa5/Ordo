@@ -211,6 +211,9 @@ function build(view: EditorView): DecorationSet {
         let at = line.from;
         for (const e of row) { if (e.from > at) decos.push(Decoration.replace({}).range(at, e.from)); at = e.to; }
         if (line.to > at) decos.push(Decoration.replace({}).range(at, line.to));
+      } else if (!lineActive && /^\s*!\[\[[^\]]+\]\]\s*$|^\s*!\[[^\]]*\]\([^)]*\)\s*$/.test(text)) {
+        // a line with just one picture: no empty line box above / below it (only a real empty line makes a gap)
+        decos.push(Decoration.line({ class: 'ordo-image-line' }).range(line.from));
       }
 
       // embeds: images & notes – rendered unless the cursor is on the line
