@@ -210,6 +210,13 @@ final class SecurityTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: root.appendingPathComponent(".ordo/ok.json").path))
     }
 
+    func testTypoDistanceForAutocorrect() {
+        XCTAssertEqual(TypoDistance.of("tset", "test"), 1)      // swapped letters
+        XCTAssertEqual(TypoDistance.of("schuel", "schule"), 1)
+        XCTAssertEqual(TypoDistance.of("fehelrn", "fehler"), 2) // too far: not corrected
+        XCTAssertEqual(TypoDistance.of("haus", "haus"), 0)
+    }
+
     func testCommitMessageNamesTheNotes() {
         XCTAssertEqual(GitSync.commitMessage(["Mathe/Integralrechnung.md"]), "Ordo: Integralrechnung")
         XCTAssertEqual(GitSync.commitMessage(["A.md", "Anhänge/Bild.png"]), "Ordo: A, Bild.png")

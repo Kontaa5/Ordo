@@ -136,7 +136,14 @@ final class ShellController: WebController {
             let lang = NLLanguageRecognizer.dominantLanguage(for: text)?.rawValue ?? checker.language()
             let miss = checker.checkSpelling(of: ns.substring(with: range), startingAt: 0, language: lang, wrap: false, inSpellDocumentWithTag: 0, wordCount: nil)
             guard miss.location != NSNotFound else { return nil }
-            return checker.correction(forWordRange: range, in: text, language: lang, inSpellDocumentWithTag: 0)
+            // only when it is very sure: one typo (swapped, missing, extra or wrong letter), same first letter,
+            // at least 4 letters, and no other suggestion that is just as close
+            let word = ns.substring(with: range)
+            guard word.count >= 4, let fix = checker.correction(forWordRange: range, in: text, language: lang, inSpellDocumentWithTag: 0),
+                  fix.first?.lowercased() == word.first?.lowercased(), TypoDistance.of(word.lowercased(), fix.lowercased()) == 1 else { return nil }
+            let guesses = checker.guesses(forWordRange: range, in: text, language: lang, inSpellDocumentWithTag: 0) ?? []
+            let rivals = guesses.filter { $0.lowercased() != fix.lowercased() && TypoDistance.of(word.lowercased(), $0.lowercased()) <= 1 }
+            return rivals.isEmpty ? fix : nil
             #else
             return nil
             #endif
