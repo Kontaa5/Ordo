@@ -156,7 +156,12 @@ export class ImageWidget extends WidgetType {
     const label = document.createElement('span');
     label.className = 'ordo-image-source';
 
+    // trackpad: a second finger during the drag is a right click – no context menu, no restart of the resize
+    box.addEventListener('contextmenu', e => {
+      if (box.classList.contains('is-resizing') || (e.target as HTMLElement).closest('.ordo-image-handle')) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
     handle.addEventListener('pointerdown', e => {
+      if (e.button !== 0 || box.classList.contains('is-resizing')) { e.preventDefault(); e.stopPropagation(); return; }
       e.preventDefault();
       e.stopPropagation();
       handle.setPointerCapture(e.pointerId);
