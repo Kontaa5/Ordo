@@ -160,8 +160,11 @@ export class ImageWidget extends WidgetType {
     box.addEventListener('contextmenu', e => {
       if (box.classList.contains('is-resizing') || (e.target as HTMLElement).closest('.ordo-image-handle')) { e.preventDefault(); e.stopPropagation(); }
     }, true);
+    handle.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });   // no native drag / text selection from the edge
     handle.addEventListener('pointerdown', e => {
       if (e.button !== 0 || box.classList.contains('is-resizing')) { e.preventDefault(); e.stopPropagation(); return; }
+      wrap.draggable = false;
+      delete wrap.dataset.grip;
       e.preventDefault();
       e.stopPropagation();
       handle.setPointerCapture(e.pointerId);
@@ -220,7 +223,10 @@ export class ImageWidget extends WidgetType {
     // otherwise the next press on the picture or a button would start moving the picture
     grip.addEventListener('mousedown', () => {
       wrap.draggable = true;
-      document.addEventListener('mouseup', () => { wrap.draggable = false; }, { once: true, capture: true });
+      wrap.dataset.grip = '1';
+      const off = () => { wrap.draggable = false; delete wrap.dataset.grip; };
+      document.addEventListener('mouseup', off, { once: true, capture: true });
+      wrap.addEventListener('dragend', off, { once: true });
     });
     box.append(img, handle, label, tools, grip);
     wrap.appendChild(box);
@@ -232,7 +238,8 @@ export class ImageWidget extends WidgetType {
   private makeDraggable(view: EditorView, wrap: HTMLElement) {
     wrap.draggable = false;   // switched on by the grip
     wrap.addEventListener('dragstart', e => {
-      if ((e.target as HTMLElement).closest?.('.ordo-image-handle, .ordo-image-tools')) { e.preventDefault(); return; }
+      // only a drag that started on the grip moves the picture – never while resizing, never from the edge or a button
+      if (wrap.dataset.grip !== '1' || wrap.querySelector('.is-resizing') || (e.target as HTMLElement).closest?.('.ordo-image-handle, .ordo-image-tools')) { e.preventDefault(); return; }
       const src = view.state.sliceDoc(this.from, this.to);
       e.dataTransfer?.setData(DRAG_TYPE, JSON.stringify({ from: this.from, to: this.to, src }));
       e.dataTransfer?.setData('text/plain', src);
