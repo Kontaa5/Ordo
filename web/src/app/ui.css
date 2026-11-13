@@ -568,6 +568,7 @@ button.copy-code-button:not(.clickable-icon):hover { background-color: var(--bac
 body .image-embed.ordo-image-inline:active, body .image-embed.ordo-image-below:active {
   position: relative !important; inset: auto !important; transform: none !important; z-index: auto !important; width: auto !important;
   height: auto !important; max-width: 100% !important; max-height: none !important; margin: 0 !important; cursor: inherit !important; background: none !important;
+  text-align: left !important; justify-content: flex-start !important; padding: 0 !important;
 }
 body .image-embed.ordo-image-inline:active::after, body .image-embed.ordo-image-below:active::after,
 body .image-embed.ordo-image-inline:active::before, body .image-embed.ordo-image-below:active::before { content: none !important; }
