@@ -267,6 +267,9 @@ export const EN: Record<string, string> = {
   'Du kannst es dort wiederherstellen.': 'You can restore it there.', 'In den Papierkorb verschoben.': 'Moved to the trash.',
 
   'Automatisch – bleibt druckscharf (300 dpi)': 'Automatic – stays print-sharp (300 dpi)',
+  'Automatisch – 300 dpi, druckscharf': 'Automatic – 300 dpi, print-sharp', 'Ziel': 'Target', 'Druck: {a} → {b} dpi': 'Print: {a} → {b} dpi',
+  'Aktuell: {d} dpi ({px} px, so breit wie in der Notiz gedruckt)': 'Now: {d} dpi ({px} px, printed as wide as in the note)',
+  'Verkleinert nur so weit, dass das Bild in seiner Größe in der Notiz gedruckt noch scharf ist (300 dpi). Kleinere Bilder werden nur platzsparender gespeichert.': 'Only shrinks as far as the picture still prints sharp at its size in the note (300 dpi). Smaller pictures are only stored more compactly.',
   'Verkleinert nur so weit, dass das Bild über die ganze Textbreite gedruckt noch scharf ist (300 dpi). Kleinere Bilder werden nur platzsparender gespeichert.': 'Only shrinks as far as the picture still prints sharp across the full text width (300 dpi). Smaller pictures are only stored more compactly.',
   'Das Bild ist schon so klein, dass es ohne Qualitätsverlust nicht weiter geht.': 'The picture is already so small that it can’t shrink further without losing quality.',
 

@@ -410,7 +410,7 @@ on('vault-closed', async (b: Boot) => { boot = b; if (started) location.reload()
 on('show-vault-picker', () => showVaultPicker());
 on('export', (opts: any) => new ExportModal(opts).open());
 on('open-settings', (tab: string) => new SettingsModal(tab).open());
-on('compress-image', (path: string) => new CompressImagesModal([path]).open());
+on('compress-image', (a: { path: string; share?: number; pixels?: number }) => new CompressImagesModal([a.path], a.share, a.pixels).open());
 on('file-open', (path: string) => rememberRecent(path));
 on('settings-changed', () => { if (started) for (const p of vault.settings?.exportPresets ?? []) addCommand({ id: 'ordo:preset-' + p.id, name: t('Export-Vorlage: {name}', { name: p.name }), icon: 'file-down', callback: () => emit('export', { preset: p }) }); });
 

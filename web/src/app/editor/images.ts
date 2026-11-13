@@ -198,7 +198,11 @@ export class ImageWidget extends WidgetType {
       tools.appendChild(b);
     };
     if (this.path) mk(t('Bearbeiten'), () => host?.editImage(this.path!, url));
-    if (this.path && /\.(jpe?g|png)$/i.test(this.path)) mk(t('Komprimieren'), () => emit('compress-image', this.path));
+    if (this.path && /\.(jpe?g|png)$/i.test(this.path)) mk(t('Komprimieren'), () => emit('compress-image', {
+      path: this.path,
+      share: Math.min(1, img.getBoundingClientRect().width / Math.max(1, view.contentDOM.clientWidth)),   // part of the text width it fills
+      pixels: img.naturalWidth,
+    }));
     if (this.width) mk(t('Originalgröße'), () => commitWidth(view, this.from, this.to, this.target, null));
     mk(t('Link zeigen'), () => { view.dispatch({ selection: { anchor: this.to } }); view.focus(); });
 
