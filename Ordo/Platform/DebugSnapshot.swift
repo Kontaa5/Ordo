@@ -76,6 +76,13 @@ enum DebugScript {
                         send(.leftMouseDragged, point(d[0] + (d[2] - d[0]) * f, d[1] + (d[3] - d[1]) * f))
                     }
                     try? await Task.sleep(for: .milliseconds(100))
+                    if let mid = step["snapMid"] as? String {   // snapshot while the button is still held
+                        try? await Task.sleep(for: .milliseconds(400))
+                        if let img = try? await model.shell.webView.takeSnapshot(configuration: nil), let tiff = img.tiffRepresentation,
+                           let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+                            try? png.write(to: dir.appendingPathComponent(mid + ".png"))
+                        }
+                    }
                     send(.leftMouseUp, point(d[2], d[3]))
                 }
                 #endif
