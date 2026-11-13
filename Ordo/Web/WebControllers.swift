@@ -93,6 +93,9 @@ class WebController: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDele
         // no Force Click previews: a firm press on a picture, button or the resize handle otherwise dims the note,
         // zooms the element ("Nachschlagen") and swallows the click / the drag
         webView.allowsLinkPreview = false
+        // trackpad: a firm press stays a normal click (no second "Force Click" stage that zooms / looks up and breaks the drag)
+        webView.pressureConfiguration = NSPressureConfiguration(pressureBehavior: .primaryClick)
+        for sub in webView.subviews { sub.pressureConfiguration = NSPressureConfiguration(pressureBehavior: .primaryClick) }
         #else
         webView.isOpaque = false
         webView.backgroundColor = .clear
