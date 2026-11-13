@@ -77,6 +77,9 @@ class WebController: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDele
         #if os(macOS)
         webView.hideBackground()
         webView.allowsMagnification = false
+        // no Force Click previews: a firm press on a picture, button or the resize handle otherwise dims the note,
+        // zooms the element ("Nachschlagen") and swallows the click / the drag
+        webView.allowsLinkPreview = false
         #else
         webView.isOpaque = false
         webView.backgroundColor = .clear

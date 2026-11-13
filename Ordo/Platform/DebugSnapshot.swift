@@ -86,6 +86,9 @@ enum DebugScript {
                     #endif
                 }
             }
+            #if os(macOS)
+            NSLog("DBG gestures %@", model.shell.webView.gestureRecognizers.map { String(describing: type(of: $0)) }.joined(separator: ","))
+            #endif
             NSLog("DBG done")
             #if os(macOS)
             if (ProcessInfo.processInfo.environment["ORDO_DEBUG_QUIT"] ?? "1") == "1" { NSApp.terminate(nil) }
