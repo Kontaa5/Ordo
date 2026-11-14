@@ -1,37 +1,58 @@
 import { t } from './app/i18n';
 // Full-size image viewer: pinch / wheel to zoom, drag to pan, Esc or tap to close.
+// With a gallery (all pictures of a note) ‹ › and the arrow keys step through them.
 
-export function openLightbox(src: string, caption = '', onEdit?: () => void) {
+export interface LightboxItem { src: string; caption: string; onEdit?: () => void }
+
+export function openLightbox(src: string, caption = '', onEdit?: () => void, gallery?: { items: LightboxItem[]; index: number }) {
+  const items: LightboxItem[] = gallery && gallery.items.length ? gallery.items : [{ src, caption, onEdit }];
+  let index = gallery && gallery.items.length ? Math.max(0, Math.min(items.length - 1, gallery.index)) : 0;
+  const many = items.length > 1;
   const overlay = document.createElement('div');
   overlay.className = 'lightbox';
   overlay.innerHTML = `
     <div class="lightbox-bar">
       <span class="lightbox-caption"></span>
       <span class="lightbox-actions">
-        ${onEdit ? `<button data-act="edit" title="${t('Bearbeiten')}">${t('Bearbeiten')}</button>` : ''}
+        <button data-act="edit" title="${t('Bearbeiten')}">${t('Bearbeiten')}</button>
         <button data-act="fit" title="${t('Einpassen')}">${t('Einpassen')}</button>
         <button data-act="close" title="${t('Schließen')}">✕</button>
       </span>
     </div>
-    <div class="lightbox-stage"><img draggable="false"></div>`;
-  (overlay.querySelector('.lightbox-caption') as HTMLElement).textContent = caption;
+    <div class="lightbox-stage"><img draggable="false"></div>
+    ${many ? `<button class="lightbox-nav is-prev" data-act="prev" title="${t('Vorheriges Bild')}">‹</button><button class="lightbox-nav is-next" data-act="next" title="${t('Nächstes Bild')}">›</button>` : ''}`;
+  const captionEl = overlay.querySelector('.lightbox-caption') as HTMLElement;
+  const editBtn = overlay.querySelector('[data-act="edit"]') as HTMLElement;
   const img = overlay.querySelector('img')!;
   const stage = overlay.querySelector('.lightbox-stage') as HTMLElement;
-  img.src = src;
 
   let scale = 1, x = 0, y = 0;
   const apply = () => { img.style.transform = `translate(${x}px, ${y}px) scale(${scale})`; };
   const reset = () => { scale = 1; x = 0; y = 0; apply(); };
+  const show = (i: number) => {
+    index = (i + items.length) % items.length;
+    const it = items[index];
+    img.src = it.src;
+    captionEl.textContent = many ? `${it.caption}  ·  ${index + 1} / ${items.length}` : it.caption;
+    editBtn.style.display = it.onEdit ? '' : 'none';
+    reset();
+  };
+  show(index);
 
   const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey, true); };
-  const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+    else if (many && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) { e.preventDefault(); e.stopPropagation(); show(index + (e.key === 'ArrowLeft' ? -1 : 1)); }
+  };
   document.addEventListener('keydown', onKey, true);
 
   overlay.addEventListener('click', e => {
     const act = (e.target as HTMLElement).closest('button')?.dataset.act;
     if (act === 'close') close();
     else if (act === 'fit') reset();
-    else if (act === 'edit') { close(); onEdit?.(); }
+    else if (act === 'edit') { const fn = items[index].onEdit; close(); fn?.(); }
+    else if (act === 'prev') show(index - 1);
+    else if (act === 'next') show(index + 1);
     else if (e.target === stage) close();
   });
 

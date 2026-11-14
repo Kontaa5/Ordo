@@ -95,4 +95,19 @@ export function parseSize(s: string | undefined): { w?: number; h?: number } {
   return { w: +m[1], h: m[2] ? +m[2] : undefined };
 }
 
+export type ImageAlign = 'left' | 'center' | 'right';
+/** `center|300`, `300|right`, `Alt|center|300` → width / height / alignment (unknown parts are alt text). */
+export function parseImageOpts(s: string | undefined): { w?: number; h?: number; align?: ImageAlign; alt: string[] } {
+  const out: { w?: number; h?: number; align?: ImageAlign; alt: string[] } = { alt: [] };
+  if (!s) return out;
+  for (const part of s.split('|')) {
+    const k = part.trim().toLowerCase();
+    if (k === 'center' || k === 'right' || k === 'left') { out.align = k; continue; }
+    const z = parseSize(part);
+    if (z.w) { out.w = z.w; out.h = z.h; continue; }
+    out.alt.push(part);
+  }
+  return out;
+}
+
 export const TAG_RE = /(^|[\s(,;])#([\p{L}\p{N}_\-/]*[\p{L}_\-/][\p{L}\p{N}_\-/]*)/gu;

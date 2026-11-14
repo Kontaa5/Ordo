@@ -5,13 +5,15 @@
 
 import { EditorState, Range, StateEffect, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
-import { resolve, fileURL, IMAGE_EXT, parseSize } from '../../vault';
+import { resolve, fileURL, IMAGE_EXT, parseImageOpts, ImageAlign } from '../../vault';
 import { editorHost } from './host';
 import { emit } from '../host';
+import { Menu } from '../ui/menu';
+import { icon } from '../dom';
 
 import { t } from '../i18n';
 export interface Embed {
-  from: number; to: number; target: string; path: string | null; width?: number;
+  from: number; to: number; target: string; path: string | null; width?: number; align?: ImageAlign;
   kind: 'image' | 'note' | 'other'; syntax: 'wiki' | 'md';
 }
 
@@ -31,17 +33,19 @@ export function findEmbeds(lineText: string, lineFrom: number, notePath: string)
     const target = m[1].split('#')[0];
     const path = resolve(target, notePath);
     const kind = IMAGE_EXT.test(target) ? 'image' : (/\.\w{2,4}$/.test(target) && !/\.md$/i.test(target) ? 'other' : 'note');
-    out.push({ from: lineFrom + m.index!, to: lineFrom + m.index! + m[0].length, target: m[1], path, width: parseSize(m[2]).w, kind, syntax: 'wiki' });
+    const o = parseImageOpts(m[2]);
+    out.push({ from: lineFrom + m.index!, to: lineFrom + m.index! + m[0].length, target: m[1], path, width: o.w, align: o.align, kind, syntax: 'wiki' });
   }
   for (const m of lineText.matchAll(MD)) {
     const alt = m[1], src = m[2];
-    const bar = alt.lastIndexOf('|');
+    const bar = alt.indexOf('|');
+    const o = bar >= 0 ? parseImageOpts(alt.slice(bar + 1)) : { w: undefined, align: undefined };
     const remote = /^[a-z][\w+.-]*:/i.test(src);
     let dec = src;
     try { dec = decodeURIComponent(src); } catch { /* raw */ }
     out.push({
       from: lineFrom + m.index!, to: lineFrom + m.index! + m[0].length, target: src,
-      path: remote ? null : resolve(dec, notePath), width: bar >= 0 ? parseSize(alt.slice(bar + 1)).w : undefined,
+      path: remote ? null : resolve(dec, notePath), width: o.w, align: o.align,
       kind: 'image', syntax: 'md',
     });
   }
@@ -89,15 +93,26 @@ export function stackedChange(state: EditorState, pos: number) {
   return { from: l.from, to: l.to, insert: e.map(x => state.sliceDoc(x.from, x.to)).join('\n') };
 }
 
-/** Rewrite the size part of an image reference (null = original size). */
-export function withWidth(src: string, w: number | null): string {
+/** Rewrite size and/or alignment of an image reference (w null = original size, align 'left' = default). Alt text stays. */
+export function withOpts(src: string, set: { w?: number | null; align?: ImageAlign }): string {
+  const build = (alt: string[], cur: ReturnType<typeof parseImageOpts>) => {
+    const w = set.w === undefined ? cur.w : set.w;
+    const align = set.align ?? cur.align;
+    return [...alt, align && align !== 'left' ? align : '', w ? String(w) : ''].filter(Boolean);
+  };
   const wiki = /^!\[\[([^\[\]|]+?)(?:\|([^\]]*))?\]\]$/.exec(src);
-  if (wiki) return w == null ? `![[${wiki[1]}]]` : `![[${wiki[1]}|${w}]]`;
+  if (wiki) {
+    const cur = parseImageOpts(wiki[2]);
+    return `![[${[wiki[1], ...build(cur.alt, cur)].join('|')}]]`;
+  }
   const md = /^!\[([^\]]*)\]\((.*)\)$/.exec(src);
   if (!md) return src;
-  const alt = md[1].replace(/\|\s*\d+(x\d+)?\s*$/, '');
-  return w == null ? `![${alt}](${md[2]})` : `![${alt}|${w}](${md[2]})`;
+  const bar = md[1].indexOf('|');
+  const first = bar >= 0 ? md[1].slice(0, bar) : md[1];
+  const cur = parseImageOpts(bar >= 0 ? md[1].slice(bar + 1) : undefined);
+  return `![${[first, ...build(cur.alt, cur)].join('|')}](${md[2]})`;
 }
+export function withWidth(src: string, w: number | null): string { return withOpts(src, { w }); }
 
 
 // While a picture is resized (or pressed anywhere but its grip) no native drag may start – not of the picture,
@@ -114,13 +129,13 @@ const EDGE = 30;   // px at the right edge of a picture that resize it (easy to 
 export class ImageWidget extends WidgetType {
   readonly version: number;
   constructor(readonly target: string, readonly path: string | null, readonly width: number | undefined,
-              readonly from: number, readonly to: number, readonly block: boolean) {
+              readonly from: number, readonly to: number, readonly block: boolean, readonly align?: ImageAlign) {
     super();
     this.version = path ? imageVersions.get(path) ?? 0 : 0;
   }
 
   eq(o: ImageWidget) {
-    return o.target === this.target && o.path === this.path && o.width === this.width && o.block === this.block && o.version === this.version;
+    return o.target === this.target && o.path === this.path && o.width === this.width && o.block === this.block && o.version === this.version && o.align === this.align;
   }
   get estimatedHeight() { return this.block ? 260 : -1; }
 
@@ -133,6 +148,7 @@ export class ImageWidget extends WidgetType {
     wrap.setAttribute('src', this.target);
     // only takes effect inside an image row: keep the chosen width, shrink if needed
     if (this.width) wrap.style.flex = `0 1 ${this.width}px`;
+    if (this.align && this.align !== 'left') wrap.classList.add('ordo-align-' + this.align);   // no effect inside an image row
     if (!this.path && !remote) {
       wrap.classList.add('is-unresolved');
       wrap.textContent = t('„{name}“ nicht gefunden', { name: this.target.split('|')[0] });
@@ -153,12 +169,17 @@ export class ImageWidget extends WidgetType {
     box.style.backgroundImage = `url("${url.replace(/["\\\n\r]/g, c => encodeURIComponent(c))}")`;
     // macOS Live Text: on a picture with text WebKit lays a text layer over the <img> that swallows clicks and drags
     // (buttons do nothing, dragging selects text). The <img> is never hit (CSS pointer-events: none) – the box takes the clicks.
+    // centred: the picture grows to both sides (2× the pointer move); right-aligned: the grip is the LEFT edge
+    const inRow = () => !!wrap.closest('.ordo-image-row');
+    const rightAligned = () => this.align === 'right' && !inRow();
+    if (this.align === 'right') box.classList.add('is-right');
     const isControl = (e: Event) => (e.target as HTMLElement).closest('.ordo-image-handle, .ordo-image-tools, .ordo-image-grip');
     let downAt = [0, 0];
     box.addEventListener('mousedown', e => { downAt = [e.clientX, e.clientY]; if (!isControl(e)) { e.preventDefault(); e.stopPropagation(); } });   // no text selection from the picture
     box.addEventListener('click', e => {
       if (isControl(e) || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 6) return;   // a drag is no click
-      if (e.clientX > box.getBoundingClientRect().right - EDGE) return;   // the resize edge never opens the picture
+      const r = box.getBoundingClientRect();
+      if (rightAligned() ? e.clientX < r.left + EDGE : e.clientX > r.right - EDGE) return;   // the resize edge never opens the picture
       e.preventDefault(); e.stopPropagation();
       host?.openImage(this.path ?? '', url);
     });
@@ -173,6 +194,22 @@ export class ImageWidget extends WidgetType {
     box.addEventListener('contextmenu', e => {
       if (box.classList.contains('is-resizing') || (e.target as HTMLElement).closest('.ordo-image-handle')) { e.preventDefault(); e.stopPropagation(); }
     }, true);
+    const alignItems = () => (['left', 'center', 'right'] as ImageAlign[]).map(a => ({
+      title: t(a === 'left' ? 'Linksbündig' : a === 'center' ? 'Zentriert' : 'Rechtsbündig'), icon: 'align-' + a,
+      checked: (this.align ?? 'left') === a, onClick: () => commitOpts(view, this.from, this.to, this.target, { align: a }),
+    }));
+    // right click on the picture: alignment + the picture's actions
+    box.addEventListener('contextmenu', e => {
+      if (e.defaultPrevented) return;
+      e.preventDefault(); e.stopPropagation();
+      const m = new Menu();
+      for (const it of alignItems()) m.addItem(it);
+      m.addSeparator();
+      if (this.path) m.addItem({ title: t('Bearbeiten'), icon: 'pencil', onClick: () => host?.editImage(this.path!, url) });
+      if (this.width) m.addItem({ title: t('Originalgröße'), icon: 'reset', onClick: () => commitWidth(view, this.from, this.to, this.target, null) });
+      m.addItem({ title: t('Link zeigen'), icon: 'link', onClick: () => { view.dispatch({ selection: { anchor: this.to } }); view.focus(); } });
+      m.showAtMouseEvent(e);
+    });
     handle.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });   // no native drag / text selection from the edge
     // Resize: drag the right edge – or, on a trackpad, just TAP the edge: then the width follows the pointer
     // without holding anything, and the next tap / click sets it (Esc cancels). No long press needed.
@@ -186,11 +223,12 @@ export class ImageWidget extends WidgetType {
       const startX = e.clientX, startW = img.getBoundingClientRect().width;
       const max = view.contentDOM.clientWidth;
       let w = Math.round(startW), moved = false;
+      const factor = inRow() ? 1 : this.align === 'center' ? 2 : this.align === 'right' ? -1 : 1;
       resizing = true;
       box.classList.add('is-resizing');
       label.textContent = `${w} px`;
       const apply = (x: number) => {
-        w = Math.round(Math.max(40, Math.min(max, startW + x - startX)));
+        w = Math.round(Math.max(40, Math.min(max, startW + factor * (x - startX))));
         img.style.width = w + 'px';
         wrap.style.flex = `0 1 ${w}px`;   // in an image row the slot follows right away
         label.textContent = `${w} px`;
@@ -255,6 +293,19 @@ export class ImageWidget extends WidgetType {
       share: Math.min(1, img.getBoundingClientRect().width / Math.max(1, view.contentDOM.clientWidth)),   // part of the text width it fills
       pixels: img.naturalWidth,
     }));
+    {
+      const b = document.createElement('button');
+      b.className = 'ordo-image-align';
+      b.title = t('Ausrichtung');
+      b.appendChild(icon('align-' + (this.align ?? 'left'), 14));
+      b.addEventListener('mousedown', e => {
+        e.preventDefault(); e.stopPropagation();
+        const m = new Menu();
+        for (const it of alignItems()) m.addItem(it);
+        m.showAtElement(b);
+      });
+      tools.appendChild(b);
+    }
     if (this.width) mk(t('Originalgröße'), () => commitWidth(view, this.from, this.to, this.target, null));
     mk(t('Link zeigen'), () => { view.dispatch({ selection: { anchor: this.to } }); view.focus(); });
 
@@ -369,8 +420,12 @@ export const imageDrop = EditorView.domEventHandlers({
   },
 });
 
-/** Positions may have shifted since the widget was drawn: find the embed again. */
 function commitWidth(view: EditorView, from: number, to: number, target: string, w: number | null) {
+  commitOpts(view, from, to, target, { w });
+}
+
+/** Positions may have shifted since the widget was drawn: find the embed again. */
+function commitOpts(view: EditorView, from: number, to: number, target: string, set: { w?: number | null; align?: ImageAlign }) {
   const state = view.state;
   let a = from, b = to;
   const current = state.sliceDoc(a, b);
@@ -381,7 +436,7 @@ function commitWidth(view: EditorView, from: number, to: number, target: string,
     a = e.from; b = e.to;
   }
   const src = state.sliceDoc(a, b);
-  const next = withWidth(src, w);
+  const next = withOpts(src, set);
   if (next !== src) view.dispatch({ changes: { from: a, to: b, insert: next } });
 }
 
@@ -417,13 +472,13 @@ function buildBelow(state: EditorState): DecorationSet {
       if (!line.text.includes('![')) continue;
       const row = imageRow(line.text, line.from, path);
       if (row) {
-        const items = row.map(e => new ImageWidget(e.target, e.path, e.width, e.from, e.to, false));
+        const items = row.map(e => new ImageWidget(e.target, e.path, e.width, e.from, e.to, false, e.align));
         decos.push(Decoration.widget({ widget: new ImageRowWidget(items), block: true, side: 1 }).range(line.to));
         continue;
       }
       for (const e of findEmbeds(line.text, line.from, path)) {
         if (e.kind !== 'image') continue;
-        decos.push(Decoration.widget({ widget: new ImageWidget(e.target, e.path, e.width, e.from, e.to, true), block: true, side: 1 }).range(line.to));
+        decos.push(Decoration.widget({ widget: new ImageWidget(e.target, e.path, e.width, e.from, e.to, true, e.align), block: true, side: 1 }).range(line.to));
       }
     }
   }

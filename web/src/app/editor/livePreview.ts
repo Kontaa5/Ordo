@@ -222,7 +222,7 @@ function build(view: EditorView): DecorationSet {
         taken.push([e.from, e.to]);
         if (!lineActive) {
           if (e.kind === 'image') {
-            decos.push(Decoration.replace({ widget: new ImageWidget(e.target, e.path, e.width, e.from, e.to, false) }).range(e.from, e.to));
+            decos.push(Decoration.replace({ widget: new ImageWidget(e.target, e.path, e.width, e.from, e.to, false, e.align) }).range(e.from, e.to));
           } else if (e.kind === 'note') {
             decos.push(Decoration.replace({ widget: new NoteEmbedWidget(e.target) }).range(e.from, e.to));
           } else decos.push(mark('cm-formatting-embed cm-hmd-embed').range(e.from, e.to));

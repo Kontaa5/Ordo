@@ -219,7 +219,7 @@ export const EN: Record<string, string> = {
 
   'Große Bilder verkleinern': 'Shrink large images', 'Große Bilder verkleinern …': 'Shrink large images …', 'Suche Bilder über 1 MB …': 'Looking for pictures over 1 MB …',
   'Keine großen Bilder gefunden, die sich verkleinern lassen.': 'No large pictures found that can be made smaller.', '{a} → {b}. Dateinamen und Links bleiben gleich.': '{a} → {b}. File names and links stay the same.', 'Bild': 'picture', 'Bilder': 'pictures', 'Bild verkleinert.': 'picture made smaller.', 'Bilder verkleinert.': 'pictures made smaller.',
-  'Verkleinern': 'Shrink', 'Komprimieren': 'Compress', 'Antippen oder ziehen zum Skalieren': 'Tap or drag to resize', 'Bild komprimieren': 'Compress picture', 'Vorhandene Bilder verkleinern': 'Shrink existing pictures',
+  'Verkleinern': 'Shrink', 'Komprimieren': 'Compress', 'Linksbündig': 'Align left', 'Zentriert': 'Centred', 'Rechtsbündig': 'Align right', 'Ausrichtung': 'Alignment', 'Vorheriges Bild': 'Previous picture', 'Nächstes Bild': 'Next picture', 'Antippen oder ziehen zum Skalieren': 'Tap or drag to resize', 'Bild komprimieren': 'Compress picture', 'Vorhandene Bilder verkleinern': 'Shrink existing pictures',
   'Bilder über 1 MB, die schon im Vault liegen. Dateinamen und Links bleiben gleich.': 'Pictures over 1 MB already in the vault. File names and links stay the same.', 'Prüfen …': 'Check …',
 
   'Original überschreiben': 'Overwrite original', 'Als Kopie speichern': 'Save as copy', 'In {n} Notizen verwendet – wird als Kopie gespeichert': 'Used in {n} notes – saved as a copy',
@@ -267,7 +267,7 @@ export const EN: Record<string, string> = {
   'Du kannst es dort wiederherstellen.': 'You can restore it there.', 'In den Papierkorb verschoben.': 'Moved to the trash.',
 
   'Automatisch – bleibt druckscharf (300 dpi)': 'Automatic – stays print-sharp (300 dpi)',
-  'Automatisch – 300 dpi, druckscharf': 'Automatic – 300 dpi, print-sharp', 'Ziel': 'Target', 'Druck: {a} → {b} dpi': 'Print: {a} → {b} dpi',
+  'Automatisch – 300 dpi, druckscharf': 'Automatic – 300 dpi, print-sharp', 'Druck: {a} → {b} dpi': 'Print: {a} → {b} dpi',
   'Aktuell: {d} dpi ({px} px, so breit wie in der Notiz gedruckt)': 'Now: {d} dpi ({px} px, printed as wide as in the note)',
   'Verkleinert nur so weit, dass das Bild in seiner Größe in der Notiz gedruckt noch scharf ist (300 dpi). Kleinere Bilder werden nur platzsparender gespeichert.': 'Only shrinks as far as the picture still prints sharp at its size in the note (300 dpi). Smaller pictures are only stored more compactly.',
   'Verkleinert nur so weit, dass das Bild über die ganze Textbreite gedruckt noch scharf ist (300 dpi). Kleinere Bilder werden nur platzsparender gespeichert.': 'Only shrinks as far as the picture still prints sharp across the full text width (300 dpi). Smaller pictures are only stored more compactly.',

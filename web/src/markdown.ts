@@ -5,7 +5,7 @@
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import type { StateInline, StateCore, Token } from 'markdown-it';
-import { resolve, fileURL, IMAGE_EXT, parseSize, basename } from './vault';
+import { resolve, fileURL, IMAGE_EXT, parseImageOpts, basename } from './vault';
 import { mathPlugin } from './math';
 import { highlightToHTML } from './app/editor/code';
 import { ICONS } from './app/icons';
@@ -45,11 +45,12 @@ export function renderWikilink(inner: string, embed: boolean): string {
   const resolved = target ? resolve(target, currentPath) : currentPath;
 
   if (embed && IMAGE_EXT.test(target)) {
-    const { w, h } = parseSize(alias);
+    const { w, h, align } = parseImageOpts(alias);
+    const alignCls = align && align !== 'left' ? ` ordo-align-${align}` : '';
     const style = [w ? `width:${w}px` : '', h ? `height:${h}px` : ''].filter(Boolean).join(';');
     if (!resolved) return `<span class="missing-embed">${esc(target)} nicht gefunden</span>`;
     const flex = w ? ` style="flex:0 1 ${w}px"` : '';
-    return `<span class="internal-embed media-embed image-embed is-loaded"${flex}><img class="ordo-img" decoding="async" src="${fileURL(resolved)}" data-path="${esc(resolved)}" alt="${esc(basename(target))}"${style ? ` style="${style}"` : ''}></span>`;
+    return `<span class="internal-embed media-embed image-embed is-loaded${alignCls}"${flex}><img class="ordo-img" decoding="async" src="${fileURL(resolved)}" data-path="${esc(resolved)}" alt="${esc(basename(target))}"${style ? ` style="${style}"` : ''}></span>`;
   }
   if (embed) {
     return `<div class="embed-note" data-href="${esc(targetFull)}"><span class="embed-title">${esc(alias || targetFull)}</span></div>`;
@@ -218,8 +219,8 @@ md.renderer.rules.image = (tokens: Token[], idx) => {
   const t = tokens[idx];
   const src = String(t.attrGet('src') ?? '');
   const altRaw = t.content;
-  const bar = altRaw.lastIndexOf('|');
-  const { w, h } = parseSize(bar >= 0 ? altRaw.slice(bar + 1) : undefined);
+  const bar = altRaw.indexOf('|');
+  const { w, h, align } = parseImageOpts(bar >= 0 ? altRaw.slice(bar + 1) : undefined);
   const alt = bar >= 0 ? altRaw.slice(0, bar) : altRaw;
   let url = src, path = '';
   if (!/^[a-z][\w+.-]*:/i.test(src)) {
@@ -227,7 +228,7 @@ md.renderer.rules.image = (tokens: Token[], idx) => {
     if (r) { url = fileURL(r); path = r; }
   }
   const style = [w ? `width:${w}px;flex:0 1 ${w}px` : '', h ? `height:${h}px` : ''].filter(Boolean).join(';');
-  return `<img class="ordo-img" decoding="async" src="${esc(url)}" data-path="${esc(path)}" alt="${esc(alt)}"${style ? ` style="${style}"` : ''}>`;
+  return `<img class="ordo-img${align && align !== 'left' ? ` ordo-align-${align}` : ''}" decoding="async" src="${esc(url)}" data-path="${esc(path)}" alt="${esc(alt)}"${style ? ` style="${style}"` : ''}>`;
 };
 
 // a paragraph made only of 2+ images on one line → row, side by side

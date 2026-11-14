@@ -563,6 +563,19 @@ button.copy-code-button:not(.clickable-icon):hover { background-color: var(--bac
   background: rgba(0, 0, 0, 0.6); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.85);
 }
 .ordo-image-box:hover .ordo-image-handle, .ordo-image-box.is-resizing .ordo-image-handle { opacity: 1; }
+/* alignment (`|center`, `|right` in the link) – never inside an image row */
+.image-embed.ordo-align-center { text-align: center; }
+.image-embed.ordo-align-right { text-align: right; }
+.ordo-image-row .image-embed.ordo-align-center, .ordo-image-row .image-embed.ordo-align-right { text-align: left; }
+.image-embed.ordo-align-right .ordo-image-box.is-right .ordo-image-handle { right: auto; left: -8px; }
+.image-embed.ordo-align-right .ordo-image-box.is-right .ordo-image-handle::after { right: auto; left: 13px; }
+.image-embed.ordo-align-right .ordo-image-box.is-right .ordo-image-grip { left: 34px; }
+.ordo-image-tools button.ordo-image-align { padding: 2px 5px; display: inline-flex; align-items: center; }
+.ordo-image-tools button.ordo-image-align svg { width: 14px; height: 14px; }
+/* reading view */
+.markdown-rendered .image-embed.ordo-align-center, .markdown-rendered .image-embed.ordo-align-right { display: block; }
+img.ordo-img.ordo-align-center { display: block; margin-left: auto; margin-right: auto; }
+img.ordo-img.ordo-align-right { display: block; margin-left: auto; margin-right: 0; }
 /* Themes with "hold to zoom" (e.g. Minimal: .image-embed:active → position: fixed over a dark backdrop) would take the picture
    out of the note on every press – resizing then snaps to 40 px and the page goes dark. Ordo has its own picture view. */
 body .image-embed.ordo-image-inline:active, body .image-embed.ordo-image-below:active {
@@ -570,6 +583,8 @@ body .image-embed.ordo-image-inline:active, body .image-embed.ordo-image-below:a
   height: auto !important; max-width: 100% !important; max-height: none !important; margin: 0 !important; cursor: inherit !important; background: none !important;
   text-align: left !important; justify-content: flex-start !important; padding: 0 !important;
 }
+body .image-embed.ordo-image-inline.ordo-align-center:active, body .image-embed.ordo-image-below.ordo-align-center:active { text-align: center !important; }
+body .image-embed.ordo-image-inline.ordo-align-right:active, body .image-embed.ordo-image-below.ordo-align-right:active { text-align: right !important; }
 body .image-embed.ordo-image-inline:active::after, body .image-embed.ordo-image-below:active::after,
 body .image-embed.ordo-image-inline:active::before, body .image-embed.ordo-image-below:active::before { content: none !important; }
 body .ordo-image-box img:active, body .ordo-image-box:active {

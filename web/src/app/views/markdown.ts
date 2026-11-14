@@ -23,7 +23,7 @@ import { arrows } from '../editor/arrows';
 import { tagCase } from '../editor/tagCase';
 import { wrapOnType } from '../editor/wrap';
 import { blockDrag, unwrapColumnsChange, sideBySideBlocksChange } from '../editor/blockDrag';
-import { imagesBelowField, imageDrop, refreshImages, bumpImage, versionedURL, sideBySideChange, stackedChange } from '../editor/images';
+import { imagesBelowField, imageDrop, refreshImages, bumpImage, versionedURL, sideBySideChange, stackedChange, findEmbeds } from '../editor/images';
 import { pageBreakField, setPageBreaks } from '../editor/pageBreaks';
 import { codeLanguage, codeHighlightStyle } from '../editor/code';
 import { mathCompletion } from '../modals/mathPalette';
@@ -33,7 +33,7 @@ import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD } from '../../clip
 import { createSearchPanel } from '../editor/searchPanel';
 import { headingFold, addReadingFolds } from '../editor/headingFold';
 import { spelling, misspelledAt, spellGuesses, keepWord } from '../editor/autocorrect';
-import { openLightbox } from '../../lightbox';
+import { openLightbox, LightboxItem } from '../../lightbox';
 import { openImageEditor } from '../../imageEditor';
 import { blobToBase64 } from '../../bridge';
 import { getIndex, IMAGE_EXT } from '../../vault';
@@ -439,7 +439,23 @@ export class MarkdownView extends View {
   // ---------- images ----------
 
   openImage(path: string, url: string) {
-    openLightbox(url, path ? basename(path) : '', path ? () => this.editImage(path, url) : undefined);
+    // every picture of the note, in order: ‹ › step through them
+    const items: LightboxItem[] = [];
+    let index = -1;
+    const doc = this.editor.state.doc;
+    for (let n = 1; n <= doc.lines; n++) {
+      const line = doc.line(n);
+      if (!line.text.includes('![')) continue;
+      for (const e of findEmbeds(line.text, line.from, this.path)) {
+        if (e.kind !== 'image' || (!e.path && !/^https?:/i.test(e.target))) continue;
+        const p = e.path, src = p ? versionedURL(p) : e.target;
+        if (index < 0 && (p ? p === path : src === url)) index = items.length;
+        items.push({ src, caption: p ? basename(p) : e.target, onEdit: p ? () => this.editImage(p, src) : undefined });
+      }
+    }
+    const single = { src: url, caption: path ? basename(path) : '', onEdit: path ? () => this.editImage(path, url) : undefined };
+    if (index < 0) { items.unshift(single); index = 0; }
+    openLightbox(single.src, single.caption, single.onEdit, { items, index });
   }
 
   editImage(path: string, url: string) {
