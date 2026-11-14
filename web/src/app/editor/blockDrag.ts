@@ -170,7 +170,7 @@ export const blockDrag = ViewPlugin.fromClass(class {
       const arrow = line?.querySelector('.ordo-heading-fold')?.getBoundingClientRect();
       if (arrow) top = arrow.top + arrow.height / 2 - 11 - root.top;
     }
-    Object.assign(this.handle.style, { top: top + 'px', left: content.left - root.left - (heading ? 50 : 24) + 'px' });
+    Object.assign(this.handle.style, { top: top + 'px', left: Math.max(2, content.left - root.left - (heading ? 50 : 24)) + 'px' });   // tiny window: never off-screen
     this.handle.hidden = false;
   };
 
