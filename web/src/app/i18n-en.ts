@@ -305,4 +305,8 @@ export const EN: Record<string, string> = {
   'Zum Wörterbuch hinzufügen': 'Add to dictionary',
   'Ignorieren': 'Ignore',
   'Ziehen, um das Bild zu verschieben': 'Drag to move the picture',
+  '⚠️ „{a}“ enthält plötzlich den Text von „{b}“. Die alte Fassung ist noch da.': '⚠️ “{a}” suddenly contains the text of “{b}”. The old version is still there.',
+  'Alte Fassung zurückholen': 'Restore old version',
+  'Alte Fassung wiederhergestellt': 'Old version restored',
+  'Die Notiz wurde inzwischen geändert – die alte Fassung ist im Git-Verlauf': 'The note has changed since – the old version is in the Git history',
 };

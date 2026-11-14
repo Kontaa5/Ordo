@@ -355,3 +355,28 @@ final class GitConflictTests: XCTestCase {
         XCTAssertEqual(try String(contentsOf: b.appendingPathComponent("bild (Konflikt).png"), encoding: .utf8), "alt")
     }
 }
+
+final class ContentGuardTests: XCTestCase {
+    private func note(_ topic: String) -> String {
+        (1...6).map { "Zeile \($0) über \(topic), lang genug um zu zählen." }.joined(separator: "\n")
+    }
+
+    func testForeignTextIsNoticed() {
+        let others = ["Medien/Expose.md": note("Medienproduktion"), "Deutsch/Kommentar.md": note("Medienproduktion")]
+        XCTAssertEqual(ContentGuard.foreignSource(path: "Deutsch/Kommentar.md", old: note("Rassismus"), new: note("Medienproduktion"), others: others), "Medien/Expose.md")
+    }
+
+    func testOwnEditsAreNotFlagged() {
+        let old = note("Zivilcourage")
+        let edited = old + "\nNeuer Absatz mit ein paar zusätzlichen Gedanken dazu."
+        XCTAssertNil(ContentGuard.foreignSource(path: "a.md", old: old, new: edited, others: ["b.md": note("INSY")]))
+    }
+
+    func testRewrittenTextWithoutTwinIsNotFlagged() {
+        XCTAssertNil(ContentGuard.foreignSource(path: "a.md", old: note("Alt"), new: note("Ganz neu"), others: ["b.md": note("INSY")]))
+    }
+
+    func testShortNotesAreIgnored() {
+        XCTAssertNil(ContentGuard.foreignSource(path: "a.md", old: "kurz", new: "anders", others: ["b.md": "anders"]))
+    }
+}

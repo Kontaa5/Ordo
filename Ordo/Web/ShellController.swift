@@ -198,6 +198,10 @@ final class ShellController: WebController {
             let dest = v.autoSort(path)
             app.pushIndexIfNeeded()
             return Self.moveResult(path, dest)
+        case "restoreReplaced":
+            let ok = v.restoreReplaced(str("path"))
+            if ok { app.pushIndexIfNeeded() }
+            return ok
         case "leave":
             let path = str("path")
             let dest = v.autoSort(path, leaving: true)

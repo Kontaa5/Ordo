@@ -31,6 +31,7 @@ const hostApi = {
   renamed: (d: { from: string; to: string }) => emit('renamed', d),
   externalChange: (d: { path: string; text: string }) => emit('external-change', d),
   deleted: (path: string) => emit('deleted', path),
+  foreignContent: (d: { path: string; source: string }) => emit('foreign-content', d),
   hotkey: (combo: string) => emit('hotkey', combo),
   command: (id: string) => emit('command', id),
   exportProgress: (p: number) => emit('export-progress', p),

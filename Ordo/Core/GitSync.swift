@@ -17,6 +17,8 @@ final class GitSync {
     private(set) var uncommitted = 0
     private(set) var unpushed = 0
     var onChange: (() -> Void)?
+    /// Called for each note changed since the last backup, with its text in that backup.
+    var checkChanged: ((String, String) -> Void)?
     private var busy = false
     /// Backing up, uploading or fetching right now (quitting would cut it off).
     var isBusy: Bool { busy }
@@ -218,6 +220,14 @@ final class GitSync {
             if FileManager.default.fileExists(atPath: placeholder.path) {
                 _ = await git(["reset", "-q", "--", path])
                 try? FileManager.default.startDownloadingUbiquitousItem(at: u)
+            }
+        }
+        // a note that suddenly holds another note's text gets a warning (the old text stays in the history)
+        if let check = checkChanged {
+            let modified = await git(["diff", "--cached", "--name-only", "--diff-filter=M", "-z"])
+            for path in modified.out.split(separator: "\0").map(String.init) where path.lowercased().hasSuffix(".md") {
+                let old = await git(["show", "HEAD:" + path])
+                if old.ok { check(path, old.out) }
             }
         }
         let staged = await git(["diff", "--cached", "--name-only", "-z"])   // -z: names with umlauts unquoted

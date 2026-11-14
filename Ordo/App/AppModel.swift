@@ -46,6 +46,7 @@ final class AppModel {
         store.onRename = { [weak self] old, new in self?.shell.callJSON("ordo.host.renamed", ["from": old, "to": new]) }
         store.onExternalChange = { [weak self] path, text in self?.shell.callJSON("ordo.host.externalChange", ["path": path, "text": text]) }
         store.onDelete = { [weak self] path in self?.shell.callJSON("ordo.host.deleted", path) }
+        store.onForeignContent = { [weak self] path, source in self?.shell.callJSON("ordo.host.foreignContent", ["path": path, "source": source]) }
         vault = store
         Task {
             await store.refresh()
@@ -99,6 +100,7 @@ final class AppModel {
         let g = GitSync(root: store.root)
         git = g
         g.onChange = { [weak self] in self?.pushGitStatus() }
+        g.checkChanged = { [weak store] path, old in store?.flagIfForeign(path, old: old) }
         gitTask = Task {
             guard await g.prepare(remote: store.settings.gitRemote) else { return }
             if store.settings.gitDailyUpload { await g.dailyUploadIfDue() }

@@ -408,6 +408,16 @@ async function start(info: NonNullable<Boot['vault']>) {
 }
 
 on('vault-opened', (info: Boot['vault']) => { if (info) start(info); });
+// a note suddenly holds another note's text (iCloud mixed up files): say so and offer the old text
+on('foreign-content', ({ path, source }: { path: string; source: string }) => {
+  notice(t('⚠️ „{a}“ enthält plötzlich den Text von „{b}“. Die alte Fassung ist noch da.').replace('{a}', noteName(path)).replace('{b}', noteName(source)), {
+    timeout: 300000, action: t('Alte Fassung zurückholen'),
+    onAction: async () => {
+      const ok = await request<boolean>('restoreReplaced', { path }).catch(() => false);
+      notice(ok ? t('Alte Fassung wiederhergestellt') : t('Die Notiz wurde inzwischen geändert – die alte Fassung ist im Git-Verlauf'), { timeout: 6000 });
+    },
+  });
+});
 on('vault-closed', async (b: Boot) => { boot = b; if (started) location.reload(); else showVaultPicker(); });
 on('show-vault-picker', () => showVaultPicker());
 on('export', (opts: any) => new ExportModal(opts).open());

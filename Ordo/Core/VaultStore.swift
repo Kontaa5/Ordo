@@ -77,6 +77,10 @@ final class VaultStore {
     @ObservationIgnored var onExternalChange: ((String, String) -> Void)?
     @ObservationIgnored var onRename: ((String, String) -> Void)?
     @ObservationIgnored var onDelete: ((String) -> Void)?
+    /// A note suddenly holds another note's text (path, the other note).
+    @ObservationIgnored var onForeignContent: ((String, String) -> Void)?
+    /// Notes flagged that way: their earlier text and the foreign one, for "Alte Fassung zurückholen".
+    @ObservationIgnored private var replaced: [String: (old: String, new: String)] = [:]
 
     init(root: URL) {
         self.root = root
@@ -267,7 +271,7 @@ final class VaultStore {
                 notes[path] = NoteMeta(path: path, parsed: parsed)
                 structureChanged = true
             }
-            if let previous, previous != text { onExternalChange?(path, text) }
+            if let previous, previous != text { onExternalChange?(path, text); flagIfForeign(path, old: previous) }
         }
         if files != result.files { files = result.files; structureChanged = true }
         if stats != result.stats { stats = result.stats; structureChanged = true }
@@ -397,6 +401,23 @@ final class VaultStore {
             notes[path] = NoteMeta(path: path, parsed: parsed)
             rebuildIndex()
         }
+    }
+
+    /// `path` changed from `old` (on disk, or since the last backup): warn if it now holds another note's text.
+    func flagIfForeign(_ path: String, old: String) {
+        guard replaced[path] == nil, let new = contents[path],
+              let source = ContentGuard.foreignSource(path: path, old: old, new: new, others: contents) else { return }
+        replaced[path] = (old, new)
+        onForeignContent?(path, source)
+    }
+
+    /// Puts the earlier text back – only if the note still holds exactly the foreign text,
+    /// so nothing typed in the meantime is overwritten.
+    func restoreReplaced(_ path: String) -> Bool {
+        guard let r = replaced.removeValue(forKey: path), contents[path] == r.new, notes[path] != nil else { return false }
+        write(path, text: r.old)
+        onExternalChange?(path, r.old)
+        return true
     }
 
     func uniquePath(_ desired: String) -> String {
