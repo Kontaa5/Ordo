@@ -118,7 +118,7 @@ export const EN: Record<string, string> = {
   'Bearbeiten (Live-Vorschau)': 'Editing (live preview)', 'Lesen': 'Reading', 'Lesbare Zeilenlänge': 'Readable line length',
   'Begrenzt die Zeilenbreite für bessere Lesbarkeit.': 'Limits the line width for easier reading.', 'Rechtschreibprüfung': 'Spellcheck',
   'Wirkt für neu geöffnete Notizen.': 'Applies to newly opened notes.', 'Seitenumbrüche anzeigen': 'Show page breaks',
-  'Zeigt, wo beim PDF-Export eine neue Seite beginnt. Die Linie lässt sich nach oben ziehen; \\pagebreak erzwingt einen Umbruch.': 'Shows where a new page starts when exporting to PDF. Drag the line up; \\pagebreak forces a break.',
+  'Zeigt, wo beim PDF-Export eine neue Seite beginnt. Die Linie lässt sich nach oben ziehen; %%pagebreak%% erzwingt einen Umbruch (in Obsidian unsichtbar).': 'Shows where a new page starts when exporting to PDF. Drag the line up; %%pagebreak%% forces a break (invisible in Obsidian).',
   'Speicherort für neue Notizen': 'Location for new notes', 'Wird eine Notiz mit Hashtags versehen, wandert sie automatisch in ihren Ordner.': 'Once a note gets hashtags it moves to its folder automatically.',
   'Bilder & Anhänge': 'Images & attachments', 'Ablage für Anhänge': 'Attachment location', 'Wohin eingefügte Fotos und Dateien gespeichert werden.': 'Where pasted photos and files are saved.',
   'In einem festen Ordner': 'In a fixed folder', 'Im Ordner der Notiz': 'In the note’s folder', 'In einem Unterordner neben der Notiz': 'In a subfolder next to the note',

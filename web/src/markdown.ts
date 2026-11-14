@@ -168,11 +168,11 @@ md.core.ruler.after('inline', 'tasks', (state: StateCore) => {
   }
 });
 
-// ---------- \pagebreak / \newpage lines ----------
+// ---------- page-break lines: %%pagebreak%% (an Obsidian comment: invisible there) or \pagebreak / \newpage ----------
 md.core.ruler.after('inline', 'pagebreaks', (state: StateCore) => {
   const toks = state.tokens;
   for (let i = 0; i < toks.length - 2; i++) {
-    if (toks[i].type === 'paragraph_open' && toks[i + 1].type === 'inline' && /^\\(pagebreak|newpage)\s*$/.test(toks[i + 1].content)) {
+    if (toks[i].type === 'paragraph_open' && toks[i + 1].type === 'inline' && /^(?:\\(?:pagebreak|newpage)|%%\s*pagebreak\s*%%)\s*$/.test(toks[i + 1].content)) {
       const t = new state.Token('html_block', '', 0);
       t.content = '<div class="page-break"></div>\n';
       t.map = toks[i].map;

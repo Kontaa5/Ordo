@@ -118,7 +118,7 @@ export class SettingsModal extends Modal {
       setting(t('Lesbare Zeilenlänge'), t('Begrenzt die Zeilenbreite für bessere Lesbarkeit.'), this.toggle(s.readableLineWidth, v => this.save({ readableLineWidth: v }))),
       setting(t('Rechtschreibprüfung'), t('Wirkt für neu geöffnete Notizen.'), this.toggle(appState.spellcheck, v => { appState.spellcheck = v; })),
       ...(isMac ? [this.textChecking()] : []),
-      setting(t('Seitenumbrüche anzeigen'), t('Zeigt, wo beim PDF-Export eine neue Seite beginnt. Die Linie lässt sich nach oben ziehen; \\pagebreak erzwingt einen Umbruch.'),
+      setting(t('Seitenumbrüche anzeigen'), t('Zeigt, wo beim PDF-Export eine neue Seite beginnt. Die Linie lässt sich nach oben ziehen; %%pagebreak%% erzwingt einen Umbruch (in Obsidian unsichtbar).'),
         this.toggle(appState.showPageBreaks, v => { appState.showPageBreaks = v; })),
     );
   }

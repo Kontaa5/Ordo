@@ -1,5 +1,5 @@
 // Page-break markers in the editor ("Seite 2"). They come from the same
-// paginator as the PDF export; dragging one upwards inserts a \\pagebreak.
+// paginator as the PDF export; dragging one upwards inserts a %%pagebreak%% (invisible in Obsidian).
 
 import { Range, StateEffect, StateField } from '@codemirror/state';
 import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
@@ -39,7 +39,7 @@ class PageBreakWidget extends WidgetType {
         ghost.remove();
         const line = place(ev.clientY);
         if (!line || Math.abs(ev.clientY - e.clientY) < 6 || line.number <= 1) return;
-        view.dispatch({ changes: { from: line.from, insert: '\\pagebreak\n' }, userEvent: 'input.pagebreak' });
+        view.dispatch({ changes: { from: line.from, insert: '%%pagebreak%%\n' }, userEvent: 'input.pagebreak' });
       };
       d.addEventListener('pointermove', move);
       d.addEventListener('pointerup', up);

@@ -199,7 +199,7 @@ function build(view: EditorView): DecorationSet {
       if (!text) continue;
       const lineActive = lines.has(ln);
 
-      if (/^\\(pagebreak|newpage)\s*$/.test(text) && !lineActive) {
+      if (/^(?:\\(?:pagebreak|newpage)|%%\s*pagebreak\s*%%)\s*$/.test(text) && !lineActive) {
         decos.push(Decoration.replace({ widget: new ManualBreakWidget() }).range(line.from, line.to));
         continue;
       }
