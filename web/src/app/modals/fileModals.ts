@@ -32,10 +32,28 @@ export class QuickSwitcher extends SuggestModal<FileItem> {
       const rest = all.filter(p => !rec.includes(p)).sort((a, b) => (vault.notes.get(b)?.mtime ?? 0) - (vault.notes.get(a)?.mtime ?? 0));
       return [...rec, ...rest].slice(0, 60).map((p, i) => ({ path: p, name: noteName(p), score: -i, matches: [], recent: i }));
     }
+    // #schule #5klasse = filter: only notes that have ALL these tags (prefix while typing, small typos ok), file names don't count
+    const raw = q.trim().split(/\s+/);
+    const tagWords = raw.filter(w => w.length > 1 && w.startsWith('#')).map(w => w.slice(1).toLowerCase());
+    const text = raw.filter(w => !w.startsWith('#')).join(' ');
+    let pool = all;
+    if (tagWords.length) {
+      const hasTags = (p: string) => {
+        const tags = (vault.notes.get(p)?.tags ?? []).map(tg => tg.toLowerCase().replace(/^#/, ''));
+        const digits = (x: string) => x.replace(/\D/g, '');   // a typo may not change a number: #5klasse ≠ #4klasse
+        return tagWords.every(w => tags.some(tg => tg.startsWith(w) || tg.split('/').some(part => part.startsWith(w)) || (wordScore(w, tg) > 0 && digits(w) === digits(tg))));
+      };
+      pool = [...vault.notes.keys()].filter(hasTags);
+      if (!text) {
+        const byUse = (p: string) => (recent.includes(p) ? 1e15 - recent.indexOf(p) : vault.notes.get(p)?.mtime ?? 0);
+        return pool.sort((a, b) => byUse(b) - byUse(a)).slice(0, 60).map((p, i) => ({ path: p, name: noteName(p), score: -i, matches: [], recent: 0 }));
+      }
+    }
+    q = text;
     const out: FileItem[] = [];
-    // every word has to fit the name, a folder or a hashtag of the note (#sew or sew), small typos allowed
-    const words = q.toLowerCase().split(/\s+/).map(w => w.replace(/^#/, '')).filter(Boolean);
-    for (const p of all) {
+    // every word has to fit the name, a folder or a hashtag of the note (sew), small typos allowed
+    const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+    for (const p of pool) {
       const name = noteName(p);
       const m = fuzzy(q, name) ?? (() => { const r = fuzzy(q, p); return r ? { score: r.score - 50, matches: [] } : null; })();
       if (m) { out.push({ path: p, name, score: m.score + (recent.includes(p) ? 30 : 0), matches: m.matches, recent: 0 }); continue; }
