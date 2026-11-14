@@ -35,6 +35,7 @@ import { headingFold, addReadingFolds, restoreFolds, foldAllHeadings } from '../
 export { foldAllHeadings };
 import { spelling, misspelledAt, spellGuesses, keepWord } from '../editor/autocorrect';
 import { openLightbox, LightboxItem } from '../../lightbox';
+import { makeColumns } from '../../columns';
 import { openImageEditor } from '../../imageEditor';
 import { blobToBase64 } from '../../bridge';
 import { getIndex, IMAGE_EXT } from '../../vault';
@@ -662,11 +663,12 @@ export class MarkdownView extends View {
       { title: t('Tabelle'), icon: 'table', onClick: () => this.insertAt(v.state.selection.main.head, '| Spalte 1 | Spalte 2 |\n| --- | --- |\n|  |  |', true) },
       { title: t('Codeblock'), icon: 'file-code', onClick: () => this.insertAt(v.state.selection.main.head, '```\n\n```', true) },
       { title: t('Callout'), icon: 'info', onClick: () => this.insertAt(v.state.selection.main.head, '> [!note] Titel\n> Inhalt', true) },
-      { title: t('Zwei Spalten'), icon: 'split', onClick: () => this.insertAt(v.state.selection.main.head, `> [!multi-column]\n>\n>> [!blank]\n>> ${t('Linke Spalte')}\n>\n>> [!blank]\n>> ${t('Rechte Spalte')}`, true) },
+      { title: t('Zwei Spalten'), icon: 'split', onClick: () => this.insertAt(v.state.selection.main.head, makeColumns([t('Linke Spalte'), t('Rechte Spalte')]), true) },
       { title: t('Seitenumbruch'), icon: 'page-break', onClick: () => this.insertAt(v.state.selection.main.head, '%%pagebreak%%', true) },
     ] });
     const onImage = (e.target as Element).closest?.('.image-embed');
-    const at = onImage ? v.posAtDOM(onImage) : sel.head;
+    const onBlock = (e.target as Element).closest?.('.ordo-rendered-block') as HTMLElement | null;   // e.g. rendered columns
+    const at = onImage ? v.posAtDOM(onImage) : onBlock ? v.posAtDOM(onBlock) : sel.head;
     const row = sideBySideChange(v.state, sel.from, sel.to), stack = stackedChange(v.state, at);
     const unwrap = unwrapColumnsChange(v.state, at);
     const cols = sel.empty ? null : sideBySideBlocksChange(v.state, sel.from, sel.to);

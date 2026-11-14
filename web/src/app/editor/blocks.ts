@@ -11,6 +11,7 @@ import { editorHost } from './host';
 import { ICONS } from '../icons';
 
 import { t } from '../i18n';
+import { COL_START, COL_END } from '../../columns';
 export interface RenderedBlock { from: number; to: number; kind: 'properties' | 'callout' | 'table' | 'math'; text: string }
 
 function touchesSel(state: EditorState, from: number, to: number) {
@@ -58,6 +59,17 @@ function candidateBlocks(state: EditorState): RenderedBlock[] {
     if (j > doc.lines) break;
     const end = doc.line(j);
     out.push({ from: line.from, to: end.to, kind: 'math', text: doc.sliceString(line.to + 1, end.to).replace(/\$\$\s*$/, '').trim() });
+    i = j;
+  }
+  // %%columns%% … %%/columns%%: one rendered block; whatever was found inside it is part of it
+  for (let i = 1; i <= doc.lines; i++) {
+    if (!COL_START.test(doc.line(i).text)) continue;
+    let j = i + 1;
+    while (j <= doc.lines && !COL_END.test(doc.line(j).text)) j++;
+    if (j > doc.lines) break;
+    const from = doc.line(i).from, to = doc.line(j).to;
+    for (let k = out.length - 1; k >= 0; k--) if (out[k].from >= from && out[k].to <= to) out.splice(k, 1);
+    out.push({ from, to, kind: 'callout', text: doc.sliceString(from, to) });
     i = j;
   }
   out.sort((a, b) => a.from - b.from);

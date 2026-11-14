@@ -7,12 +7,13 @@ import { EditorView, ViewPlugin, ViewUpdate } from '@codemirror/view';
 import { syntaxTree } from '@codemirror/language';
 import { notice } from '../ui/notice';
 import { t } from '../i18n';
+import { COL_START, COL_END, makeColumns, splitColumns } from '../../columns';
 
 export interface Block { from: number; to: number }
 type Zone = 'before' | 'after' | 'left' | 'right';
 
 const DRAG_BLOCK = 'application/x-ordo-block';
-const COLUMNS = /^>\s*\[!(multi-column|columns|spalten)\]/i;
+const OLD_COLUMNS = /^>\s*\[!(multi-column|columns|spalten)\]/i;   // earlier format (a callout, visible in Obsidian)
 export const MAX_COLUMNS = 3;
 
 function frontmatterEnd(state: EditorState): number {
@@ -34,12 +35,23 @@ export function topBlocks(state: EditorState): Block[] {
     if (out.length && from <= out[out.length - 1].to) { out[out.length - 1].to = Math.max(out[out.length - 1].to, to); continue; }
     out.push({ from, to });
   }
+  // a columns block is one block, however many paragraphs it holds
+  for (let i = 0; i < out.length; i++) {
+    if (!COL_START.test(state.doc.lineAt(out[i].from).text)) continue;
+    let end = -1;
+    for (let n = state.doc.lineAt(out[i].from).number + 1; n <= state.doc.lines; n++) if (COL_END.test(state.doc.line(n).text)) { end = state.doc.line(n).to; break; }
+    if (end < 0) continue;
+    while (i + 1 < out.length && out[i + 1].from <= end) { out[i].to = Math.max(out[i].to, out[i + 1].to); out.splice(i + 1, 1); }
+    out[i].to = Math.max(out[i].to, end);
+  }
   return out;
 }
 
 const blockAt = (blocks: Block[], pos: number) => blocks.find(b => pos >= b.from && pos <= b.to) ?? null;
-const isColumns = (state: EditorState, b: Block) => COLUMNS.test(state.doc.lineAt(b.from).text);
-const columnCount = (text: string) => text.split('\n').filter(l => /^>>\s*\[!/.test(l)).length;
+const isNewColumns = (state: EditorState, b: Block) => COL_START.test(state.doc.lineAt(b.from).text);
+const isColumns = (state: EditorState, b: Block) => isNewColumns(state, b) || OLD_COLUMNS.test(state.doc.lineAt(b.from).text);
+const isColumnsText = (text: string) => COL_START.test(text.split('\n')[0]) || OLD_COLUMNS.test(text);
+const columnCount = (text: string) => COL_START.test(text.split('\n')[0]) ? splitColumns(text).length : text.split('\n').filter(l => /^>>\s*\[!/.test(l)).length;
 const asColumn = (text: string) => '>> [!blank]\n' + text.split('\n').map(l => (l.trim() ? '>> ' + l : '>>')).join('\n');
 
 /** Range to cut out so no run of empty lines is left behind. */
@@ -61,18 +73,23 @@ export function blockDropChanges(state: EditorState, src: Block, dst: Block, zon
   const del = cut(state, src);
   if (dst.from < del.to && dst.to > del.from) return null;
   let ins: { from: number; to?: number; insert: string };
-  if ((zone === 'left' || zone === 'right') && COLUMNS.test(text)) zone = zone === 'left' ? 'before' : 'after';   // no columns inside columns
+  if ((zone === 'left' || zone === 'right') && isColumnsText(text)) zone = zone === 'left' ? 'before' : 'after';   // no columns inside columns
   if (zone === 'before') ins = { from: dst.from, insert: text + '\n\n' };
   else if (zone === 'after') ins = { from: dst.to, insert: '\n\n' + text };
   else if (isColumns(state, dst)) {
     const dstText = state.sliceDoc(dst.from, dst.to);
     if (columnCount(dstText) >= MAX_COLUMNS) return 'full' as const;
-    const at = zone === 'left' ? state.doc.lineAt(dst.from).to : dst.to;
-    ins = { from: at, insert: '\n>\n' + asColumn(text) };
+    if (isNewColumns(state, dst)) {   // a new first part after %%columns%%, or a last one before %%/columns%%
+      ins = zone === 'left' ? { from: state.doc.lineAt(dst.from).to, insert: '\n' + text + '\n%%column%%' }
+                            : { from: state.doc.lineAt(dst.to).from, insert: '%%column%%\n' + text + '\n' };
+    } else {
+      const at = zone === 'left' ? state.doc.lineAt(dst.from).to : dst.to;
+      ins = { from: at, insert: '\n>\n' + asColumn(text) };
+    }
   } else {
     const target = state.sliceDoc(dst.from, dst.to);
     const [a, b] = zone === 'left' ? [text, target] : [target, text];
-    ins = { from: dst.from, to: dst.to, insert: `> [!multi-column]\n>\n${asColumn(a)}\n>\n${asColumn(b)}` };
+    ins = { from: dst.from, to: dst.to, insert: makeColumns([a, b]) };
   }
   return [del, ins];
 }
@@ -83,14 +100,17 @@ export function sideBySideBlocksChange(state: EditorState, from: number, to: num
   if (sel.length < 2 || sel.length > MAX_COLUMNS || sel.some(b => isColumns(state, b))) return null;
   // pictures-only lines are handled by "Bilder nebeneinander"
   if (sel.every(b => /^(\s*!\[[^\n]*\s*)+$/.test(state.sliceDoc(b.from, b.to)))) return null;
-  const cols = sel.map(b => asColumn(state.sliceDoc(b.from, b.to))).join('\n>\n');
-  return { from: sel[0].from, to: sel[sel.length - 1].to, insert: `> [!multi-column]\n>\n${cols}` };
+  return { from: sel[0].from, to: sel[sel.length - 1].to, insert: makeColumns(sel.map(b => state.sliceDoc(b.from, b.to))) };
 }
 
 /** Columns block → its columns one after another again. */
 export function unwrapColumnsChange(state: EditorState, pos: number) {
   const b = blockAt(topBlocks(state), pos);
   if (!b || !isColumns(state, b)) return null;
+  if (isNewColumns(state, b)) {
+    const text = splitColumns(state.sliceDoc(b.from, b.to)).map(p => p.text.trim()).filter(Boolean).join('\n\n');
+    return { from: b.from, to: b.to, insert: text };
+  }
   const cols: string[][] = [];
   for (const line of state.sliceDoc(b.from, b.to).split('\n').slice(1)) {
     if (/^>>\s*\[!blank\]/i.test(line)) { cols.push([]); continue; }
