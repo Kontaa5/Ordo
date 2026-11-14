@@ -149,3 +149,47 @@ export function selectionToMarkdown(sel: Selection): string | null {
     .replace(/\\\[\\\[/g, '[[').replace(/\\\]\\\]/g, ']]')
     .replace(/\\#(?=[\p{L}\p{N}_])/gu, '#');
 }
+
+// ---------- "Kopieren als …" ----------
+
+/**
+ * Plain Markdown that any app understands: no Obsidian/Ordo extras. Comments (%%pagebreak%%, column markers)
+ * go, columns become paragraphs one below the other, [[links]] become their text, ![[pictures]] standard
+ * image links, sizes / alignment and ==highlights== are dropped, callouts become quotes with a bold title.
+ */
+export function plainMarkdown(md: string): string {
+  const fence = /^\s*(```|~~~)/;
+  let inFence = false;
+  const out: string[] = [];
+  for (const raw of md.split('\n')) {
+    if (fence.test(raw)) { inFence = !inFence; out.push(raw); continue; }
+    if (inFence) { out.push(raw); continue; }
+    if (/^%%\s*column\s*%%\s*$/i.test(raw)) { out.push(''); continue; }   // between two columns: a paragraph break
+    let line = raw.replace(/%%[\s\S]*?%%/g, '');
+    if (raw.trim() && !line.trim()) continue;   // the line was only a comment
+    line = line
+      .replace(/!\[\[([^\[\]|\n]+?)(?:\|[^\[\]\n]*)?\]\]/g, (_m, target: string) => {
+        const name = target.split('#')[0].trim();
+        return /\.(png|jpe?g|gif|webp|svg|heic|bmp)$/i.test(name) ? `![${name.replace(/\.\w+$/, '')}](${encodeURI(name)})` : name;
+      })
+      .replace(/!\[([^\]|\n]*)\|[^\]\n]*\]\(/g, '![$1](')
+      .replace(/\[\[([^\[\]|\n]+?)(?:\|([^\[\]\n]*))?\]\]/g, (_m, target: string, alias?: string) => alias || target.replace(/#/g, ' › '))
+      .replace(/==([^=\n]+)==/g, '$1')
+      .replace(/^(\s*>+)\s*\[!([\w-]+)\][+-]?\s*(.*)$/, (_m, q: string, kind: string, title: string) => `${q} **${title || kind.charAt(0).toUpperCase() + kind.slice(1)}**`);
+    out.push(line);
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/** Rendered HTML for Word, Pages, Mail …: pictures embedded (not as links to files), no Ordo controls, no page-break markers. */
+export async function richHTML(container: HTMLElement): Promise<string> {
+  container.querySelectorAll('button, .copy-code-button, .katex-mathml, table.properties, .page-break, .edit-block-button, .ordo-heading-fold').forEach(el => el.remove());
+  await Promise.all([...container.querySelectorAll('img')].map(async img => {
+    try {
+      const blob = await (await fetch(img.src)).blob();
+      img.src = await new Promise<string>((ok, fail) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = fail; r.readAsDataURL(blob); });
+      img.removeAttribute('data-path');
+    } catch { /* keep the link */ }
+  }));
+  return container.innerHTML;
+}

@@ -29,7 +29,7 @@ import { codeLanguage, codeHighlightStyle } from '../editor/code';
 import { mathCompletion } from '../modals/mathPalette';
 import { render, COPY_ICON, CHECK_ICON } from '../../markdown';
 import { paginate, applyGeomVars, contentSize, whenImagesLoaded } from '../../paginate';
-import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD } from '../../clipboard';
+import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD, plainMarkdown, richHTML } from '../../clipboard';
 import { createSearchPanel } from '../editor/searchPanel';
 import { headingFold, addReadingFolds, restoreFolds, foldAllHeadings } from '../editor/headingFold';
 export { foldAllHeadings };
@@ -518,6 +518,18 @@ export class MarkdownView extends View {
     dt.setData(ORDO_MD, md);
   }
 
+  /** Right click › Kopieren: Ordo source as it is, plain Markdown for any app, or formatted text with the pictures inside. */
+  async copyAs(kind: 'ordo' | 'markdown' | 'rich', md: string) {
+    try {
+      if (kind !== 'rich') { await request('copyToClipboard', { plain: kind === 'markdown' ? plainMarkdown(md) : md }); return; }
+      const div = document.createElement('div');
+      div.innerHTML = render(md, { path: this.path, showProperties: false });
+      const html = await richHTML(div);   // pictures embedded, so Word / Pages / Mail show them
+      await request('copyToClipboard', { plain: div.innerText, html });
+      notice(t('Kopiert'), { timeout: 1200 });
+    } catch (err) { notice(t('Kopieren fehlgeschlagen: ') + err); }
+  }
+
   private onCopy(e: ClipboardEvent, view: EditorView, cut: boolean) {
     const ranges = view.state.selection.ranges.filter(r => !r.empty);
     if (!ranges.length || !e.clipboardData) return false;   // empty selection: CodeMirror copies the whole line
@@ -642,7 +654,11 @@ export class MarkdownView extends View {
       m.addSeparator();
     }
     m.addItem({ title: t('Ausschneiden'), icon: 'scissors', disabled: sel.empty, onClick: () => { navigator.clipboard?.writeText(v.state.sliceDoc(sel.from, sel.to)); v.dispatch({ changes: { from: sel.from, to: sel.to } }); } });
-    m.addItem({ title: t('Kopieren'), icon: 'copy', disabled: sel.empty, onClick: () => navigator.clipboard?.writeText(v.state.sliceDoc(sel.from, sel.to)) });
+    m.addItem({ title: t('Kopieren'), icon: 'copy', disabled: sel.empty, submenu: [
+      { title: t('Mit Ordo-Formatierung'), icon: 'copy', onClick: () => this.copyAs('ordo', v.state.sliceDoc(sel.from, sel.to)) },
+      { title: t('Als reines Markdown'), icon: 'file-text', onClick: () => this.copyAs('markdown', v.state.sliceDoc(sel.from, sel.to)) },
+      { title: t('Als formatierten Text (mit Bildern)'), icon: 'type', onClick: () => this.copyAs('rich', v.state.sliceDoc(sel.from, sel.to)) },
+    ] });
     m.addItem({ title: t('Einfügen'), icon: 'paste', onClick: async () => { const t = await navigator.clipboard?.readText(); if (t) this.insertText(t); } });
     m.addSeparator();
     m.addItem({ title: t('Formatierung'), icon: 'type', submenu: [

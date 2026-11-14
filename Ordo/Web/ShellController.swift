@@ -15,6 +15,9 @@ final class ShellController: WebController {
     weak var app: AppModel?
     /// Smaller versions from the last "compressPlan", written on "applyCompress".
     private var compressCache: [String: Data] = [:]
+    #if DEBUG && os(macOS)
+    private var savedClipboard: [[(NSPasteboard.PasteboardType, Data)]] = []
+    #endif
     private let exporter = PDFExporter()
 
     init() {
@@ -233,7 +236,35 @@ final class ShellController: WebController {
             try v.trash(str("path"))
             app.pushIndexIfNeeded()
             return nil
+        case "copyToClipboard":
+            // "Kopieren als …": plain text and optionally formatted HTML (pictures embedded) – only strings, nothing runs
+            let plain = str("plain")
+            let html = body["html"] as? String
+            guard plain.utf8.count < 5_000_000, (html?.utf8.count ?? 0) < 80_000_000 else { throw HostError(message: "Zu groß zum Kopieren") }
+            #if os(macOS)
+            let pb = NSPasteboard.general
+            pb.clearContents()
+            if let html { pb.setString(html, forType: .html) }
+            pb.setString(plain, forType: .string)
+            #else
+            var item: [String: Any] = [UTType.utf8PlainText.identifier: plain]
+            if let html { item[UTType.html.identifier] = html }
+            UIPasteboard.general.items = [item]
+            #endif
+            return nil
         #if DEBUG && os(macOS)
+        case "debugSaveClipboard":   // automated checks: keep the user's clipboard, give it back afterwards
+            let pb = NSPasteboard.general
+            savedClipboard = pb.pasteboardItems?.map { item in item.types.compactMap { t in item.data(forType: t).map { (t, $0) } } } ?? []
+            return nil
+        case "debugReadClipboard":
+            let pb = NSPasteboard.general
+            return ["types": pb.types?.map(\.rawValue) ?? [], "html": pb.string(forType: .html) ?? "", "plain": pb.string(forType: .string) ?? ""]
+        case "debugRestoreClipboard":
+            let pb = NSPasteboard.general
+            pb.clearContents()
+            pb.writeObjects(savedClipboard.map { pairs in let it = NSPasteboardItem(); for (t, d) in pairs { it.setData(d, forType: t) }; return it })
+            return nil
         case "debugPaste":
             // automated checks: a real ⌘V with the given clipboard; the user's clipboard is restored afterwards
             let pb = NSPasteboard.general
