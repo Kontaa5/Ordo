@@ -1,7 +1,7 @@
 // Phosphor Regular icons (MIT) – path data, rendered by icon() in dom.ts.
 
 export const ICONS: Record<string, string> = {
- "compress": "<path fill=\"none\" stroke=\"currentColor\" stroke-width=\"18\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M40 40 L104 104 M104 56 V104 H56 M216 216 L152 152 M152 200 V152 H200\"/>",
+ "compress": "<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"18\" stroke-linejoin=\"round\"><circle cx=\"128\" cy=\"66\" r=\"26\"/><path d=\"M76 104 H180 L212 216 H44 Z\"/></g><path fill=\"currentColor\" d=\"M104 142 h16 v20 l18 -20 h20 l-22 24 l24 30 h-20 l-20 -26 v26 h-16 Z\"/>",
  "align-left": "<rect x=\"32\" y=\"48\" width=\"192\" height=\"16\" rx=\"8\"/><rect x=\"32\" y=\"96\" width=\"128\" height=\"16\" rx=\"8\"/><rect x=\"32\" y=\"144\" width=\"192\" height=\"16\" rx=\"8\"/><rect x=\"32\" y=\"192\" width=\"128\" height=\"16\" rx=\"8\"/>",
  "align-center": "<rect x=\"32\" y=\"48\" width=\"192\" height=\"16\" rx=\"8\"/><rect x=\"64\" y=\"96\" width=\"128\" height=\"16\" rx=\"8\"/><rect x=\"32\" y=\"144\" width=\"192\" height=\"16\" rx=\"8\"/><rect x=\"64\" y=\"192\" width=\"128\" height=\"16\" rx=\"8\"/>",
  "align-right": "<rect x=\"32\" y=\"48\" width=\"192\" height=\"16\" rx=\"8\"/><rect x=\"96\" y=\"96\" width=\"128\" height=\"16\" rx=\"8\"/><rect x=\"32\" y=\"144\" width=\"192\" height=\"16\" rx=\"8\"/><rect x=\"96\" y=\"192\" width=\"128\" height=\"16\" rx=\"8\"/>",
