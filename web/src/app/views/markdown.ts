@@ -31,7 +31,8 @@ import { render, COPY_ICON, CHECK_ICON } from '../../markdown';
 import { paginate, applyGeomVars, contentSize, whenImagesLoaded } from '../../paginate';
 import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD } from '../../clipboard';
 import { createSearchPanel } from '../editor/searchPanel';
-import { headingFold, addReadingFolds } from '../editor/headingFold';
+import { headingFold, addReadingFolds, restoreFolds, foldAllHeadings } from '../editor/headingFold';
+export { foldAllHeadings };
 import { spelling, misspelledAt, spellGuesses, keepWord } from '../editor/autocorrect';
 import { openLightbox, LightboxItem } from '../../lightbox';
 import { openImageEditor } from '../../imageEditor';
@@ -125,6 +126,7 @@ export class MarkdownView extends View {
       // start below the frontmatter so the properties render as a box
       const fm = /^---\r?\n[\s\S]*?\r?\n---[ \t]*(\r?\n|$)/.exec(text);
       if (fm) this.editor.dispatch({ selection: { anchor: Math.min(text.length, fm[0].length) } });
+      restoreFolds(this.editor, s.path);
       this.dirty = false;
       this.loaded = true;
       request('noteOpened', { path: s.path }).catch(() => {});

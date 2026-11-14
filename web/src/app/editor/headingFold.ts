@@ -6,6 +6,63 @@ import { Decoration, DecorationSet, EditorView, ViewPlugin, ViewUpdate, WidgetTy
 import { codeFolding, foldEffect, unfoldEffect, foldedRanges, foldKeymap, foldService, syntaxTree } from '@codemirror/language';
 import { icon } from '../dom';
 import { t } from '../i18n';
+import { editorHost } from './host';
+
+// ── remembered per note (like Obsidian): the folded headings by text + occurrence, so edits elsewhere don't lose them ──
+const KEY = (path: string) => 'ordo-folds:' + path;
+function headingKeys(state: EditorState, lineStarts: number[]): string[] {
+  const seen = new Map<string, number>(), want = new Set(lineStarts), out: string[] = [];
+  for (let n = 1; n <= state.doc.lines; n++) {
+    const l = state.doc.line(n);
+    if (!HEADING.test(l.text)) continue;
+    const k = l.text.trim(), i = seen.get(k) ?? 0;
+    seen.set(k, i + 1);
+    if (want.has(l.from)) out.push(i ? `${k}\u0000${i}` : k);
+  }
+  return out;
+}
+function saveFolds(view: EditorView) {
+  const path = view.state.facet(editorHost)?.path();
+  if (!path) return;
+  const starts: number[] = [];
+  foldedRanges(view.state).between(0, view.state.doc.length, a => { starts.push(view.state.doc.lineAt(a).from); });
+  const keys = headingKeys(view.state, starts);
+  try { keys.length ? localStorage.setItem(KEY(path), JSON.stringify(keys)) : localStorage.removeItem(KEY(path)); } catch { /* storage off */ }
+}
+/** Fold again what was folded when the note was last open. */
+export function restoreFolds(view: EditorView, path: string) {
+  let keys: string[] = [];
+  try { keys = JSON.parse(localStorage.getItem(KEY(path)) ?? '[]'); } catch { return; }
+  if (!Array.isArray(keys) || !keys.length) return;
+  const want = new Set(keys.filter(k => typeof k === 'string')), seen = new Map<string, number>(), effects = [];
+  const state = view.state;
+  for (let n = 1; n <= state.doc.lines; n++) {
+    const l = state.doc.line(n);
+    if (!HEADING.test(l.text)) continue;
+    const k = l.text.trim(), i = seen.get(k) ?? 0;
+    seen.set(k, i + 1);
+    if (!want.has(i ? `${k}\u0000${i}` : k)) continue;
+    const r = sectionAt(state, l.from);
+    if (r) effects.push(foldEffect.of(r));
+  }
+  if (effects.length) view.dispatch({ effects });
+}
+
+/** Fold (or unfold) every heading of the note. */
+export function foldAllHeadings(view: EditorView, fold: boolean) {
+  const state = view.state, effects = [];
+  if (!fold) {
+    foldedRanges(state).between(0, state.doc.length, (from, to) => { effects.push(unfoldEffect.of({ from, to })); });
+  } else {
+    for (let n = 1; n <= state.doc.lines; n++) {
+      const l = state.doc.line(n);
+      if (!HEADING.test(l.text)) continue;
+      const r = sectionAt(state, l.from);
+      if (r && !isFolded(state, r.from, r.to)) effects.push(foldEffect.of(r));
+    }
+  }
+  if (effects.length) view.dispatch({ effects });
+}
 
 const HEADING = /^(#{1,6})\s/;
 
@@ -86,7 +143,9 @@ export const headingFold = [
     decorations: DecorationSet;
     constructor(view: EditorView) { this.decorations = build(view); }
     update(u: ViewUpdate) {
-      if (u.docChanged || u.viewportChanged || u.transactions.some(tr => tr.effects.some(e => e.is(foldEffect) || e.is(unfoldEffect)))) this.decorations = build(u.view);
+      const folding = u.transactions.some(tr => tr.effects.some(e => e.is(foldEffect) || e.is(unfoldEffect)));
+      if (u.docChanged || u.viewportChanged || folding) this.decorations = build(u.view);
+      if (folding) saveFolds(u.view);
     }
   }, { decorations: v => v.decorations }),
 ];

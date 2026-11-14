@@ -24,7 +24,7 @@ import { TagSpellingModal } from './modals/tagSpelling';
 import { TrashModal, trashButton } from './modals/trash';
 import { gitStatusItem, gitSyncNow, gitPullNow } from './git';
 import { MathPalette } from './modals/mathPalette';
-import { getActiveMarkdownView, format, MarkdownView } from './views/markdown';
+import { getActiveMarkdownView, format, MarkdownView, foldAllHeadings } from './views/markdown';
 import { toggleCallout } from '../markdown';
 import { sideBySideChange, stackedChange } from './editor/images';
 import { sideBySideBlocksChange } from './editor/blockDrag';
@@ -76,6 +76,8 @@ function registerCommands() {
   } });
   addCommand({ id: 'ordo:images-side-by-side', name: t('Bilder nebeneinander'), icon: 'layers', check: () => !!getActiveMarkdownView(), callback: imgCmd((st, sel) => sideBySideChange(st, sel.from, sel.to)) });
   addCommand({ id: 'ordo:images-stacked', name: t('Bilder untereinander'), icon: 'list', check: () => !!getActiveMarkdownView(), callback: imgCmd((st, sel) => stackedChange(st, sel.head)) });
+  addCommand({ id: 'editor:fold-all', name: t('Alle Überschriften einklappen'), icon: 'collapse-all', check: () => getActiveMarkdownView()?.mode === 'source', callback: () => { const v = getActiveMarkdownView(); if (v) foldAllHeadings(v.editor, true); } });
+  addCommand({ id: 'editor:unfold-all', name: t('Alle Überschriften ausklappen'), icon: 'expand-all', check: () => getActiveMarkdownView()?.mode === 'source', callback: () => { const v = getActiveMarkdownView(); if (v) foldAllHeadings(v.editor, false); } });
   addCommand({ id: 'editor:open-search', name: t('In aktueller Datei suchen'), icon: 'search', hotkeys: M('F'), check: () => !!getActiveMarkdownView(), callback: () => getActiveMarkdownView()?.openSearch() });
   addCommand({ id: 'markdown:toggle-preview', name: t('Lese-/Bearbeitungsmodus umschalten'), icon: 'book-open', hotkeys: M('E'), ctrlAlias: true, check: () => !!getActiveMarkdownView(), callback: () => getActiveMarkdownView()?.toggleMode() });
   addCommand({ id: 'app:open-settings', name: t('Einstellungen öffnen'), icon: 'settings', hotkeys: M(','), ctrlAlias: true, callback: () => new SettingsModal().open() });
