@@ -203,7 +203,7 @@ export class ImageWidget extends WidgetType {
       if (e.defaultPrevented) return;
       e.preventDefault(); e.stopPropagation();
       const m = new Menu();
-      for (const it of alignItems()) m.addItem(it);
+      m.addItem({ title: t('Ausrichtung'), icon: 'align-' + (this.align ?? 'left'), submenu: alignItems() });
       m.addSeparator();
       if (this.path) m.addItem({ title: t('Bearbeiten'), icon: 'pencil', onClick: () => host?.editImage(this.path!, url) });
       if (this.width) m.addItem({ title: t('Originalgröße'), icon: 'reset', onClick: () => commitWidth(view, this.from, this.to, this.target, null) });
@@ -281,33 +281,29 @@ export class ImageWidget extends WidgetType {
 
     const tools = document.createElement('span');
     tools.className = 'ordo-image-tools';
-    const mk = (text: string, fn: () => void) => {
+    // icon buttons; what each one does shows on hover (data-tip, instant) and as the native tooltip
+    const mk = (name: string, tip: string, fn: (b: HTMLButtonElement) => void) => {
       const b = document.createElement('button');
-      b.textContent = text;
-      b.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); fn(); });
+      b.dataset.tip = tip;
+      b.setAttribute('aria-label', tip);
+      b.appendChild(icon(name, 14));
+      b.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); fn(b); });
       tools.appendChild(b);
+      return b;
     };
-    if (this.path) mk(t('Bearbeiten'), () => host?.editImage(this.path!, url));
-    if (this.path && /\.(jpe?g|png)$/i.test(this.path)) mk(t('Komprimieren'), () => emit('compress-image', {
+    if (this.path) mk('pencil', t('Bearbeiten'), () => host?.editImage(this.path!, url));
+    if (this.path && /\.(jpe?g|png)$/i.test(this.path)) mk('compress', t('Komprimieren'), () => emit('compress-image', {
       path: this.path,
       share: Math.min(1, img.getBoundingClientRect().width / Math.max(1, view.contentDOM.clientWidth)),   // part of the text width it fills
       pixels: img.naturalWidth,
     }));
-    {
-      const b = document.createElement('button');
-      b.className = 'ordo-image-align';
-      b.title = t('Ausrichtung');
-      b.appendChild(icon('align-' + (this.align ?? 'left'), 14));
-      b.addEventListener('mousedown', e => {
-        e.preventDefault(); e.stopPropagation();
-        const m = new Menu();
-        for (const it of alignItems()) m.addItem(it);
-        m.showAtElement(b);
-      });
-      tools.appendChild(b);
-    }
-    if (this.width) mk(t('Originalgröße'), () => commitWidth(view, this.from, this.to, this.target, null));
-    mk(t('Link zeigen'), () => { view.dispatch({ selection: { anchor: this.to } }); view.focus(); });
+    mk('align-' + (this.align ?? 'left'), t('Ausrichtung'), b => {
+      const m = new Menu();
+      for (const it of alignItems()) m.addItem(it);
+      m.showAtElement(b);
+    });
+    if (this.width) mk('reset', t('Originalgröße'), () => commitWidth(view, this.from, this.to, this.target, null));
+    mk('code', t('Link zeigen'), () => { view.dispatch({ selection: { anchor: this.to } }); view.focus(); });
 
     // moving a picture (next to another one) only from this grip: a click on the picture never starts a drag
     const grip = document.createElement('span');
