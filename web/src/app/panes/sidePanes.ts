@@ -71,7 +71,18 @@ export class SearchPane implements SidePane {
     this.el.classList.toggle('has-hits', hits.length > 0);
     const total = hits.reduce((s, x) => s + x.matches.length, 0);
     this.info.textContent = total ? t('{n} Dateien · {m} Treffer', { n: hits.length, m: total }) : (hits.length === 1 ? t('1 Datei') : t('{n} Dateien', { n: hits.length }));
-    this.results.replaceChildren(...hits.map(hit => this.renderHit(hit)));
+    // many hits (one letter typed): draw the first files only, the rest on demand – building thousands of rows stalls typing
+    const FIRST = 40;
+    const more = (from: number): HTMLElement[] => {
+      const rows = hits.slice(from, from + FIRST).map(hit => this.renderHit(hit));
+      if (hits.length > from + FIRST) {
+        const btn = h('div', { cls: 'search-result-more tappable', text: t('{n} weitere Dateien anzeigen', { n: hits.length - from - FIRST }) });
+        btn.addEventListener('click', () => btn.replaceWith(...more(from + FIRST)));
+        rows.push(btn);
+      }
+      return rows;
+    };
+    this.results.replaceChildren(...more(0));
   }
 
   private renderHit(hit: SearchHit) {

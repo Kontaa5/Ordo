@@ -68,6 +68,7 @@ final class VaultStore {
     private(set) var state = VaultState()
 
     @ObservationIgnored private(set) var contents: [String: String] = [:]
+    @ObservationIgnored var searchTask: Task<[SearchHit], Never>?
     @ObservationIgnored private var mtimes: [String: Date] = [:]
     @ObservationIgnored private var byBase: [String: [String]] = [:]
     @ObservationIgnored private var refreshing: Task<Void, Never>?

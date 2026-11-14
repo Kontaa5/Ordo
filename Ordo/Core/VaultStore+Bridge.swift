@@ -46,7 +46,7 @@ extension VaultStore {
 
     // MARK: search
 
-    struct SearchQuery {
+    struct SearchQuery: Sendable {
         var words: [String] = []
         var tags: [String] = []
         var paths: [String] = []
@@ -73,7 +73,9 @@ extension VaultStore {
         }
     }
 
-    func search(_ raw: String, caseSensitive: Bool, limit: Int = 300) -> [[String: Any]] {
+    /// Full-text search. Only the candidate list is built here (main actor); the scan over all texts runs in the
+    /// background, so typing in the search field never stalls the app. A newer search cancels the running one.
+    func search(_ raw: String, caseSensitive: Bool, limit: Int = 300) async -> [[String: Any]] {
         let q = SearchQuery(raw, caseSensitive: caseSensitive)
         guard !(q.words.isEmpty && q.tags.isEmpty && q.paths.isEmpty && q.files.isEmpty) else { return [] }
         var candidates = q.tags.isEmpty ? Array(notes.keys) : notes(withTags: q.tags, matchAll: true)
@@ -81,15 +83,33 @@ extension VaultStore {
             q.paths.allSatisfy { p.localizedCaseInsensitiveContains($0) } &&
             q.files.allSatisfy { Paths.noteName(p).localizedCaseInsensitiveContains($0) }
         }
+        let texts = contents   // copy-on-write snapshot, nothing is copied unless the vault changes meanwhile
+        searchTask?.cancel()
+        let task = Task.detached(priority: .userInitiated) { Self.scan(q, candidates.sorted(), texts, limit) }
+        searchTask = task
+        let hits = await task.value
+        return hits.map { h in
+            ["path": h.path, "matches": h.matches.map { ["line": $0.line, "text": $0.text, "ranges": $0.ranges] as [String: Any] }]
+        }
+    }
+
+    struct SearchHit: Sendable {
+        struct Match: Sendable { let line: Int; let text: String; let ranges: [[Int]] }
+        let path: String; let matches: [Match]; let score: Int
+    }
+
+    nonisolated static func scan(_ q: SearchQuery, _ candidates: [String], _ texts: [String: String], _ limit: Int) -> [SearchHit] {
         let opts: String.CompareOptions = q.caseSensitive ? [] : [.caseInsensitive, .diacriticInsensitive]
-        var out: [([String: Any], Int)] = []
-        for path in candidates.sorted() {
-            let text = contents[path] ?? ""
+        var out: [SearchHit] = []
+        for path in candidates {
+            if Task.isCancelled { return [] }
+            let text = texts[path] ?? ""
             let name = Paths.noteName(path)
-            var nameHit = false, ok = true
+            var ok = true
             for w in q.words where name.range(of: w, options: opts) == nil && text.range(of: w, options: opts) == nil { ok = false; break }
             guard ok else { continue }
-            var matches: [[String: Any]] = []
+            var matches: [SearchHit.Match] = []
+            var nameHit = false
             if !q.words.isEmpty {
                 for w in q.words where name.range(of: w, options: opts) != nil { nameHit = true }
                 var lineNo = 0
@@ -98,22 +118,22 @@ extension VaultStore {
                     for w in q.words {
                         var search = line.startIndex..<line.endIndex
                         while let r = line.range(of: w, options: opts, range: search) {
-                            ranges.append([line.distance(from: line.startIndex, to: r.lowerBound), line.distance(from: line.startIndex, to: r.upperBound)])
+                            // UTF-16 offsets: the page slices the text with JavaScript string indices
+                            ranges.append([r.lowerBound.utf16Offset(in: line), r.upperBound.utf16Offset(in: line)])
                             search = r.upperBound..<line.endIndex
                         }
                     }
                     if !ranges.isEmpty {
-                        matches.append(["line": lineNo, "text": String(line.prefix(400)), "ranges": ranges])
+                        matches.append(.init(line: lineNo, text: String(line.prefix(400)), ranges: ranges))
                         if matches.count >= 20 { stop = true }
                     }
                     lineNo += 1
                 }
             }
-            let score = (nameHit ? 1000 : 0) + matches.count
-            out.append((["path": path, "matches": matches], score))
+            out.append(.init(path: path, matches: matches, score: (nameHit ? 1000 : 0) + matches.count))
             if out.count >= limit { break }
         }
-        return out.sorted { $0.1 > $1.1 }.map(\.0)
+        return out.sorted { $0.score > $1.score }
     }
 
     // MARK: appearance (Obsidian-compatible)

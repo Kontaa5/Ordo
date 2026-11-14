@@ -375,7 +375,7 @@ final class ShellController: WebController {
         case "pickAttachments":
             return try await pickAttachments(v, note: str("notePath"))
         case "search":
-            return v.search(str("query"), caseSensitive: body["caseSensitive"] as? Bool ?? false)
+            return await v.search(str("query"), caseSensitive: body["caseSensitive"] as? Bool ?? false)
         case "appearance":
             return v.appearance()
         case "saveAppearance":
