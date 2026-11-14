@@ -6,6 +6,7 @@ import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import type { StateInline, StateCore, Token } from 'markdown-it';
 import { resolve, fileURL, IMAGE_EXT, parseImageOpts, basename } from './vault';
+import { COL_START, COL_END, splitColumns } from './columns';
 import { mathPlugin } from './math';
 import { highlightToHTML } from './app/editor/code';
 import { ICONS } from './app/icons';
@@ -168,17 +169,35 @@ md.core.ruler.after('inline', 'tasks', (state: StateCore) => {
   }
 });
 
-// ---------- page-break lines: %%pagebreak%% (an Obsidian comment: invisible there) or \pagebreak / \newpage ----------
+// ---------- page-break lines: %%pagebreak%% (an Obsidian comment: invisible there) ----------
 md.core.ruler.after('inline', 'pagebreaks', (state: StateCore) => {
   const toks = state.tokens;
   for (let i = 0; i < toks.length - 2; i++) {
-    if (toks[i].type === 'paragraph_open' && toks[i + 1].type === 'inline' && /^(?:\\(?:pagebreak|newpage)|%%\s*pagebreak\s*%%)\s*$/.test(toks[i + 1].content)) {
+    if (toks[i].type === 'paragraph_open' && toks[i + 1].type === 'inline' && /^%%\s*pagebreak\s*%%\s*$/.test(toks[i + 1].content)) {
       const t = new state.Token('html_block', '', 0);
       t.content = '<div class="page-break"></div>\n';
       t.map = toks[i].map;
       toks.splice(i, 3, t);
     }
   }
+});
+
+// ---------- %%columns%% … %%column%% … %%/columns%% (invisible markers in Obsidian) ----------
+md.block.ruler.before('paragraph', 'ordo_columns', (state, startLine, endLine, silent) => {
+  const lineText = (l: number) => state.src.slice(state.bMarks[l] + state.tShift[l], state.eMarks[l]);
+  if (state.sCount[startLine] - state.blkIndent >= 4 || !COL_START.test(lineText(startLine))) return false;
+  let end = startLine + 1;
+  while (end < endLine && !COL_END.test(lineText(end))) end++;
+  if (end >= endLine) return false;   // no end marker: plain text
+  if (silent) return true;
+  const block = Array.from({ length: end - startLine + 1 }, (_, i) => state.src.slice(state.bMarks[startLine + i], state.eMarks[startLine + i])).join('\n');
+  // each part rendered on its own, padded so its blocks keep their real line numbers (click → line)
+  const cols = splitColumns(block).map(p => `<div class="callout" data-callout="blank"><div class="callout-content">${md.render('\n'.repeat(startLine + p.line) + p.text)}</div></div>`).join('');
+  const tok = state.push('html_block', '', 0);
+  tok.map = [startLine, end + 1];
+  tok.content = `<div class="callout" data-callout="multi-column" data-line="${startLine}"><div class="callout-content">${cols}</div></div>\n`;
+  state.line = end + 1;
+  return true;
 });
 
 // ---------- source line numbers on every block ----------

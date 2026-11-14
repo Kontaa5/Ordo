@@ -55,7 +55,7 @@ export const EN: Record<string, string> = {
   'Obsidian-Vault erkannt: Einstellungen und Darstellung übernommen. Obsidian kann parallel weiterlaufen.': 'Obsidian vault detected: settings and appearance imported. You can keep using Obsidian alongside.',
 
   // file explorer
-  'Sortierung ändern': 'Change sort order', 'Alle einklappen': 'Collapse all', 'Alle Überschriften einklappen': 'Fold all headings', 'Alle Überschriften ausklappen': 'Unfold all headings', 'Alle ausklappen': 'Expand all', 'Neuer Ordner': 'New folder',
+  'Sortierung ändern': 'Change sort order', 'Alle einklappen': 'Collapse all', '{n} weitere Dateien anzeigen': 'Show {n} more files', 'Alle Überschriften einklappen': 'Fold all headings', 'Alle Überschriften ausklappen': 'Unfold all headings', 'Alle ausklappen': 'Expand all', 'Neuer Ordner': 'New folder',
   'Dateiname (A bis Z)': 'File name (A to Z)', 'Dateiname (Z bis A)': 'File name (Z to A)', 'Bearbeitet (neu → alt)': 'Modified (new to old)',
   'Bearbeitet (alt → neu)': 'Modified (old to new)', 'Erstellt (neu → alt)': 'Created (new to old)', 'Erstellt (alt → neu)': 'Created (old to new)',
   'Festgepinnt': 'Pinned', 'Wird aus iCloud geladen …': 'Downloading from iCloud …', 'In neuem Tab öffnen': 'Open in new tab',

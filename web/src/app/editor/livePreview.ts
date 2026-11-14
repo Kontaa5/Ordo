@@ -13,6 +13,7 @@ import { COPY_ICON, CHECK_ICON } from '../../markdown';
 import { NoteEmbedWidget, renderedBlocks } from './blocks';
 
 import { t } from '../i18n';
+import { icon } from '../dom';
 // ---------- helpers ----------
 
 export function frontmatterRange(state: EditorState): { from: number; to: number } | null {
@@ -152,8 +153,11 @@ class ManualBreakWidget extends WidgetType {
   toDOM(view: EditorView) {
     const d = document.createElement('span');
     d.className = 'ordo-manual-break';
-    d.innerHTML = '<span>Seitenumbruch</span><button aria-label="Umbruch entfernen">✕</button>';
-    d.querySelector('button')!.addEventListener('mousedown', e => {
+    const btn = document.createElement('button');
+    btn.setAttribute('aria-label', t('Umbruch entfernen'));
+    btn.appendChild(icon('x', 12));
+    d.append(Object.assign(document.createElement('span'), { textContent: t('Seitenumbruch') }), btn);
+    btn.addEventListener('mousedown', e => {
       e.preventDefault();
       const line = view.state.doc.lineAt(view.posAtDOM(d));
       view.dispatch({ changes: { from: line.from, to: Math.min(line.to + 1, view.state.doc.length) } });
@@ -199,7 +203,7 @@ function build(view: EditorView): DecorationSet {
       if (!text) continue;
       const lineActive = lines.has(ln);
 
-      if (/^(?:\\(?:pagebreak|newpage)|%%\s*pagebreak\s*%%)\s*$/.test(text) && !lineActive) {
+      if (/^%%\s*pagebreak\s*%%\s*$/.test(text) && !lineActive) {
         decos.push(Decoration.replace({ widget: new ManualBreakWidget() }).range(line.from, line.to));
         continue;
       }

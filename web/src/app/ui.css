@@ -641,7 +641,10 @@ body.is-mobile .ordo-image-tools { opacity: 1; }
 .cm-page-break-ghost { position: fixed; height: 0; border-top: 2px solid var(--interactive-accent); pointer-events: none; z-index: 50; }
 .ordo-manual-break { display: inline-flex; width: 100%; align-items: center; gap: 10px; color: var(--text-accent); font-family: var(--font-interface); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 .ordo-manual-break::before, .ordo-manual-break::after { content: ""; flex: 1; border-top: 1.5px solid hsla(var(--interactive-accent-hsl), 0.55); }
-.ordo-manual-break button { order: 3; border: 0; background: hsla(var(--interactive-accent-hsl), 0.15); color: var(--text-accent); border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: var(--cursor); padding: 0; }
+/* the ✕ exactly centred, whatever the theme does to buttons (padding, height, shadow) */
+.ordo-manual-break button { order: 3; display: inline-flex !important; align-items: center; justify-content: center; flex: none; border: 0 !important; box-shadow: none !important; background: hsla(var(--interactive-accent-hsl), 0.15) !important; color: var(--text-accent); border-radius: 50% !important; width: 20px !important; height: 20px !important; min-width: 0 !important; padding: 0 !important; margin: 0 !important; line-height: 0; cursor: var(--cursor); }
+.ordo-manual-break button svg { width: 12px; height: 12px; display: block; }
+.ordo-manual-break button:hover { background: hsla(var(--interactive-accent-hsl), 0.3) !important; }
 
 /* autocomplete, search panel */
 .cm-tooltip { border: 1px solid var(--background-modifier-border) !important; background: var(--background-primary) !important; border-radius: var(--radius-m); box-shadow: var(--shadow-s); overflow: hidden; font-family: var(--font-interface); }
@@ -1123,3 +1126,6 @@ body.is-mobile .modal .setting-item { flex-wrap: wrap; gap: 8px; }
 body.is-mobile .modal .setting-item-description { overflow-wrap: anywhere; }
 /* misspelled word (macOS spell checker, see editor/autocorrect.ts) */
 .ordo-misspelled { text-decoration: underline wavy var(--color-red, #e5484d); text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-skip-ink: none; }
+
+.search-result-more { padding: 6px 10px; margin: 4px 6px; font-size: var(--font-ui-small); color: var(--text-accent); cursor: var(--cursor); border-radius: var(--radius-s); }
+.search-result-more:hover { background: var(--background-modifier-hover); }

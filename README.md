@@ -48,7 +48,7 @@ Auch die Einstellungen löschen: `brew uninstall --zap --cask ordo`.
 ## Funktionen
 
 - 1. Hashtag = Ordner, 2. Hashtag = Unterordner (`#4klasse #medt` → `4klasse/medt/`)
-- PDF-Export aller Notizen mit bestimmten Hashtags, Seitenumbrüche im Editor sichtbar
+- PDF-Export aller Notizen mit bestimmten Hashtags, Seitenumbrüche im Editor sichtbar (`%%pagebreak%%` – in Obsidian unsichtbar)
 - Bilder zuschneiden, nebeneinander anordnen, ohne Qualitätsverlust verkleinern
 - Graph nach Hashtags, Spalten, Themes, Hell/Dunkel, Deutsch/Englisch
 - iCloud für Mac und iPhone, optional Git-Backup
