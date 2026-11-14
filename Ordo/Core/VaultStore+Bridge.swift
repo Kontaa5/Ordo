@@ -70,6 +70,8 @@ extension VaultStore {
                 else if t.hasPrefix("#") && t.count > 1 { tags.append(MarkdownParsing.normalizeTag(t)) }
                 else { words.append(t) }
             }
+            // the rest is ONE phrase: "der w" finds exactly "der w" (case-insensitive), not every "der" and every "w"
+            if words.count > 1 { words = [words.joined(separator: " ")] }
         }
     }
 
