@@ -163,7 +163,14 @@ export const blockDrag = ViewPlugin.fromClass(class {
     const lineH = Math.max(16, Math.min(c.bottom - c.top, 40));
     // a heading has its fold arrow right left of the text: the grip moves one step further out, both stay easy to hit
     const heading = /^#{1,6}\s/.test(this.view.state.doc.lineAt(b.from).text);
-    Object.assign(this.handle.style, { top: c.top - root.top + (lineH - 22) / 2 + 'px', left: content.left - root.left - (heading ? 50 : 24) + 'px' });
+    let top = c.top - root.top + (lineH - 22) / 2;
+    if (heading) {   // same height as the fold arrow
+      const dom = this.view.domAtPos(b.from).node;
+      const line = (dom instanceof Element ? dom : dom.parentElement)?.closest('.cm-line');
+      const arrow = line?.querySelector('.ordo-heading-fold')?.getBoundingClientRect();
+      if (arrow) top = arrow.top + arrow.height / 2 - 11 - root.top;
+    }
+    Object.assign(this.handle.style, { top: top + 'px', left: content.left - root.left - (heading ? 50 : 24) + 'px' });
     this.handle.hidden = false;
   };
 
