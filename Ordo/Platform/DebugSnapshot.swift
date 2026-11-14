@@ -28,6 +28,12 @@ enum DebugScript {
             }
             #endif
             for (i, step) in steps.enumerated() {
+                #if os(macOS)
+                if let size = step["size"] as? [Double], size.count == 2, let window = model.shell.webView.window {   // {"size": [w, h]}: window content size
+                    window.setContentSize(NSSize(width: size[0], height: size[1]))
+                    try? await Task.sleep(for: .seconds(0.5))
+                }
+                #endif
                 if let js = step["js"] as? String {
                     do {
                         let r = try await model.shell.webView.callAsyncJavaScript(js, contentWorld: .page)

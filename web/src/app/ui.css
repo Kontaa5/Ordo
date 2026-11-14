@@ -420,6 +420,10 @@ body.mod-macos .workspace:not(.is-left-sidedock-open) .mod-root .workspace-tab-h
 .markdown-source-view.is-readable-line-width .cm-scroller > .inline-title,
 .markdown-source-view.is-readable-line-width .cm-content { width: 100% !important; max-width: var(--file-line-width) !important; margin-left: auto !important; margin-right: auto !important; }
 .markdown-source-view .cm-line { padding: 0; }
+/* a side margin that no theme can take away (issue #4: narrow window → text glued to the edge). Left leaves room for
+   the block grip + the heading fold arrow; in a wide window the centred column keeps its own margins anyway. */
+body:not(.is-mobile) .workspace-leaf .markdown-source-view.mod-cm6 .cm-editor .cm-scroller { padding-left: 56px !important; padding-right: 40px !important; }
+body:not(.is-mobile) .workspace-leaf .markdown-reading-view .markdown-preview-view.markdown-preview-view { padding-left: 48px !important; padding-right: 40px !important; }
 /* indentation guides in lists, like Obsidian: a thin line at the start of every tab, stretched to the full line height */
 .markdown-source-view .ordo-indent { position: relative; display: inline-block; height: 1lh; vertical-align: top; text-indent: 0; }   /* leading whitespace of list lines, as wide as the parent markers */
 .markdown-source-view .ordo-list-mark { display: inline-block; white-space: pre; text-indent: 0; }   /* text-indent is inherited by inline-blocks: without 0 the number would hang out */
