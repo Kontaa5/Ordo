@@ -557,6 +557,8 @@ export class MarkdownView extends View {
     const md = ranges.map(r => view.state.sliceDoc(r.from, r.to)).join(view.state.lineBreak);
     this.fillClipboard(e.clipboardData, md);
     this.copyChord = cut ? null : { md, until: Date.now() + 1500 };
+    // a quiet hint that 1 / 2 right now copy it differently
+    if (!cut) notice(t('Kopiert · jetzt 1 = reines Markdown, 2 = formatierter Text'), { timeout: 1500 });
     if (cut) view.dispatch({ changes: ranges, userEvent: 'delete.cut', scrollIntoView: true });
     return true;
   }
@@ -677,8 +679,8 @@ export class MarkdownView extends View {
     }
     m.addItem({ title: t('Ausschneiden'), icon: 'scissors', disabled: sel.empty, onClick: () => { navigator.clipboard?.writeText(v.state.sliceDoc(sel.from, sel.to)); v.dispatch({ changes: { from: sel.from, to: sel.to } }); } });
     m.addItem({ title: t('Kopieren'), icon: 'copy', disabled: sel.empty, submenu: [
-      { title: t('Als reines Markdown'), icon: 'file-text', hotkey: COPY_KEY + ' 1', onClick: () => this.copyAs('markdown', v.state.sliceDoc(sel.from, sel.to)) },
       { title: t('Mit Ordo-Formatierung'), icon: 'copy', hotkey: COPY_KEY, onClick: () => this.copyAs('ordo', v.state.sliceDoc(sel.from, sel.to)) },
+      { title: t('Als reines Markdown'), icon: 'file-text', hotkey: COPY_KEY + ' 1', onClick: () => this.copyAs('markdown', v.state.sliceDoc(sel.from, sel.to)) },
       { title: t('Als formatierten Text (mit Bildern)'), icon: 'type', hotkey: COPY_KEY + ' 2', onClick: () => this.copyAs('rich', v.state.sliceDoc(sel.from, sel.to)) },
     ] });
     m.addItem({ title: t('Einfügen'), icon: 'paste', onClick: async () => { const t = await navigator.clipboard?.readText(); if (t) this.insertText(t); } });
