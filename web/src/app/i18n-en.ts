@@ -309,4 +309,6 @@ export const EN: Record<string, string> = {
   'Alte Fassung zurückholen': 'Restore old version',
   'Alte Fassung wiederhergestellt': 'Old version restored',
   'Die Notiz wurde inzwischen geändert – die alte Fassung ist im Git-Verlauf': 'The note has changed since – the old version is in the Git history',
+  'Als reines Markdown kopiert': 'Copied as plain Markdown',
+  'Als formatierter Text kopiert': 'Copied as formatted text',
 };

@@ -42,6 +42,8 @@ import { getIndex, IMAGE_EXT } from '../../vault';
 import { appState } from '../state';
 import { t } from '../i18n';
 
+
+const COPY_KEY = isMac ? '⌘C' : 'Ctrl+C';
 export class MarkdownView extends View {
   path = '';
   mode: 'source' | 'preview' = 'source';
@@ -204,6 +206,8 @@ export class MarkdownView extends View {
       pageBreakField,
       autocompletion({ override: [wikiCompletion, tagCompletion, mathCompletion], icons: false, activateOnTyping: true }),
       search({ top: true, createPanel: createSearchPanel }),
+      // ⌘C, then 1 or 2 right after: the same text again as plain Markdown / formatted text
+      Prec.highest(keymap.of([{ key: '1', run: () => this.copyChordKey('markdown') }, { key: '2', run: () => this.copyChordKey('rich') }])),
       Prec.high(keymap.of([{ key: 'Tab', run: acceptCompletion }])),   // Tab takes the suggestion; without a list it indents as usual
       tagCase,
       wrapOnType,
@@ -218,6 +222,7 @@ export class MarkdownView extends View {
         paste: (e, view) => this.onPaste(e, view),
         copy: (e, view) => this.onCopy(e, view, false),
         cut: (e, view) => this.onCopy(e, view, true),
+        keydown: e => { if (e.key !== '1' && e.key !== '2' && !e.metaKey && !e.ctrlKey && e.key !== 'Meta' && e.key !== 'Control') this.copyChord = null; return false; },
         drop: (e, view) => {
           const files = Array.from(e.dataTransfer?.files ?? []);
           if (!files.length) return false;
@@ -521,20 +526,37 @@ export class MarkdownView extends View {
   /** Right click › Kopieren: Ordo source as it is, plain Markdown for any app, or formatted text with the pictures inside. */
   async copyAs(kind: 'ordo' | 'markdown' | 'rich', md: string) {
     try {
-      if (kind !== 'rich') { await request('copyToClipboard', { plain: kind === 'markdown' ? plainMarkdown(md) : md }); return; }
+      if (kind !== 'rich') {
+        await request('copyToClipboard', { plain: kind === 'markdown' ? plainMarkdown(md) : md });
+        notice(kind === 'markdown' ? t('Als reines Markdown kopiert') : t('Kopiert'), { timeout: 1200 });
+        return;
+      }
       const div = document.createElement('div');
       div.innerHTML = render(md, { path: this.path, showProperties: false });
       const html = await richHTML(div);   // pictures embedded, so Word / Pages / Mail show them
       await request('copyToClipboard', { plain: div.innerText, html });
-      notice(t('Kopiert'), { timeout: 1200 });
+      notice(t('Als formatierter Text kopiert'), { timeout: 1200 });
     } catch (err) { notice(t('Kopieren fehlgeschlagen: ') + err); }
+  }
+
+  /** What ⌘C just copied – for 1 / 2 pressed within a moment after it. */
+  private copyChord: { md: string; until: number } | null = null;
+
+  private copyChordKey(kind: 'markdown' | 'rich') {
+    const c = this.copyChord;
+    this.copyChord = null;
+    if (!c || Date.now() > c.until) return false;   // a normal 1 / 2
+    this.copyAs(kind, c.md);
+    return true;
   }
 
   private onCopy(e: ClipboardEvent, view: EditorView, cut: boolean) {
     const ranges = view.state.selection.ranges.filter(r => !r.empty);
     if (!ranges.length || !e.clipboardData) return false;   // empty selection: CodeMirror copies the whole line
     e.preventDefault();
-    this.fillClipboard(e.clipboardData, ranges.map(r => view.state.sliceDoc(r.from, r.to)).join(view.state.lineBreak));
+    const md = ranges.map(r => view.state.sliceDoc(r.from, r.to)).join(view.state.lineBreak);
+    this.fillClipboard(e.clipboardData, md);
+    this.copyChord = cut ? null : { md, until: Date.now() + 1500 };
     if (cut) view.dispatch({ changes: ranges, userEvent: 'delete.cut', scrollIntoView: true });
     return true;
   }
@@ -655,9 +677,9 @@ export class MarkdownView extends View {
     }
     m.addItem({ title: t('Ausschneiden'), icon: 'scissors', disabled: sel.empty, onClick: () => { navigator.clipboard?.writeText(v.state.sliceDoc(sel.from, sel.to)); v.dispatch({ changes: { from: sel.from, to: sel.to } }); } });
     m.addItem({ title: t('Kopieren'), icon: 'copy', disabled: sel.empty, submenu: [
-      { title: t('Mit Ordo-Formatierung'), icon: 'copy', onClick: () => this.copyAs('ordo', v.state.sliceDoc(sel.from, sel.to)) },
-      { title: t('Als reines Markdown'), icon: 'file-text', onClick: () => this.copyAs('markdown', v.state.sliceDoc(sel.from, sel.to)) },
-      { title: t('Als formatierten Text (mit Bildern)'), icon: 'type', onClick: () => this.copyAs('rich', v.state.sliceDoc(sel.from, sel.to)) },
+      { title: t('Als reines Markdown'), icon: 'file-text', hotkey: COPY_KEY + ' 1', onClick: () => this.copyAs('markdown', v.state.sliceDoc(sel.from, sel.to)) },
+      { title: t('Mit Ordo-Formatierung'), icon: 'copy', hotkey: COPY_KEY, onClick: () => this.copyAs('ordo', v.state.sliceDoc(sel.from, sel.to)) },
+      { title: t('Als formatierten Text (mit Bildern)'), icon: 'type', hotkey: COPY_KEY + ' 2', onClick: () => this.copyAs('rich', v.state.sliceDoc(sel.from, sel.to)) },
     ] });
     m.addItem({ title: t('Einfügen'), icon: 'paste', onClick: async () => { const t = await navigator.clipboard?.readText(); if (t) this.insertText(t); } });
     m.addSeparator();
