@@ -19,6 +19,12 @@ const SORT_LABELS: [SortOrder, string][] = [
   ['ctime-desc', t('Erstellt (neu → alt)')], ['ctime-asc', t('Erstellt (alt → neu)')],
 ];
 
+
+/** Puts the file itself on the clipboard: ⌘V in the Finder (or Mail, Messages …) inserts a copy. */
+async function copyFile(path: string) {
+  try { await request('copyFile', { path }); notice(t('Kopiert – im Finder mit ⌘V einfügen'), { timeout: 2500 }); }
+  catch (err) { notice(t('Kopieren fehlgeschlagen: ') + err); }
+}
 export class FileExplorer implements SidePane {
   id = 'files';
   title = t('Dateien');
@@ -269,6 +275,7 @@ export class FileExplorer implements SidePane {
       m.addItem({ title: t('Verschieben nach …'), icon: 'folder-input', onClick: () => new FolderSuggestModal(f => moveTo(folder, f), folder).open() });
       m.addItem({ title: t('Umbenennen …'), icon: 'pencil', onClick: () => this.startRename(folder) });
       m.addItem({ title: t('Im Finder zeigen'), icon: 'folder-open', onClick: () => request('reveal', { path: folder }) });
+      m.addItem({ title: t('Kopieren (zum Einfügen im Finder)'), icon: 'copy', onClick: () => copyFile(folder) });
       m.addItem({ title: t('Pfad kopieren'), icon: 'copy', onClick: () => navigator.clipboard?.writeText(folder) });
       m.addSeparator();
       m.addItem({ title: t('Löschen'), icon: 'trash', warning: true, onClick: () => trashPath(folder) });
@@ -291,6 +298,7 @@ export class FileExplorer implements SidePane {
     m.addItem({ title: t('Verschieben nach …'), icon: 'folder-input', onClick: () => new FolderSuggestModal(f => moveTo(path, f), path).open() });
     m.addItem({ title: t('Umbenennen …'), icon: 'pencil', onClick: () => this.startRename(path) });
     m.addItem({ title: t('Im Finder zeigen'), icon: 'folder-open', onClick: () => request('reveal', { path }) });
+    m.addItem({ title: t('Kopieren (zum Einfügen im Finder)'), icon: 'copy', onClick: () => copyFile(path) });
     m.addItem({ title: t('Pfad kopieren'), icon: 'copy', onClick: () => navigator.clipboard?.writeText(path) });
     m.addSeparator();
     m.addItem({ title: t('Löschen'), icon: 'trash', warning: true, onClick: () => trashPath(path) });

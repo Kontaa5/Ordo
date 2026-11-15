@@ -455,6 +455,17 @@ final class ShellController: WebController {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             Platform.reveal(dir)
             return nil
+        case "copyFile":
+            // a note, picture or folder as a file on the clipboard: ⌘V in the Finder puts a copy there
+            let url = v.url(str("path"))
+            guard url != FolderRules.blocked, FileManager.default.fileExists(atPath: url.path) else { throw HostError(message: "Datei nicht gefunden") }
+            #if os(macOS)
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.writeObjects([url as NSURL])
+            #else
+            UIPasteboard.general.url = url
+            #endif
+            return nil
         case "reveal":
             Platform.reveal(v.url(str("path")))
             return nil
