@@ -380,3 +380,20 @@ final class ContentGuardTests: XCTestCase {
         XCTAssertNil(ContentGuard.foreignSource(path: "a.md", old: "kurz", new: "anders", others: ["b.md": "anders"]))
     }
 }
+
+final class FingerprintTests: XCTestCase {
+    func testGitFolderNameUnchanged() {
+        let url = VaultStore.supportURL(URL(fileURLWithPath: "/Users/gabrielsuntinger/Library/Mobile Documents/iCloud~md~obsidian/Documents/myBrain_icloud-sync"), folder: "git", ext: ".git")
+        XCTAssertTrue(url.path.hasSuffix("Ordo/git/myBrain_icloud-sync-0a43e7ec9b9f5913.git"), url.path)
+    }
+
+    func testDatedBack() {
+        let d = Date(timeIntervalSince1970: 1_000_000)
+        let known = VaultStore.fingerprint("alt", d)
+        XCTAssertTrue(VaultStore.datedBack(known: known, now: VaultStore.fingerprint("fremd", d.addingTimeInterval(-86_400))))   // older date, other text
+        XCTAssertTrue(VaultStore.datedBack(known: known, now: VaultStore.fingerprint("fremd", d)))                               // same date, other text
+        XCTAssertFalse(VaultStore.datedBack(known: known, now: VaultStore.fingerprint("bearbeitet", d.addingTimeInterval(60)))) // normal edit
+        XCTAssertFalse(VaultStore.datedBack(known: known, now: VaultStore.fingerprint("alt", d.addingTimeInterval(-60))))       // same text
+        XCTAssertFalse(VaultStore.datedBack(known: nil, now: known))                                                             // new note
+    }
+}

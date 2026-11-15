@@ -50,9 +50,7 @@ final class GitSync {
 
     init(root: URL) {
         self.root = root
-        let hash = SHA256.hash(data: Data(root.standardizedFileURL.path.utf8)).prefix(8).map { String(format: "%02x", $0) }.joined()
-        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        gitDir = base.appendingPathComponent("Ordo/git/\(root.lastPathComponent)-\(hash).git", isDirectory: true)
+        gitDir = VaultStore.supportURL(root, folder: "git", ext: ".git")
     }
 
     // MARK: running git
@@ -253,6 +251,12 @@ final class GitSync {
         }
         let shown = names.prefix(3).joined(separator: ", ")
         return "Ordo: " + shown + (names.count > 3 ? " +\(names.count - 3) weitere" : "")
+    }
+
+    /// A note's text in the last backup (nil: no backup of it).
+    func committedText(_ path: String) async -> String? {
+        let r = await git(["show", "HEAD:" + path])
+        return r.ok ? r.out : nil
     }
 
     func push() async -> Bool {

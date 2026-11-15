@@ -46,7 +46,15 @@ final class AppModel {
         store.onRename = { [weak self] old, new in self?.shell.callJSON("ordo.host.renamed", ["from": old, "to": new]) }
         store.onExternalChange = { [weak self] path, text in self?.shell.callJSON("ordo.host.externalChange", ["path": path, "text": text]) }
         store.onDelete = { [weak self] path in self?.shell.callJSON("ordo.host.deleted", path) }
-        store.onForeignContent = { [weak self] path, source in self?.shell.callJSON("ordo.host.foreignContent", ["path": path, "source": source]) }
+        store.onForeignContent = { [weak self] path, source, canRestore in self?.shell.callJSON("ordo.host.foreignContent", ["path": path, "source": source, "canRestore": canRestore]) }
+        #if os(macOS)
+        // reads the backup directly: at launch this runs before Git-Sync starts (and backs up)
+        store.backupText = { [weak store] path in
+            guard let store else { return nil }
+            guard store.settings.gitEnabled, GitSync.gitAvailable() else { return nil }
+            return await GitSync(root: store.root).committedText(path)
+        }
+        #endif
         vault = store
         Task {
             await store.refresh()
@@ -109,6 +117,7 @@ final class AppModel {
     }
 
     @ObservationIgnored private var gitCheck: Task<Void, Never>?
+    @ObservationIgnored private var gitAutoCommit: Task<Void, Never>?
 
     /// Checks the git status a moment after something happened (a burst of saves becomes one `git status`).
     func gitStatusSoon() {
@@ -119,6 +128,15 @@ final class AppModel {
             await self?.gitTask?.value           // the repository must be set up first
             guard !Task.isCancelled, let self, self.git === g, !g.isBusy else { return }   // a backup refreshes the status itself
             await g.refreshStatus()
+        }
+        // a minute after the last change: a local backup (commit only – no upload, no Touch ID),
+        // so every version can be brought back, not only the last uploaded one
+        gitAutoCommit?.cancel()
+        gitAutoCommit = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(60))
+            await self?.gitTask?.value
+            guard !Task.isCancelled, let self, self.git === g else { return }
+            await g.commit()
         }
     }
 
@@ -143,7 +161,7 @@ final class AppModel {
     func closeVault(notify: Bool = true) {
         #if os(macOS)
         watcher = nil
-        gitTask?.cancel(); gitTask = nil; gitCheck?.cancel(); git = nil
+        gitTask?.cancel(); gitTask = nil; gitCheck?.cancel(); gitAutoCommit?.cancel(); git = nil
         #endif
         refreshTask?.cancel()
         if let v = vault { v.root.stopAccessingSecurityScopedResource() }

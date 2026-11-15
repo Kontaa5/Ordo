@@ -409,14 +409,18 @@ async function start(info: NonNullable<Boot['vault']>) {
 
 on('vault-opened', (info: Boot['vault']) => { if (info) start(info); });
 // a note suddenly holds another note's text (iCloud mixed up files): say so and offer the old text
-on('foreign-content', ({ path, source }: { path: string; source: string }) => {
-  notice(t('⚠️ „{a}“ enthält plötzlich den Text von „{b}“. Die alte Fassung ist noch da.').replace('{a}', noteName(path)).replace('{b}', noteName(source)), {
+on('foreign-content', ({ path, source, canRestore }: { path: string; source: string; canRestore: boolean }) => {
+  const msg = source
+    ? t('⚠️ „{a}“ enthält plötzlich den Text von „{b}“.').replace('{b}', noteName(source))
+    : t('⚠️ „{a}“ wurde von außen mit einem älteren Stand überschrieben (vermutlich iCloud).');
+  const text = msg.replace('{a}', noteName(path)) + ' ' + (canRestore ? t('Die alte Fassung ist noch da.') : t('Ältere Fassungen: Finder › Ablage › Zurücksetzen auf.'));
+  notice(text, canRestore ? {
     timeout: 300000, action: t('Alte Fassung zurückholen'),
     onAction: async () => {
       const ok = await request<boolean>('restoreReplaced', { path }).catch(() => false);
       notice(ok ? t('Alte Fassung wiederhergestellt') : t('Die Notiz wurde inzwischen geändert – die alte Fassung ist im Git-Verlauf'), { timeout: 6000 });
     },
-  });
+  } : { timeout: 300000 });
 });
 on('vault-closed', async (b: Boot) => { boot = b; if (started) location.reload(); else showVaultPicker(); });
 on('show-vault-picker', () => showVaultPicker());

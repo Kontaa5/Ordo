@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import CryptoKit
 import ImageIO
 import UniformTypeIdentifiers
 
@@ -78,15 +79,54 @@ final class VaultStore {
     @ObservationIgnored var onRename: ((String, String) -> Void)?
     @ObservationIgnored var onDelete: ((String) -> Void)?
     /// A note suddenly holds another note's text (path, the other note).
-    @ObservationIgnored var onForeignContent: ((String, String) -> Void)?
+    /// (path, the other note or "", whether the old text can be restored)
+    @ObservationIgnored var onForeignContent: ((String, String, Bool) -> Void)?
     /// Notes flagged that way: their earlier text and the foreign one, for "Alte Fassung zurückholen".
     @ObservationIgnored private var replaced: [String: (old: String, new: String)] = [:]
+    /// For a note iCloud changed behind Ordo's back: its text in the last backup (git), if there is one.
+    @ObservationIgnored var backupText: ((String) async -> String?)?
+    /// Content fingerprint + date of every note, kept outside iCloud. Changed content with a date
+    /// that did not move forward means iCloud put another or an older file there.
+    struct Fingerprint: Codable, Equatable { var h: String; var m: Double }
+    @ObservationIgnored private var fingerprints: [String: Fingerprint] = [:]
+    @ObservationIgnored private var fingerprintSave: Task<Void, Never>?
 
     init(root: URL) {
         self.root = root
         self.name = root.lastPathComponent
         self.settings = VaultSettings()
         loadSettingsAndState()
+        if let data = try? Data(contentsOf: fingerprintURL), let f = try? JSONDecoder().decode([String: Fingerprint].self, from: data) { fingerprints = f }
+    }
+
+    /// Ordo's own files for this vault outside iCloud: Application Support/Ordo/<folder>/<vault>-<hash><ext>.
+    nonisolated static func supportURL(_ root: URL, folder: String, ext: String) -> URL {
+        let hash = SHA256.hash(data: Data(root.standardizedFileURL.path.utf8)).prefix(8).map { String(format: "%02x", $0) }.joined()
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return base.appendingPathComponent("Ordo/\(folder)/\(root.lastPathComponent)-\(hash)\(ext)", isDirectory: ext == ".git")
+    }
+
+    private var fingerprintURL: URL { Self.supportURL(root, folder: "fingerprints", ext: ".json") }
+
+    nonisolated static func fingerprint(_ text: String, _ date: Date) -> Fingerprint {
+        Fingerprint(h: SHA256.hash(data: Data(text.utf8)).prefix(12).map { String(format: "%02x", $0) }.joined(), m: date.timeIntervalSince1970)
+    }
+
+    /// Changed text whose date did not move forward: not an edit (an edit – here, on the phone – always has a newer date).
+    nonisolated static func datedBack(known: Fingerprint?, now: Fingerprint) -> Bool {
+        guard let known, known.h != now.h else { return false }
+        return now.m <= known.m
+    }
+
+    private func saveFingerprintsSoon() {
+        fingerprintSave?.cancel()
+        fingerprintSave = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(3))
+            guard !Task.isCancelled, let self, let data = try? JSONEncoder().encode(self.fingerprints) else { return }
+            let url = self.fingerprintURL
+            try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? data.write(to: url, options: .atomic)
+        }
     }
 
     // MARK: - URLs
@@ -251,6 +291,7 @@ final class VaultStore {
         var structureChanged = false
         // removed notes
         for path in notes.keys where result.notes[path] == nil {
+            fingerprints[path] = nil
             notes[path] = nil
             contents[path] = nil
             mtimes[path] = nil
@@ -262,17 +303,25 @@ final class VaultStore {
             notes[path] = NoteMeta(path: path, parsed: ParsedNote(), isPlaceholder: true)
             structureChanged = true
         }
+        var datedBack: [String] = []
         for (path, text, parsed, modified) in loaded {
             let previous = contents[path]
             mtimes[path] = modified
+            let fp = Self.fingerprint(text, modified)
+            if fingerprints[path] != fp {
+                if Self.datedBack(known: fingerprints[path], now: fp) { datedBack.append(path) }
+                fingerprints[path] = fp
+                saveFingerprintsSoon()
+            }
             if previous == text, notes[path]?.isPlaceholder == false { continue }
             contents[path] = text
             if notes[path]?.parsed != parsed || notes[path]?.isPlaceholder != false {
                 notes[path] = NoteMeta(path: path, parsed: parsed)
                 structureChanged = true
             }
-            if let previous, previous != text { onExternalChange?(path, text); flagIfForeign(path, old: previous) }
+            if let previous, previous != text { onExternalChange?(path, text); if !datedBack.contains(path) { flagIfForeign(path, old: previous) } }
         }
+
         if files != result.files { files = result.files; structureChanged = true }
         if stats != result.stats { stats = result.stats; structureChanged = true }
         if folders != result.folders { folders = result.folders; structureChanged = true }
@@ -282,6 +331,8 @@ final class VaultStore {
         }
         if structureChanged || isLoading { rebuildIndex() }
         isLoading = false
+        // before anything else (a backup at launch) can take the old text out of the last backup
+        for path in datedBack { await flagDatedBack(path) }
     }
 
     private func rebuildIndex() {
@@ -396,6 +447,8 @@ final class VaultStore {
         let vals = try? url.resourceValues(forKeys: [.contentModificationDateKey, .creationDateKey, .fileSizeKey])
         mtimes[path] = vals?.contentModificationDate ?? Date()
         stats[path] = FileStat(mtime: vals?.contentModificationDate ?? Date(), ctime: vals?.creationDate ?? stats[path]?.ctime ?? Date(), size: vals?.fileSize ?? text.utf8.count)
+        fingerprints[path] = Self.fingerprint(text, vals?.contentModificationDate ?? Date())
+        saveFingerprintsSoon()
         let parsed = MarkdownParsing.parse(text)
         if notes[path]?.parsed != parsed || notes[path] == nil {
             notes[path] = NoteMeta(path: path, parsed: parsed)
@@ -408,7 +461,18 @@ final class VaultStore {
         guard replaced[path] == nil, let new = contents[path],
               let source = ContentGuard.foreignSource(path: path, old: old, new: new, others: contents) else { return }
         replaced[path] = (old, new)
-        onForeignContent?(path, source)
+        onForeignContent?(path, source, true)
+    }
+
+    /// iCloud changed a note but its date stayed or went back – always worth a warning. The old
+    /// text comes from the last backup; without one the warning has no restore button.
+    private func flagDatedBack(_ path: String) async {
+        guard replaced[path] == nil, let new = contents[path] else { return }
+        let old = await backupText?(path)
+        guard replaced[path] == nil, contents[path] == new, old != new else { return }
+        let source = old.flatMap { ContentGuard.foreignSource(path: path, old: $0, new: new, others: contents) } ?? ""
+        if let old { replaced[path] = (old, new) }
+        onForeignContent?(path, source, old != nil)
     }
 
     /// Puts the earlier text back – only if the note still holds exactly the foreign text,
@@ -549,6 +613,7 @@ final class VaultStore {
         if var meta = notes.removeValue(forKey: old) { meta.path = new; notes[new] = meta }
         if let c = contents.removeValue(forKey: old) { contents[new] = c }
         if let m = mtimes.removeValue(forKey: old) { mtimes[new] = m }
+        if let f = fingerprints.removeValue(forKey: old) { fingerprints[new] = f; saveFingerprintsSoon() }
     }
 
     /// Obsidian updates links when a note is renamed – so do we.
