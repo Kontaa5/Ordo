@@ -39,6 +39,16 @@ final class ShellController: WebController {
         return url
     }
 
+    #if os(macOS)
+    /// "data:image/…;base64,…" (made by Ordo from vault pictures) → PNG, only if it really is a picture.
+    nonisolated static func pngFromDataURI(_ s: String) -> Data? {
+        guard s.hasPrefix("data:image/"), let comma = s.firstIndex(of: ","), s[..<comma].hasSuffix(";base64"),
+              let raw = Data(base64Encoded: String(s[s.index(after: comma)...])), raw.count < 40_000_000,
+              let image = NSImage(data: raw), let tiff = image.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff) else { return nil }
+        return rep.representation(using: .png, properties: [:])
+    }
+    #endif
+
     static func moveResult(_ path: String, _ dest: String?) -> [String: Any] {
         ["path": dest ?? path, "moved": dest != nil, "from": path]
     }
@@ -246,10 +256,16 @@ final class ShellController: WebController {
             let html = body["html"] as? String
             guard plain.utf8.count < 5_000_000, (html?.utf8.count ?? 0) < 80_000_000 else { throw HostError(message: "Zu groß zum Kopieren") }
             #if os(macOS)
+            // the pictures also as real pictures: chat windows and Messages ignore pictures inside HTML.
+            // The first one sits next to the text (most apps only look at the first item), the rest follow.
+            let images = (body["images"] as? [String] ?? []).prefix(20).compactMap(Self.pngFromDataURI)
+            let items = [NSPasteboardItem()] + images.dropFirst().map { _ in NSPasteboardItem() }
+            if let html { items[0].setString(html, forType: .html) }
+            items[0].setString(plain, forType: .string)
+            for (item, png) in zip(items, images) { item.setData(png, forType: .png) }
             let pb = NSPasteboard.general
             pb.clearContents()
-            if let html { pb.setString(html, forType: .html) }
-            pb.setString(plain, forType: .string)
+            pb.writeObjects(items)
             #else
             var item: [String: Any] = [UTType.utf8PlainText.identifier: plain]
             if let html { item[UTType.html.identifier] = html }
@@ -263,7 +279,9 @@ final class ShellController: WebController {
             return nil
         case "debugReadClipboard":
             let pb = NSPasteboard.general
-            return ["types": pb.types?.map(\.rawValue) ?? [], "html": pb.string(forType: .html) ?? "", "plain": pb.string(forType: .string) ?? ""]
+            let items = pb.pasteboardItems ?? []
+            return ["types": pb.types?.map(\.rawValue) ?? [], "html": pb.string(forType: .html) ?? "", "plain": pb.string(forType: .string) ?? "",
+                    "items": items.count, "pngs": items.filter { $0.data(forType: .png) != nil }.count]
         case "debugRestoreClipboard":
             let pb = NSPasteboard.general
             pb.clearContents()

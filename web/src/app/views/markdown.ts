@@ -534,7 +534,10 @@ export class MarkdownView extends View {
       const div = document.createElement('div');
       div.innerHTML = render(md, { path: this.path, showProperties: false });
       const html = await richHTML(div);   // pictures embedded, so Word / Pages / Mail show them
-      await request('copyToClipboard', { plain: div.innerText, html });
+      const images = [...div.querySelectorAll('img')].map(i => i.getAttribute('src') ?? '').filter(src => src.startsWith('data:image/'));
+      // plain text for chats etc.: the lines as in the note; the pictures come along as pictures
+      const plain = plainMarkdown(md).replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\n{3,}/g, '\n\n').trim();
+      await request('copyToClipboard', { plain, html, images });
       notice(t('Als formatierter Text kopiert'), { timeout: 1200 });
     } catch (err) { notice(t('Kopieren fehlgeschlagen: ') + err); }
   }
