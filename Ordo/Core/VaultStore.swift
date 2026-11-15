@@ -945,11 +945,21 @@ final class VaultStore {
         return result
     }
 
+    /// Writes into the existing file (like Obsidian) instead of replacing it with a new one: for iCloud
+    /// the note stays the same file, not a delete + create on every save – that churn is the likely
+    /// cause of iCloud once putting the wrong text into two notes. A save cut off by a crash is caught
+    /// by the fingerprints and the local git backup.
     nonisolated static func coordinatedWrite(_ data: Data, to url: URL) {
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         var err: NSError?
-        NSFileCoordinator(filePresenter: nil).coordinate(writingItemAt: url, options: [.forReplacing], error: &err) { u in
-            try? data.write(to: u, options: .atomic)
+        NSFileCoordinator(filePresenter: nil).coordinate(writingItemAt: url, options: [], error: &err) { u in
+            if let h = try? FileHandle(forWritingTo: u) {
+                defer { try? h.close() }
+                try? h.write(contentsOf: data)
+                try? h.truncate(atOffset: UInt64(data.count))   // after writing: the file is never empty in between
+            } else {
+                try? data.write(to: u, options: .withoutOverwriting)   // new file
+            }
         }
     }
 

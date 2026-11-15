@@ -397,3 +397,16 @@ final class FingerprintTests: XCTestCase {
         XCTAssertFalse(VaultStore.datedBack(known: nil, now: known))                                                             // new note
     }
 }
+
+final class InPlaceWriteTests: XCTestCase {
+    func testWritesIntoSameFileAndShortens() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let url = dir.appendingPathComponent("Notiz.md")
+        VaultStore.coordinatedWrite(Data("ein langer erster Text\nmit zwei Zeilen".utf8), to: url)   // new file (folder too)
+        let inode = try FileManager.default.attributesOfItem(atPath: url.path)[.systemFileNumber] as? Int
+        VaultStore.coordinatedWrite(Data("kurz".utf8), to: url)
+        XCTAssertEqual(try String(contentsOf: url, encoding: .utf8), "kurz")
+        XCTAssertEqual(try FileManager.default.attributesOfItem(atPath: url.path)[.systemFileNumber] as? Int, inode)
+        try? FileManager.default.removeItem(at: dir)
+    }
+}
