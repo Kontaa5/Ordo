@@ -315,6 +315,7 @@ export const EN: Record<string, string> = {
   'Als reines Markdown kopiert': 'Copied as plain Markdown',
   'Als formatierter Text kopiert': 'Copied as formatted text',
   'Kopiert · jetzt 1 = reines Markdown, 2 = formatierter Text': 'Copied · now 1 = plain Markdown, 2 = formatted text',
-  'Kopieren (zum Einfügen im Finder)': 'Copy (to paste in Finder)',
-  'Kopiert – im Finder mit ⌘V einfügen': 'Copied – paste in Finder with ⌘V',
+  'Datei kopieren': 'Copy file',
+  'Ordner kopieren': 'Copy folder',
+  'Datei kopiert': 'File copied',
 };

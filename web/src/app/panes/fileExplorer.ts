@@ -2,7 +2,7 @@
 // .tree-item.nav-folder / .nav-file) so themes style it like Obsidian.
 
 import { h, icon, iconButton, tooltip, noteName, dirname, basename } from '../dom';
-import { request, on, emit } from '../host';
+import { request, on, emit, isMac } from '../host';
 import { vault, TreeFolder, SortOrder } from '../store';
 import { Menu } from '../ui/menu';
 import { notice } from '../ui/notice';
@@ -20,9 +20,18 @@ const SORT_LABELS: [SortOrder, string][] = [
 ];
 
 
+/** The file just clicked in the list: ⌘C right after copies the file itself (until you click or type elsewhere). */
+let picked: string | null = null;
+document.addEventListener('mousedown', e => { if (!(e.target as Element)?.closest?.('.nav-file-title')) picked = null; }, true);
+document.addEventListener('keydown', e => {
+  const copy = (isMac ? e.metaKey : e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'c';
+  if (copy && picked && vault.exists(picked)) { e.preventDefault(); e.stopPropagation(); copyFile(picked); return; }
+  if (!['Meta', 'Control', 'Shift', 'Alt'].includes(e.key)) picked = null;
+}, true);
+
 /** Puts the file itself on the clipboard: ⌘V in the Finder (or Mail, Messages …) inserts a copy. */
 async function copyFile(path: string) {
-  try { await request('copyFile', { path }); notice(t('Kopiert – im Finder mit ⌘V einfügen'), { timeout: 2500 }); }
+  try { await request('copyFile', { path }); notice(t('Datei kopiert'), { timeout: 1500 }); }
   catch (err) { notice(t('Kopieren fehlgeschlagen: ') + err); }
 }
 export class FileExplorer implements SidePane {
@@ -119,7 +128,7 @@ export class FileExplorer implements SidePane {
         meta?.pinned ? h('div', { cls: 'nav-file-tag ordo-pin', 'aria-label': t('Festgepinnt') }, icon('pin')) : null,
       );
       if (meta?.placeholder) tooltip(self, t('Wird aus iCloud geladen …'), 'right');
-      self.addEventListener('click', e => this.openFile(file.path, e));
+      self.addEventListener('click', e => { picked = file.path; this.openFile(file.path, e); });
       self.addEventListener('auxclick', e => { if (e.button === 1) this.openFile(file.path, e, true); });
       self.addEventListener('contextmenu', e => this.fileMenu(e, file.path));
       this.dragSource(self, file.path);
@@ -275,7 +284,7 @@ export class FileExplorer implements SidePane {
       m.addItem({ title: t('Verschieben nach …'), icon: 'folder-input', onClick: () => new FolderSuggestModal(f => moveTo(folder, f), folder).open() });
       m.addItem({ title: t('Umbenennen …'), icon: 'pencil', onClick: () => this.startRename(folder) });
       m.addItem({ title: t('Im Finder zeigen'), icon: 'folder-open', onClick: () => request('reveal', { path: folder }) });
-      m.addItem({ title: t('Kopieren (zum Einfügen im Finder)'), icon: 'copy', onClick: () => copyFile(folder) });
+      m.addItem({ title: t('Ordner kopieren'), icon: 'copy', onClick: () => copyFile(folder) });
       m.addItem({ title: t('Pfad kopieren'), icon: 'copy', onClick: () => navigator.clipboard?.writeText(folder) });
       m.addSeparator();
       m.addItem({ title: t('Löschen'), icon: 'trash', warning: true, onClick: () => trashPath(folder) });
@@ -298,7 +307,7 @@ export class FileExplorer implements SidePane {
     m.addItem({ title: t('Verschieben nach …'), icon: 'folder-input', onClick: () => new FolderSuggestModal(f => moveTo(path, f), path).open() });
     m.addItem({ title: t('Umbenennen …'), icon: 'pencil', onClick: () => this.startRename(path) });
     m.addItem({ title: t('Im Finder zeigen'), icon: 'folder-open', onClick: () => request('reveal', { path }) });
-    m.addItem({ title: t('Kopieren (zum Einfügen im Finder)'), icon: 'copy', onClick: () => copyFile(path) });
+    m.addItem({ title: t('Datei kopieren'), icon: 'copy', hotkey: isMac ? '⌘C' : 'Ctrl+C', onClick: () => copyFile(path) });
     m.addItem({ title: t('Pfad kopieren'), icon: 'copy', onClick: () => navigator.clipboard?.writeText(path) });
     m.addSeparator();
     m.addItem({ title: t('Löschen'), icon: 'trash', warning: true, onClick: () => trashPath(path) });
