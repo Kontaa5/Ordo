@@ -11,6 +11,7 @@ import { getScheme, setScheme, getZoom, setZoom, appearance, saveAppearance, app
 import { executeCommand, getCommands, hotkeysFor, displayHotkey, setHotkey, eventCombo, Hotkey, Modifier } from '../commands';
 import { TagRuleModal } from './tagRule';
 import { SortAllModal } from './sortAll';
+import { DictionaryModal } from './dictionary';
 import { setting } from './tagRule';
 
 import { t, lang, setLang, Lang } from '../i18n';
@@ -35,6 +36,7 @@ export class SettingsModal extends Modal {
     this.tabs = [
       { id: 'general', name: t('Allgemein'), group: t('Optionen'), render: el => this.general(el) },
       { id: 'editor', name: t('Editor'), group: t('Optionen'), render: el => this.editor(el) },
+      { id: 'spelling', name: t('Rechtschreibung'), group: t('Optionen'), render: el => this.spelling(el) },
       { id: 'files', name: t('Dateien & Links'), group: t('Optionen'), render: el => this.files(el) },
       { id: 'folders', name: t('Ordner-Automatik'), group: t('Optionen'), render: el => this.folders(el) },
       { id: 'appearance', name: t('Darstellung'), group: t('Optionen'), render: el => this.appearance(el) },
@@ -47,12 +49,72 @@ export class SettingsModal extends Modal {
     const items = h('div', { cls: 'vertical-tab-header-group-items' });
     for (const t of this.tabs) items.appendChild(h('div', { cls: 'vertical-tab-nav-item', 'data-tab': t.id, text: t.name, onclick: () => this.show(t.id) }));
     group.appendChild(items);
-    this.nav.appendChild(group);
+    this.nav.append(this.searchField(), group);
     this.show(start);
+  }
+
+  /** Search over all options: every tab rendered once, only matching rows shown (tab name as heading). */
+  private searchField() {
+    const input = h('input', { type: 'search', cls: 'ordo-settings-search', placeholder: t('Einstellungen suchen …'), spellcheck: 'false' });
+    let all: HTMLElement | null = null;
+    const filter = () => {
+      const q = input.value.trim().toLowerCase();
+      if (!all) return;
+      let any = false;
+      for (const sec of Array.from(all.children) as HTMLElement[]) {
+        const tabHit = (sec.dataset.name ?? '').toLowerCase().includes(q);
+        let hits = 0;
+        sec.querySelectorAll<HTMLElement>('.setting-item:not(.ordo-search-section-title)').forEach(row => {
+          const hit = tabHit || (row.textContent ?? '').toLowerCase().includes(q);
+          row.hidden = !hit;
+          if (hit && !row.classList.contains('setting-item-heading')) hits++;
+        });
+        // loose text and blocks without options (hints, previews): only when the tab itself matches
+        for (const el of Array.from(sec.children) as HTMLElement[]) {
+          if (el.classList.contains('setting-item')) continue;
+          const rows = el.querySelectorAll<HTMLElement>('.setting-item');
+          el.hidden = rows.length ? !Array.from(rows).some(r => !r.hidden) : !tabHit;
+        }
+        sec.hidden = !hits;
+        any ||= hits > 0;
+      }
+      empty.hidden = any;
+    };
+    const empty = h('div', { cls: 'setting-item-description', text: t('Keine Treffer') });
+    input.addEventListener('input', () => {
+      if (!input.value.trim()) { all = null; this.show(this.active); return; }
+      if (!all) {
+        // render once per search; async parts (macOS options, Git status) are filtered when they arrive
+        all = h('div');
+        for (const tab of this.tabs) {
+          const sec = h('div', { cls: 'ordo-search-section', 'data-name': tab.name });
+          sec.appendChild(h('div', { cls: 'setting-item setting-item-heading ordo-search-section-title' }, h('div', { cls: 'setting-item-info' }, h('div', { cls: 'setting-item-name', text: tab.name }))));
+          all.appendChild(sec);
+          tab.render(sec);
+        }
+        new MutationObserver(() => { if (all) filter(); }).observe(all, { childList: true, subtree: true });
+        this.nav.querySelectorAll('.vertical-tab-nav-item').forEach(n => n.classList.remove('is-active'));
+        this.content.replaceChildren(all, empty);
+        this.content.scrollTop = 0;
+      }
+      filter();
+    });
+    this.searchInput = input;
+    return input;
+  }
+  private searchInput: HTMLInputElement | null = null;
+  /** Escape first clears the search, then closes. */
+  protected onEscape() {
+    const i = this.searchInput;
+    if (!i?.value) return false;
+    i.value = '';
+    i.dispatchEvent(new Event('input'));
+    return true;
   }
 
   private show(id: string) {
     this.active = id;
+    if (this.searchInput?.value) this.searchInput.value = '';
     this.nav.querySelectorAll('.vertical-tab-nav-item').forEach(n => n.classList.toggle('is-active', (n as HTMLElement).dataset.tab === id));
     this.content.replaceChildren();
     this.content.scrollTop = 0;
@@ -77,7 +139,8 @@ export class SettingsModal extends Modal {
       };
       wrap.replaceChildren(
         setting(t('Grammatik prüfen'), t('Grammatikprüfung von macOS – offline, kein Text verlässt den Mac.'), this.toggle(s.grammar, set('grammar'))),
-        setting(t('Autokorrektur'), t('Tippfehler korrigiert macOS beim Schreiben automatisch.'), this.toggle(s.autocorrect, set('autocorrect'))));
+        setting(t('Autokorrektur'), t('Tippfehler korrigiert macOS beim Schreiben automatisch.'), this.toggle(s.autocorrect, set('autocorrect'))),
+        setting(t('Wörterbuch'), t('Hinzugefügte und ignorierte Wörter ansehen, ändern oder löschen.'), h('button', { text: t('Bearbeiten …'), onclick: () => new DictionaryModal().open() })));
     }).catch(() => {});
     return wrap;
   }
@@ -116,11 +179,15 @@ export class SettingsModal extends Modal {
       setting(t('Standardansicht für neue Tabs'), t('Neue Notizen öffnen sich immer im Bearbeiten-Modus.'),
         this.dropdown([['edit', t('Bearbeiten (Live-Vorschau)')], ['read', t('Lesen')]], s.defaultMode, v => this.save({ defaultMode: v }))),
       setting(t('Lesbare Zeilenlänge'), t('Begrenzt die Zeilenbreite für bessere Lesbarkeit.'), this.toggle(s.readableLineWidth, v => this.save({ readableLineWidth: v }))),
-      setting(t('Rechtschreibprüfung'), t('Wirkt für neu geöffnete Notizen.'), this.toggle(appState.spellcheck, v => { appState.spellcheck = v; })),
-      ...(isMac ? [this.textChecking()] : []),
       setting(t('Seitenumbrüche anzeigen'), t('Zeigt, wo beim PDF-Export eine neue Seite beginnt. Die Linie lässt sich nach oben ziehen; %%pagebreak%% erzwingt einen Umbruch (in Obsidian unsichtbar).'),
         this.toggle(appState.showPageBreaks, v => { appState.showPageBreaks = v; })),
     );
+  }
+
+  private spelling(el: HTMLElement) {
+    el.append(
+      setting(t('Rechtschreibprüfung'), t('Wirkt für neu geöffnete Notizen.'), this.toggle(appState.spellcheck, v => { appState.spellcheck = v; })),
+      ...(isMac ? [this.textChecking()] : []));
   }
 
   private files(el: HTMLElement) {

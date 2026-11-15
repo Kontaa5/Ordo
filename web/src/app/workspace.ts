@@ -7,6 +7,7 @@ import { Menu } from './ui/menu';
 import { hotkeyLabel, executeCommand } from './commands';
 
 import { t } from './i18n';
+import { vault } from './store';
 export type ViewState =
   | { type: 'markdown'; path: string; mode?: 'source' | 'preview'; line?: number }
   | { type: 'graph' }
@@ -376,9 +377,14 @@ export class Workspace {
     this.requestSave();
   }
 
+  /** Recently closed tabs, newest last – ⌘⇧T opens them again. */
+  private closed: ViewState[] = [];
+
   closeLeaf(leaf: Leaf) {
     const idx = this.leaves.indexOf(leaf);
     if (idx < 0) return;
+    const state = leaf.view?.getState();
+    if (state && state.type !== 'empty') { this.closed.push(state); this.closed.splice(0, this.closed.length - 30); }
     leaf.view?.onClose();
     leaf.tabHeaderEl.remove();
     leaf.containerEl.remove();
@@ -392,6 +398,17 @@ export class Workspace {
       } else this.setActiveLeaf(this.leaves[Math.min(idx, this.leaves.length - 1)]);
     }
     this.requestSave();
+  }
+
+  /** ⌘⇧T: the last closed tab again (skips notes deleted in the meantime). */
+  reopenClosedTab() {
+    while (this.closed.length) {
+      const state = this.closed.pop()!;
+      if ('path' in state && !vault.exists(state.path)) continue;
+      this.newTab(state);
+      return true;
+    }
+    return false;
   }
 
   newTab(state: ViewState = { type: 'empty' }): Leaf {

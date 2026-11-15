@@ -18,6 +18,7 @@ import { Menu } from '../ui/menu';
 import { hotkeyLabel, executeCommand } from '../commands';
 import { editorHost, EditorHost } from '../editor/host';
 import { livePreview } from '../editor/livePreview';
+import { selectionMark } from '../editor/selectionMark';
 import { renderedBlocksField } from '../editor/blocks';
 import { arrows } from '../editor/arrows';
 import { tagCase } from '../editor/tagCase';
@@ -29,7 +30,7 @@ import { codeLanguage, codeHighlightStyle } from '../editor/code';
 import { mathCompletion } from '../modals/mathPalette';
 import { render, COPY_ICON, CHECK_ICON } from '../../markdown';
 import { paginate, applyGeomVars, contentSize, whenImagesLoaded } from '../../paginate';
-import { pasteText, inCodeBlock, selectionToMarkdown, ORDO_MD, plainMarkdown, richHTML } from '../../clipboard';
+import { pasteText, inCodeBlock, reindentPaste, fencedCodeAt, selectionToMarkdown, ORDO_MD, plainMarkdown, richHTML, wordSafeCode } from '../../clipboard';
 import { createSearchPanel } from '../editor/searchPanel';
 import { headingFold, addReadingFolds, restoreFolds, foldAllHeadings } from '../editor/headingFold';
 export { foldAllHeadings };
@@ -198,6 +199,7 @@ export class MarkdownView extends View {
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({ spellcheck: appState.spellcheck && !isMac ? 'true' : 'false', autocorrect: 'off', autocapitalize: 'sentences' }),
       livePreview,
+      selectionMark,
       renderedBlocksField,
       imagesBelowField,
       imageDrop,
@@ -518,6 +520,7 @@ export class MarkdownView extends View {
     if (sel) for (let i = 0; i < sel.rangeCount; i++) div.appendChild(sel.getRangeAt(i).cloneContents());
     else div.innerHTML = render(md, { path: this.path, showProperties: false });
     div.querySelectorAll('button, .copy-code-button, .katex-mathml, table.properties').forEach(el => el.remove());
+    wordSafeCode(div);
     dt.setData('text/plain', md);
     dt.setData('text/html', div.innerHTML);
     dt.setData(ORDO_MD, md);
@@ -534,10 +537,9 @@ export class MarkdownView extends View {
       const div = document.createElement('div');
       div.innerHTML = render(md, { path: this.path, showProperties: false });
       const html = await richHTML(div);   // pictures embedded, so Word / Pages / Mail show them
-      const images = [...div.querySelectorAll('img')].map(i => i.getAttribute('src') ?? '').filter(src => src.startsWith('data:image/'));
-      // plain text for chats etc.: the lines as in the note; the pictures come along as pictures
+      // plain text for chats (Claude, Signal): the lines as in the note, without picture links
       const plain = plainMarkdown(md).replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\n{3,}/g, '\n\n').trim();
-      await request('copyToClipboard', { plain, html, images });
+      await request('copyToClipboard', { plain, html });
       notice(t('Als formatierter Text kopiert'), { timeout: 1200 });
     } catch (err) { notice(t('Kopieren fehlgeschlagen: ') + err); }
   }
@@ -585,6 +587,12 @@ export class MarkdownView extends View {
     const before = view.state.sliceDoc(line.from, sel.from);
     const after = view.state.sliceDoc(sel.to, view.state.doc.lineAt(sel.to).to);
     let insert = text;
+    // indented code block (inside a list): every pasted line at the block's indentation (#19)
+    const fence = fencedCodeAt(view.state, sel.from);
+    if (fence && !/^\s*(```|~~~)/.test(line.text)) {
+      const indent = /^[ \t]*/.exec(view.state.doc.lineAt(fence.from).text)![0];
+      if (indent && insert.includes('\n')) insert = (before === '' ? indent : '') + reindentPaste(insert, indent, !before.trim());
+    }
     if (/^\s*(```|~~~)/.test(insert) && before.trim()) insert = '\n' + insert;
     if (/(```|~~~)\s*$/.test(insert) && after.trim()) insert += '\n';
     if (/^\s*(```|~~~)/.test(after) && !insert.endsWith('\n')) insert += '\n';

@@ -13,7 +13,7 @@ export class Modal {
   contentEl: HTMLElement;
   private onKey = (e: KeyboardEvent) => {
     if (stack[stack.length - 1] !== this) return;
-    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); this.close(); }
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (!this.onEscape()) this.close(); }
   };
 
   constructor(cls = '') {
@@ -46,6 +46,8 @@ export class Modal {
   }
 
   onOpen() {}
+  /** Escape: true = handled here (e.g. a search field cleared), the modal stays open. */
+  protected onEscape() { return false; }
   onClose() {}
 }
 

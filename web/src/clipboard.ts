@@ -98,6 +98,36 @@ export function inCodeBlock(state: EditorState, pos: number) {
   return false;
 }
 
+/**
+ * Multi-line paste into an indented code block (e.g. a ``` block inside a list item): the pasted lines keep
+ * their relative indentation, but each one starts at the block's indentation – otherwise lines 2… land at
+ * column 0 and break out of the list and the code block.
+ * `indent` = leading whitespace of the cursor line, `atIndent` = only whitespace before the cursor.
+ */
+export function reindentPaste(text: string, indent: string, atIndent: boolean): string {
+  const lines = text.split(/\r?\n/);
+  if (lines.length < 2 || !indent) return text;
+  // whitespace lines 2… share (pasted from an indented source); the first line's own indent is replaced by the cursor's
+  let common: string | null = null;
+  for (const l of lines.slice(1)) {
+    if (!l.trim()) continue;
+    const ws = /^[ \t]*/.exec(l)![0];
+    if (common === null) common = ws;
+    else { let i = 0; while (i < common.length && i < ws.length && common[i] === ws[i]) i++; common = common.slice(0, i); }
+  }
+  const strip = (l: string) => l.startsWith(common ?? '') ? l.slice((common ?? '').length) : l.replace(/^[ \t]+/, '');
+  return lines.map((l, i) => {
+    if (i === 0) return atIndent ? l.replace(/^[ \t]+/, '') : l;
+    return l.trim() ? indent + strip(l) : '';
+  }).join('\n');
+}
+
+/** The ``` block around `pos`, if any. */
+export function fencedCodeAt(state: EditorState, pos: number): { from: number; to: number } | null {
+  for (let n: any = syntaxTree(state).resolveInner(pos, -1); n; n = n.parent) if (n.name === 'FencedCode') return { from: n.from, to: n.to };
+  return null;
+}
+
 /** Decide what text a paste should insert. */
 export function pasteText(plain: string, html: string, insideCode: boolean): string {
   const text = cleanSpaces(plain);
@@ -182,6 +212,23 @@ export function plainMarkdown(md: string): string {
 }
 
 /** Rendered HTML for Word, Pages, Mail …: pictures embedded (not as links to files), no Ordo controls, no page-break markers. */
+/**
+ * Code blocks as one paragraph with line breaks and inline styles. A <pre> inside a list item makes Word
+ * number every code line as a list entry.
+ */
+export function wordSafeCode(container: HTMLElement) {
+  container.querySelectorAll('pre').forEach(pre => {
+    const lines = (pre.querySelector('code') ?? pre).textContent!.replace(/\n$/, '').split('\n');
+    const block = document.createElement('div');
+    block.setAttribute('style', 'font-family: Menlo, Consolas, monospace; font-size: 10pt; background: #f4f4f4; padding: 6pt 8pt; margin: 4pt 0; border-radius: 4px; line-height: 1.4;');
+    lines.forEach((l, i) => {
+      if (i) block.appendChild(document.createElement('br'));
+      block.appendChild(document.createTextNode(l.replace(/\t/g, '    ').replace(/ /g, '\u00a0')));
+    });
+    pre.replaceWith(block);
+  });
+}
+
 export async function richHTML(container: HTMLElement): Promise<string> {
   container.querySelectorAll('button, .copy-code-button, .katex-mathml, table.properties, .page-break, .edit-block-button, .ordo-heading-fold').forEach(el => el.remove());
   await Promise.all([...container.querySelectorAll('img')].map(async img => {
@@ -191,5 +238,6 @@ export async function richHTML(container: HTMLElement): Promise<string> {
       img.removeAttribute('data-path');
     } catch { /* keep the link */ }
   }));
+  wordSafeCode(container);
   return container.innerHTML;
 }

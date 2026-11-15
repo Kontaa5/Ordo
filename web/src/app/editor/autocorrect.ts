@@ -15,14 +15,38 @@ const WORD = /[\p{L}'’]+$/u;
 // code, links, URLs, tags, math, front matter, HTML: never corrected, never underlined
 const SKIP = /Code|URL|Link|Hashtag|hashtag|Math|math|Frontmatter|frontmatter|HTML|Comment|Image|WikiLink|Embed/;
 
-// ── words the user kept (undid the correction) ──
+// ── words the user kept (undid the correction, "Ignorieren", "Zum Wörterbuch hinzufügen") ──
+// stored as typed (older entries are lowercase), compared without case; editable in Settings › Wörterbuch
 const IGNORE_KEY = 'ordo:spellIgnore';
-const ignored = new Set<string>((() => { try { return JSON.parse(localStorage.getItem(IGNORE_KEY) || '[]'); } catch { return []; } })());
+const ignored = new Map<string, string>((() => {
+  try { const a = JSON.parse(localStorage.getItem(IGNORE_KEY) || '[]'); return Array.isArray(a) ? a.filter(w => typeof w === 'string').map(w => [w.toLowerCase(), w] as [string, string]) : []; } catch { return []; }
+})());
+function persist() { try { localStorage.setItem(IGNORE_KEY, JSON.stringify([...ignored.values()].slice(-2000))); } catch { /* private */ } }
 function ignore(word: string) {
-  ignored.add(word.toLowerCase());
-  try { localStorage.setItem(IGNORE_KEY, JSON.stringify([...ignored].slice(-2000))); } catch { /* private */ }
+  ignored.delete(word.toLowerCase());
+  ignored.set(word.toLowerCase(), word);
+  persist();
 }
 const isIgnored = (w: string) => ignored.has(w.toLowerCase());
+
+/** Settings › Wörterbuch: Ordo's kept words, which of them are in the macOS dictionary. */
+export async function keptWords(): Promise<{ word: string; learned: boolean }[]> {
+  const words = [...ignored.values()];
+  const learned = new Set(await request<string[]>('learnedWords', { words }).catch(() => []));
+  return words.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).map(word => ({ word, learned: learned.has(word) }));
+}
+/** Remove a kept word (also from the macOS dictionary when Ordo had added it there). */
+export async function forgetWord(word: string) {
+  ignored.delete(word.toLowerCase());
+  persist();
+  await request('unlearnWord', { word }).catch(() => {});
+}
+/** Change a kept word: the old one goes, the new one is kept the same way (macOS dictionary or only Ordo). */
+export async function changeWord(old: string, word: string, learned: boolean) {
+  await forgetWord(old);
+  if (learned) await request('learnWord', { word }).catch(() => {});
+  ignore(word);
+}
 
 function skip(view: EditorView, pos: number) {
   for (let n: any = syntaxTree(view.state).resolveInner(pos, 1); n; n = n.parent) if (SKIP.test(n.name)) return true;

@@ -25,6 +25,7 @@ import { TrashModal, trashButton } from './modals/trash';
 import { gitStatusItem, gitSyncNow, gitPullNow } from './git';
 import { MathPalette } from './modals/mathPalette';
 import { getActiveMarkdownView, format, MarkdownView, foldAllHeadings } from './views/markdown';
+import { initLinkStatus } from './ui/linkStatus';
 import { toggleCallout } from '../markdown';
 import { sideBySideChange, stackedChange } from './editor/images';
 import { sideBySideBlocksChange } from './editor/blockDrag';
@@ -55,6 +56,7 @@ function registerCommands() {
   const M = (k: string, ...mods: string[]) => [{ modifiers: ['Mod', ...mods] as any, key: k }];
   addCommand({ id: 'file:new-note', name: t('Neue Notiz erstellen'), icon: 'square-pen', hotkeys: M('N'), ctrlAlias: true, callback: () => newNote() });
   addCommand({ id: 'workspace:new-tab', name: t('Neuer Tab'), icon: 'plus', hotkeys: M('T'), ctrlAlias: true, callback: () => workspace.newTab() });
+  addCommand({ id: 'workspace:reopen-tab', name: t('Geschlossenen Tab wieder öffnen'), icon: 'rotate-ccw', hotkeys: M('T', 'Shift'), ctrlAlias: true, callback: () => { workspace.reopenClosedTab(); } });
   addCommand({ id: 'workspace:close-tab', name: t('Aktuellen Tab schließen'), icon: 'x', hotkeys: M('W'), ctrlAlias: true, callback: () => { if (workspace.activeLeaf) workspace.closeLeaf(workspace.activeLeaf); } });
   addCommand({ id: 'workspace:next-tab', name: t('Nächster Tab'), hotkeys: [{ modifiers: ['Ctrl'], key: 'Tab' }], callback: () => workspace.cycleTabs(1) });
   addCommand({ id: 'workspace:previous-tab', name: t('Vorheriger Tab'), hotkeys: [{ modifiers: ['Ctrl', 'Shift'], key: 'Tab' }], callback: () => workspace.cycleTabs(-1) });
@@ -103,7 +105,7 @@ function registerCommands() {
   editorCmd('editor:insert-wikilink', t('Internen Link einfügen'), 'link', [['Mod'], 'K'], 'link');
   editorCmd('editor:toggle-bullet-list', t('Aufzählung'), 'list', undefined, 'list');
   editorCmd('editor:toggle-blockquote', t('Zitat'), 'quote', undefined, 'quote');
-  editorCmd('editor:cycle-heading', t('Überschrift-Ebene wechseln'), 'heading', [['Mod', 'Shift'], 'T'], 'heading');
+  editorCmd('editor:cycle-heading', t('Überschrift-Ebene wechseln'), 'heading', [['Mod', 'Alt'], 'T'], 'heading');
   editorCmd('editor:toggle-inline-math', t('Inline-Formel ($…$)'), 'math', undefined, 'sigma');
 
   addCommand({ id: 'ordo:insert-math', name: t('Formel einfügen …'), icon: 'sigma', hotkeys: M('M', 'Shift'), check: () => getActiveMarkdownView()?.mode === 'source', callback: () => { const v = getActiveMarkdownView(); if (v) new MathPalette(v.editor).open(); } });
@@ -470,7 +472,8 @@ window.addEventListener('unhandledrejection', e => post({ type: 'log', message: 
     m.addItem({ title: t('Pfad kopieren'), icon: 'copy', onClick: () => navigator.clipboard?.writeText(path) });
   });
   if (boot.isPhone) document.body.classList.add('is-phone');
+  initLinkStatus();
   if (boot.vault) await start(boot.vault);
   else showVaultPicker();
-  (window as any).ordo.debug = { workspace: () => workspace, vault, request, executeCommand, getActiveMarkdownView, isModalOpen, appearance: () => import('./appearance') };
+  (window as any).ordo.debug = { workspace: () => workspace, vault, request, executeCommand, getActiveMarkdownView, isModalOpen, appearance: () => import('./appearance'), commands: () => import('./commands') };
 })();

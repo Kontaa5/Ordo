@@ -40,13 +40,12 @@ final class ShellController: WebController {
     }
 
     #if os(macOS)
-    /// "data:image/…;base64,…" (made by Ordo from vault pictures) → PNG, only if it really is a picture.
-    nonisolated static func pngFromDataURI(_ s: String) -> Data? {
-        guard s.hasPrefix("data:image/"), let comma = s.firstIndex(of: ","), s[..<comma].hasSuffix(";base64"),
-              let raw = Data(base64Encoded: String(s[s.index(after: comma)...])), raw.count < 40_000_000,
-              let image = NSImage(data: raw), let tiff = image.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff) else { return nil }
-        return rep.representation(using: .png, properties: [:])
+    /// A kept word as stored and with a capital first letter (older entries of Ordo's list are lowercase).
+    nonisolated static func spellVariants(_ w: String) -> [String] {
+        let cap = w.prefix(1).uppercased() + w.dropFirst()
+        return cap == w ? [w] : [w, cap]
     }
+
     #endif
 
     static func moveResult(_ path: String, _ dest: String?) -> [String: Any] {
@@ -135,6 +134,25 @@ final class ShellController: WebController {
             return true
             #else
             return false
+            #endif
+        case "unlearnWord":
+            // Settings › Wörterbuch: remove a word Ordo added to the macOS dictionary
+            #if os(macOS)
+            let word = str("word")
+            guard (1...64).contains(word.count) else { return false }
+            let learned = Self.spellVariants(word).filter { NSSpellChecker.shared.hasLearnedWord($0) }
+            learned.forEach { NSSpellChecker.shared.unlearnWord($0) }
+            return !learned.isEmpty
+            #else
+            return false
+            #endif
+        case "learnedWords":
+            // which of Ordo's kept words are in the macOS dictionary (macOS has no API to list them all)
+            #if os(macOS)
+            let words = (body["words"] as? [String] ?? []).prefix(2000).filter { (1...64).contains($0.count) }
+            return words.filter { Self.spellVariants($0).contains { NSSpellChecker.shared.hasLearnedWord($0) } }
+            #else
+            return [String]()
             #endif
         case "correct":
             // autocorrect of the word just typed (WebKit's own does not reach the CodeMirror editor):
@@ -256,16 +274,14 @@ final class ShellController: WebController {
             let html = body["html"] as? String
             guard plain.utf8.count < 5_000_000, (html?.utf8.count ?? 0) < 80_000_000 else { throw HostError(message: "Zu groß zum Kopieren") }
             #if os(macOS)
-            // the pictures also as real pictures: chat windows and Messages ignore pictures inside HTML.
-            // The first one sits next to the text (most apps only look at the first item), the rest follow.
-            let images = (body["images"] as? [String] ?? []).prefix(20).compactMap(Self.pngFromDataURI)
-            let items = [NSPasteboardItem()] + images.dropFirst().map { _ in NSPasteboardItem() }
-            if let html { items[0].setString(html, forType: .html) }
-            items[0].setString(plain, forType: .string)
-            for (item, png) in zip(items, images) { item.setData(png, forType: .png) }
+            // one item: HTML with every picture (Word, Pages, Mail) and the text. No picture of its own: with one,
+            // chats (Claude, Signal) paste only the picture and drop the text (#22).
+            let item = NSPasteboardItem()
+            if let html { item.setString(html, forType: .html) }
+            item.setString(plain, forType: .string)
             let pb = NSPasteboard.general
             pb.clearContents()
-            pb.writeObjects(items)
+            pb.writeObjects([item])
             #else
             var item: [String: Any] = [UTType.utf8PlainText.identifier: plain]
             if let html { item[UTType.html.identifier] = html }

@@ -135,8 +135,7 @@ class FenceFlairWidget extends WidgetType {
       const pos = view.posAtDOM(wrap);
       for (let n: any = syntaxTree(view.state).resolveInner(pos + 1, 1); n; n = n.parent) {
         if (n.name !== 'FencedCode') continue;
-        const text = n.getChild('CodeText');
-        navigator.clipboard?.writeText(text ? view.state.sliceDoc(text.from, text.to) : '');
+        navigator.clipboard?.writeText(fencedCodeText(view.state, n.from, n.to));
         copy.innerHTML = CHECK_ICON; copy.classList.add('is-copied');
         setTimeout(() => { copy.innerHTML = COPY_ICON; copy.classList.remove('is-copied'); }, 1200);
         break;
@@ -146,6 +145,22 @@ class FenceFlairWidget extends WidgetType {
     return wrap;
   }
   ignoreEvent() { return true; }
+}
+
+/**
+ * The code of a ``` block without the fences. Inside a list the block is indented and Lezer splits the code
+ * into one CodeText per line (#21), so take the lines between the fences and remove the fence's indentation.
+ */
+export function fencedCodeText(state: EditorState, from: number, to: number): string {
+  const open = state.doc.lineAt(from), last = state.doc.lineAt(to);
+  const indent = /^[ \t]*/.exec(open.text)![0];
+  const closed = last.number > open.number && /^[ \t]*(```|~~~)/.test(last.text);
+  const lines: string[] = [];
+  for (let i = open.number + 1; i <= (closed ? last.number - 1 : last.number); i++) {
+    const l = state.doc.line(i).text;
+    lines.push(l.startsWith(indent) ? l.slice(indent.length) : l.replace(/^[ \t]+/, ''));
+  }
+  return lines.join('\n');
 }
 
 class ManualBreakWidget extends WidgetType {

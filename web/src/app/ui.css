@@ -75,6 +75,9 @@ body {
   --zoom-factor: 1;
 }
 
+/* inline code stands out a little more than the theme's value (often almost the page colour); code blocks keep the theme's */
+body.theme-light { --ordo-code-bg: color-mix(in srgb, var(--code-background), #000 3.5%); }
+body.theme-dark { --ordo-code-bg: color-mix(in srgb, var(--code-background), #fff 4%); }
 body.theme-light { --bold-color: #000;
   color-scheme: light;
   --highlight-mix-blend-mode: darken;
@@ -433,6 +436,9 @@ body:not(.is-mobile) .workspace-leaf .markdown-reading-view .markdown-preview-vi
 .markdown-source-view .cm-selectionBackground, .markdown-source-view .cm-focused .cm-selectionBackground { background-color: var(--text-selection) !important; }
 .markdown-source-view .cm-gutters { display: none; }
 .markdown-source-view .cm-placeholder { color: var(--text-faint); }
+.markdown-source-view .cm-inline-code .ordo-sel, .markdown-source-view .cm-highlight .ordo-sel { background-color: var(--text-selection) !important; }   /* #20: selection above the code background */
+/* links always show the hand, also when a theme sets --cursor-link to default */
+.markdown-source-view .cm-link, .markdown-source-view .cm-url.external-link, .markdown-source-view .cm-hmd-internal-link, .markdown-rendered a { cursor: pointer !important; }
 .cm-selectionMatch { background-color: hsla(var(--interactive-accent-hsl), 0.12); }
 
 .inline-title {
@@ -463,7 +469,7 @@ body:not(.is-mobile) .workspace-leaf .markdown-reading-view .markdown-preview-vi
 .cm-strikethrough { text-decoration: line-through; }
 .cm-highlight { background-color: var(--text-highlight-bg); color: var(--text-normal); }
 .cm-inline-code {
-  font-family: var(--font-monospace); font-size: var(--code-size); background-color: var(--code-background); border-radius: var(--code-radius); padding: 0.1em 0.25em; color: var(--code-normal);
+  font-family: var(--font-monospace); font-size: var(--code-size); background-color: var(--ordo-code-bg, var(--code-background)); border-radius: var(--code-radius); padding: 0.1em 0.25em; color: var(--code-normal);
 }
 .cm-formatting-code.cm-inline-code { color: var(--text-faint); }
 .cm-hmd-internal-link, .cm-link { color: var(--link-color); text-decoration-line: var(--link-decoration); text-decoration-thickness: var(--link-decoration-thickness); cursor: var(--cursor-link); }
@@ -711,7 +717,7 @@ body.is-mobile .ordo-image-tools { opacity: 1; }
   background-color: var(--tag-background); border: var(--tag-border-width) solid var(--tag-border-color); border-radius: var(--tag-radius); color: var(--tag-color);
   font-size: var(--tag-size); padding: var(--tag-padding-y) var(--tag-padding-x); text-decoration: none; line-height: 1;
 }
-.markdown-rendered code { font-family: var(--font-monospace); font-size: var(--code-size); background-color: var(--code-background); border-radius: var(--code-radius); padding: 0.1em 0.25em; color: var(--code-normal); }
+.markdown-rendered code { font-family: var(--font-monospace); font-size: var(--code-size); background-color: var(--ordo-code-bg, var(--code-background)); border-radius: var(--code-radius); padding: 0.1em 0.25em; color: var(--code-normal); }
 .markdown-rendered pre { position: relative; background-color: var(--code-background); border-radius: var(--code-radius); padding: var(--size-4-3) var(--size-4-4); margin: 0 0 var(--p-spacing); overflow-x: auto; white-space: var(--code-white-space); }
 .markdown-rendered pre code { background: none; padding: 0; white-space: inherit; }
 .markdown-rendered pre .copy-code-button { position: absolute; top: 4px; right: 4px; }
@@ -1129,3 +1135,15 @@ body.is-mobile .modal .setting-item-description { overflow-wrap: anywhere; }
 
 .search-result-more { padding: 6px 10px; margin: 4px 6px; font-size: var(--font-ui-small); color: var(--text-accent); cursor: var(--cursor); border-radius: var(--radius-s); }
 .search-result-more:hover { background: var(--background-modifier-hover); }
+
+.ordo-dictionary input[type=search] { width: 100%; margin: 10px 0 8px; }
+.ordo-dict-word { flex: 1; border: none !important; background: transparent !important; box-shadow: none !important; padding: 2px 4px; }
+.ordo-dict-word:focus { background: var(--background-modifier-form-field) !important; }
+.ordo-dict-badge { font-size: var(--font-ui-smaller); color: var(--text-muted); border: 1px solid var(--background-modifier-border); border-radius: var(--radius-s); padding: 0 5px; }
+
+.ordo-settings-search { width: 100%; margin: 0 0 10px; }
+.ordo-search-section-title .setting-item-name { color: var(--text-accent); }
+.ordo-search-section:first-child .ordo-search-section-title { padding-top: 0; }
+
+.ordo-link-status { position: fixed; left: 8px; bottom: 30px; z-index: 50; max-width: min(60vw, 600px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none;
+  font-size: var(--font-ui-smaller); color: var(--text-muted); background: var(--background-secondary); border: 1px solid var(--background-modifier-border); border-radius: var(--radius-s); padding: 2px 8px; box-shadow: var(--shadow-s); }
