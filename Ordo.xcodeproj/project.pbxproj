@@ -17,12 +17,14 @@
 		367724F6EF04E69FF4B1CA04 /* ImageProcessing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D5A9BA0180979CFA203A7E /* ImageProcessing.swift */; };
 		3710CA9018993AEFFE62A65C /* ObsidianImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBAD25C4D6AD8EA74E605AB5 /* ObsidianImport.swift */; };
 		48B74DC65AD573806057D7B6 /* FileWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51FDA751C2B16B30D751EA0 /* FileWatcher.swift */; };
+		568221DEA1B6C272A2E5C5C6 /* ContentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D4F1B5617A1AE9E83D0FFF /* ContentGuard.swift */; };
 		5BD3D22B4629630330AA8DE1 /* MarkdownParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4B677B6C49092CB164F6E72 /* MarkdownParsing.swift */; };
 		5D9B8F989E6508852420A618 /* VaultSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7830E50B09790482ECC4C432 /* VaultSettings.swift */; };
 		60580B6FCF778840EBD1FDF2 /* ShellController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42103208F49AEAF32308DF0B /* ShellController.swift */; };
 		60AF283D95E606C9D8E4A494 /* GitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = B313737E0E5E4CE7DC7206BB /* GitSync.swift */; };
 		6757DD794F18E9CBCEE3B525 /* VaultStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9EDD942D0D847832387D39 /* VaultStore.swift */; };
 		6ED714651D1A573E8226BCA4 /* VaultStore+Bridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */; };
+		71478B67B3BB6D23EFBFE554 /* ContentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D4F1B5617A1AE9E83D0FFF /* ContentGuard.swift */; };
 		717F82A926FBD193BF3DC16B /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = B9A288AD68E9D0F8065A9863 /* AppIcon.icon */; };
 		71BCA2111BB05975E6FC4831 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C74341FCE1F2DC3211AE7233 /* AppModel.swift */; };
 		7F65BEAB26425C59E2D2CE4A /* DebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE52032C282D1C04E5CA48A3 /* DebugSnapshot.swift */; };
@@ -67,6 +69,7 @@
 		B51FDA751C2B16B30D751EA0 /* FileWatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileWatcher.swift; sourceTree = "<group>"; };
 		B9A288AD68E9D0F8065A9863 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		C69570E34AF79B5D0B9F6630 /* Ordo.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Ordo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C6D4F1B5617A1AE9E83D0FFF /* ContentGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentGuard.swift; sourceTree = "<group>"; };
 		C74341FCE1F2DC3211AE7233 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		CF86AB404BEACE9FD1A6CE82 /* VaultStore+Bridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultStore+Bridge.swift"; sourceTree = "<group>"; };
 		D25F278E3F78F125EAC57060 /* OrdoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OrdoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -90,6 +93,7 @@
 		1B341A56CB3FBB07BBB6C269 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				C6D4F1B5617A1AE9E83D0FFF /* ContentGuard.swift */,
 				8916296DF2BCA68D1D6D0B8E /* FolderRules.swift */,
 				B313737E0E5E4CE7DC7206BB /* GitSync.swift */,
 				A07D30447D2338BC59A341C2 /* HostError.swift */,
@@ -288,6 +292,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				71BCA2111BB05975E6FC4831 /* AppModel.swift in Sources */,
+				71478B67B3BB6D23EFBFE554 /* ContentGuard.swift in Sources */,
 				7F65BEAB26425C59E2D2CE4A /* DebugSnapshot.swift in Sources */,
 				B535704721851CAE0E67B16F /* DockIcon.swift in Sources */,
 				48B74DC65AD573806057D7B6 /* FileWatcher.swift in Sources */,
@@ -316,6 +321,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				568221DEA1B6C272A2E5C5C6 /* ContentGuard.swift in Sources */,
 				A34D38E50052C17AB5D79868 /* CoreTests.swift in Sources */,
 				F0B7C64288003D2D423D8B0E /* FolderRules.swift in Sources */,
 				60AF283D95E606C9D8E4A494 /* GitSync.swift in Sources */,
