@@ -376,16 +376,27 @@ export class MarkdownView extends View {
     const slices = await measurePages(text, this.path);
     const g = pageGeom();
     const { w } = contentSize(g);
-    const scale = Math.min(1.45, Math.max(0.4, (this.previewEl.clientWidth - 48) / g.pageW));
-    const html = measureEl().innerHTML;
+    const cs = getComputedStyle(this.previewEl);   // themes / readable line width change the padding: no horizontal scrollbar
+    const avail = this.previewEl.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 24;
+    const scale = Math.min(1.45, Math.max(0.4, avail / g.pageW));
+    const html = (await measureEl()).innerHTML;
+    const styles = await printStyles();
     const frag = document.createDocumentFragment();
     slices.forEach((s, i) => {
       const page = h('div', { cls: 'ordo-sheet', style: { width: g.pageW * scale + 'px', height: g.pageH * scale + 'px' } });
+      page.dataset.line = String(s.line ?? '');
       page.innerHTML = `<div class="ordo-sheet-inner" style="transform:scale(${scale});width:${g.pageW}px;height:${g.pageH}px">
         <div class="ordo-sheet-clip" style="left:${g.ml}px;top:${g.mt}px;width:${w}px;height:${s.height}px">
-          <div class="print-body markdown-rendered" style="position:absolute;top:${-s.top}px;--content-w:${w}px;--print-font:${g.fontSize}px">${html}</div>
+          <div class="ordo-print-host" style="position:absolute;top:${-s.top}px;width:${w}px"></div>
         </div>
         <div class="ordo-sheet-num" style="bottom:${Math.max(12, g.mb / 2 - 6)}px">${i + 1} / ${slices.length}</div></div>`;
+      // same CSS as the PDF (no app or theme rules), so the page shows exactly what gets exported
+      const root = page.querySelector<HTMLElement>('.ordo-print-host')!.attachShadow({ mode: 'open' });
+      root.adoptedStyleSheets = styles;
+      const body = h('div', { cls: 'print-body' });
+      applyGeomVars(body, g);
+      body.innerHTML = html;
+      root.appendChild(body);
       frag.appendChild(page);
     });
     this.previewEl.replaceChildren(frag);
@@ -415,7 +426,7 @@ export class MarkdownView extends View {
       this.fillClipboard(e.clipboardData, md, sel);
     });
     this.previewEl.addEventListener('click', e => {
-      const el = e.target as HTMLElement;
+      const el = (e.composedPath()[0] ?? e.target) as HTMLElement;   // page view: the click target sits in a sheet's shadow root
       const link = el.closest('a.internal-link, .embed-title') as HTMLElement | null;
       if (link) {
         e.preventDefault();
@@ -628,7 +639,8 @@ export class MarkdownView extends View {
 
   scrollToLine(line: number) {
     if (this.mode === 'preview') {
-      this.previewEl.querySelector(`[data-line="${line}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      const sheet = Array.from(this.previewEl.querySelectorAll<HTMLElement>('.ordo-sheet')).filter(s => s.dataset.line !== '' && +s.dataset.line! <= line).pop();
+      (sheet ?? this.previewEl.querySelector(`[data-line="${line}"]`))?.scrollIntoView({ block: 'start', behavior: 'smooth' });
       return;
     }
     const l = this.editor.state.doc.line(Math.max(1, Math.min(this.editor.state.doc.lines, line + 1)));
@@ -889,13 +901,28 @@ function tagCompletion(ctx: CompletionContext) {
 
 // ---------- page measurement (shared, hidden) ----------
 
-let measure: HTMLElement | null = null;
+// The page layout must match the PDF exactly, so it is measured in a shadow root that only
+// sees the exporter's CSS (export.css + KaTeX) – no app rules, no theme or snippet CSS.
+let printSheets: Promise<CSSStyleSheet[]> | null = null;
+function printStyles() {
+  return printSheets ??= Promise.all(['katex.min.css', 'export.css'].map(async file => {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(await fetch(file).then(r => r.text()).catch(() => ''));
+    return sheet;
+  }));
+}
+
+let measure: Promise<HTMLElement> | null = null;
 function measureEl() {
-  if (!measure) {
-    measure = h('div', { cls: 'print-body markdown-rendered ordo-measure', 'aria-hidden': 'true' });
-    document.body.appendChild(measure);
-  }
-  return measure;
+  return measure ??= (async () => {
+    const host = h('div', { cls: 'ordo-measure ordo-print-host', 'aria-hidden': 'true' });
+    const root = host.attachShadow({ mode: 'open' });
+    root.adoptedStyleSheets = await printStyles();
+    const el = h('div', { cls: 'print-body' });
+    root.appendChild(el);
+    document.body.appendChild(host);
+    return el;
+  })();
 }
 
 export function pageGeom() {
@@ -908,7 +935,7 @@ export function pageGeom() {
 }
 
 async function measurePages(text: string, path: string) {
-  const el = measureEl();
+  const el = await measureEl();
   const g = pageGeom();
   applyGeomVars(el, g);
   el.innerHTML = render(text, { path, showProperties: false });

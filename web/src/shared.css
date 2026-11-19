@@ -1,7 +1,11 @@
 /* Shared by the app and the PDF exporter: print layout, lightbox, image editor. */
 
 /* ---------- print layout (measurement, page view, PDF) – always light ---------- */
+/* In the app the page layout lives in a shadow root (see measureEl in views/markdown.ts): nothing the theme sets on <body>
+   (letter-spacing, font features, fonts via variables …) may change it, or the page lines would not match the PDF. */
+:host { all: initial; display: block; }
 .print-body {
+  --font-text: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; --font-monospace: ui-monospace, "SF Mono", Menlo, monospace;
   width: var(--content-w, 483px); font-size: var(--print-font, 11px); line-height: 1.5; color: #1f1f1f; color-scheme: light;
   font-family: var(--font-text, -apple-system, BlinkMacSystemFont, "Inter", sans-serif);
   --text-normal: #1f1f1f; --text-muted: #555; --text-faint: #999; --background-primary: #fff; --background-secondary: #f6f6f6;
@@ -35,6 +39,13 @@
 .print-body th, .print-body td { border: 1px solid var(--table-border-color); padding: 3px 8px; text-align: left; }
 .print-body hr { border: 0; border-top: 1px solid var(--hr-color); margin: 1.2em 0; }
 .print-body .page-break { border: 0; margin: 0; height: 0; }
+/* picture alignment (`|center`, `|right` in the link) – never inside an image row */
+.print-body .image-embed.ordo-align-center, .print-body .image-embed.ordo-align-right { display: block; }
+.print-body .image-embed.ordo-align-center { text-align: center; }
+.print-body .image-embed.ordo-align-right { text-align: right; }
+.print-body img.ordo-img.ordo-align-center { display: block; margin-left: auto; margin-right: auto; }
+.print-body img.ordo-img.ordo-align-right { display: block; margin-left: auto; margin-right: 0; }
+.print-body .ordo-image-row .image-embed { text-align: left; }
 .print-body .callout { padding: 0.7em 0.9em 0.7em 1.2em; border-radius: 4px; background: rgba(var(--callout-color, var(--callout-default)), 0.1); margin: 0.8em 0; }
 .print-body .callout-title { color: rgb(var(--callout-color, var(--callout-default))); font-weight: 600; display: flex; gap: 4px; align-items: center; }
 .print-body .callout-icon svg { width: 1.1em; height: 1.1em; }
