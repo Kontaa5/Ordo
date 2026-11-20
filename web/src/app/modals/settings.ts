@@ -29,7 +29,7 @@ export class SettingsModal extends Modal {
   private onCloseHooks: (() => void)[] = [];
   onClose() { this.onCloseHooks.forEach(f => f()); }
 
-  constructor(start = 'general', private notePath?: string) {
+  constructor(start = 'general', private notePath?: string, private commit?: string) {
     super('mod-settings mod-sidebar-layout');
     this.modalEl.replaceChildren(
       h('div', { cls: 'modal-close-button', onclick: () => this.close() }, icon('x')),
@@ -44,7 +44,7 @@ export class SettingsModal extends Modal {
       { id: 'hotkeys', name: t('Tastenkürzel'), group: t('Optionen'), render: el => this.hotkeys(el) },
       { id: 'pdf', name: t('Seite & PDF'), group: t('Optionen'), render: el => this.pdf(el) },
       ...(isMac ? [{ id: 'git', name: t('Git-Sync'), group: t('Optionen'), render: (el: HTMLElement) => this.git(el) },
-        { id: 'versions', name: t('Versionen'), group: t('Optionen'), render: (el: HTMLElement) => renderVersions(el, this.notePath) }] : []),
+        { id: 'versions', name: t('Versionen'), group: t('Optionen'), render: (el: HTMLElement) => renderVersions(el, this.notePath, this.commit) }] : []),
     ];
     this.active = start;
     const group = h('div', { cls: 'vertical-tab-header-group' }, h('div', { cls: 'vertical-tab-header-group-title', text: t('Optionen') }));

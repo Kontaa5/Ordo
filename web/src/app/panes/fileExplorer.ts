@@ -302,7 +302,7 @@ export class FileExplorer implements SidePane {
     if (isNote) {
       m.addItem({ title: meta?.pinned ? t('Wieder nach Hashtags einsortieren') : t('Hier festpinnen'), icon: meta?.pinned ? 'wand' : 'pin', onClick: () => setPinned(path, !meta?.pinned) });
       m.addItem({ title: t('Als PDF exportieren …'), icon: 'file-down', onClick: () => emit('export', { paths: [path] }) });
-      if (isMac) m.addItem({ title: t('Ältere Versionen …'), icon: 'undo', onClick: () => emit('open-versions', path) });
+      if (isMac) m.addItem({ title: t('Ältere Versionen …'), icon: 'history', onClick: () => emit('open-versions', path) });
       m.addSeparator();
     }
     m.addItem({ title: t('Verschieben nach …'), icon: 'folder-input', onClick: () => new FolderSuggestModal(f => moveTo(path, f), path).open() });

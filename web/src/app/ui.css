@@ -1163,3 +1163,6 @@ body.is-mobile .modal .setting-item-description { overflow-wrap: anywhere; }
 .ordo-versions-preview { padding: 8px 16px; font-size: var(--font-ui-medium); user-select: text; }
 .ordo-versions-preview img { max-width: 100%; }
 @media (max-width: 700px) { .ordo-versions-body { grid-template-columns: 1fr; height: auto; } .ordo-versions-preview { max-height: 50vh; } }
+
+.ordo-versions-pane-all { margin: 8px 12px 10px; width: calc(100% - 24px); }
+.ordo-versions-pane-row .tree-item-inner { font-size: var(--font-ui-small); }

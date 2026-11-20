@@ -9,6 +9,7 @@ import { Menu } from '../ui/menu';
 import { getActiveMarkdownView, setPinned } from '../views/markdown';
 import { TagSpellingModal, applyTagSpellings } from '../modals/tagSpelling';
 import { TagRuleModal } from '../modals/tagRule';
+import { Version, fullDate } from '../modals/versions';
 
 import { t, tn } from '../i18n';
 import { notice } from '../ui/notice';
@@ -335,5 +336,35 @@ export class AutomationPane implements SidePane {
       }
     }
     this.el.replaceChildren(...rows.filter(Boolean) as HTMLElement[]);
+  }
+}
+
+// ---------- versions of the open note (Git-Sync backups) ----------
+
+export class VersionsPane implements SidePane {
+  id = 'versions'; title = t('Versionen'); icon = 'history';
+  el = h('div', { cls: 'workspace-leaf-content ordo-versions-pane', 'data-type': 'ordo-versions' });
+  private seq = 0;
+  constructor() {
+    // only while the pane is shown: no git call per note switch otherwise
+    const re = debounce(() => { if (this.el.offsetParent) this.render(); }, 300);
+    on('file-open', re); on('active-leaf-change', re); on('git-status', re);
+  }
+  onShow() { this.render(); }
+  async render() {
+    const path = currentPath(), seq = ++this.seq;
+    if (!vault.settings.gitEnabled) {
+      this.el.replaceChildren(h('div', { cls: 'pane-empty', text: t('Versionen gibt es mit Git-Sync (Einstellungen → Git-Sync).') }),
+        h('button', { cls: 'ordo-versions-pane-all', text: t('Einstellungen öffnen'), onclick: () => emit('open-settings', 'git') }));
+      return;
+    }
+    if (!path) { this.el.replaceChildren(h('div', { cls: 'pane-empty', text: t('Keine Notiz aktiv.') })); return; }
+    const list = await request<Version[]>('versionList', { path }).catch(() => [] as Version[]);
+    if (seq !== this.seq) return;
+    const all = h('button', { cls: 'mod-cta ordo-versions-pane-all', text: t('Versionen ansehen & wiederherstellen …'), onclick: () => emit('open-versions', path) });
+    if (!list.length) { this.el.replaceChildren(h('div', { cls: 'pane-empty', text: t('Von dieser Notiz gibt es noch keine Sicherung.') }), all); return; }
+    this.el.replaceChildren(all, ...list.map((v, i) => h('div', { cls: 'tree-item-self is-clickable ordo-versions-pane-row', onclick: () => emit('open-versions', { path, commit: v.commit }) },
+      h('div', { cls: 'tree-item-inner', text: fullDate(v.date) }),
+      i === 0 ? h('div', { cls: 'tree-item-flair-outer' }, h('span', { cls: 'tree-item-flair', text: t('letzte') })) : null)));
   }
 }

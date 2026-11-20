@@ -11,14 +11,14 @@ import { vault } from '../store';
 import { lang, t } from '../i18n';
 
 interface NoteEntry { path: string; exists: boolean }
-interface Version { commit: string; date: number; path: string }
+export interface Version { commit: string; date: number; path: string }
 
-const fullDate = (ts: number) => new Date(ts * 1000).toLocaleString(lang === 'de' ? 'de-AT' : 'en-US',
+export const fullDate = (ts: number) => new Date(ts * 1000).toLocaleString(lang === 'de' ? 'de-AT' : 'en-US',
   { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 const fileName = (p: string) => (p.split('/').pop() ?? p).replace(/\.md$/i, '');
 
 /** The tab. `start`: open this note's versions right away (e.g. the note that is open). */
-export function renderVersions(el: HTMLElement, start?: string) {
+export function renderVersions(el: HTMLElement, start?: string, commit?: string) {
   el.append(h('p', { cls: 'setting-item-description', text: t('Jede Sicherung von Git-Sync ist eine Version. Notiz wählen, Version ansehen und mit einem Klick zurückholen – auch gelöschte Notizen. Der jetzige Stand wird vorher gesichert, das Zurückholen lässt sich also selbst wieder rückgängig machen.') }));
   if (!vault.settings.gitEnabled) {
     el.append(h('p', { cls: 'setting-item-description', text: t('Dafür muss Git-Sync eingeschaltet sein (Einstellungen → Git-Sync).') }));
@@ -26,7 +26,7 @@ export function renderVersions(el: HTMLElement, start?: string) {
   }
   const box = h('div', { cls: 'ordo-versions' });
   el.append(box);
-  if (start) showNote(box, start, true); else showList(box);
+  if (start) showNote(box, start, vault.notes.has(start), '', commit); else showList(box);
 }
 
 async function showList(box: HTMLElement, query = '') {
@@ -47,7 +47,7 @@ async function showList(box: HTMLElement, query = '') {
   fill();
 }
 
-async function showNote(box: HTMLElement, path: string, exists: boolean, query = '') {
+async function showNote(box: HTMLElement, path: string, exists: boolean, query = '', commit?: string) {
   const back = h('button', { text: t('← Alle Notizen'), onclick: () => showList(box, query) });
   const versions = h('div', { cls: 'ordo-versions-versions' });
   const preview = h('div', { cls: 'ordo-versions-preview markdown-rendered' });
@@ -77,7 +77,10 @@ async function showNote(box: HTMLElement, path: string, exists: boolean, query =
       h('div', { cls: 'ordo-trash-meta', text: (i === 0 && exists ? t('letzte Sicherung') : '') + (v.path !== list[0].path ? (i === 0 && exists ? ' · ' : '') + t('hieß „{name}“', { name: fileName(v.path) }) : '') }));
     return row;
   }));
-  pick(list[0], versions.firstElementChild as HTMLElement);
+  const at = Math.max(0, list.findIndex(v => v.commit === commit));
+  const first = versions.children[at] as HTMLElement;
+  pick(list[at], first);
+  first.scrollIntoView({ block: 'nearest' });
 
   restore.onclick = async () => {
     const v = chosen;

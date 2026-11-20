@@ -346,4 +346,7 @@ export const EN: Record<string, string> = {
   "„{name}“ wird mit dem Text vom {date} wieder angelegt.": "“{name}” is created again with the text from {date}.",
   "Version wiederherstellen?": "Restore version?",
   "„{name}“ ist wiederhergestellt.": "“{name}” is restored.",
+  "Versionen gibt es mit Git-Sync (Einstellungen → Git-Sync).": "Versions come from Git-Sync (Settings → Git-Sync).",
+  "Versionen ansehen & wiederherstellen …": "View & restore versions …",
+  "letzte": "latest",
 };
