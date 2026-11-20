@@ -4,7 +4,7 @@
 import { syntaxTree } from '@codemirror/language';
 import type { SyntaxNode } from '@lezer/common';
 import { EditorState, Range, StateField } from '@codemirror/state';
-import { Decoration, DecorationSet, EditorView, WidgetType } from '@codemirror/view';
+import { Decoration, DecorationSet, EditorView, ViewPlugin, WidgetType } from '@codemirror/view';
 import { render, toggleCallout } from '../../markdown';
 import { renderMath } from '../../math';
 import { editorHost } from './host';
@@ -169,6 +169,25 @@ export const renderedBlocksField = StateField.define<DecorationSet>({
     return deco;
   },
   provide: f => EditorView.decorations.from(f),
+});
+
+/** A click below a rendered block (callout, table …) that ends the note: a new empty line after it, like
+ *  Obsidian. Otherwise the click put the cursor at the very end – inside the block, which then opened as source. */
+export const clickBelowLastBlock = ViewPlugin.define(view => {
+  const onDown = (e: MouseEvent) => {
+    if (e.button !== 0 || e.shiftKey || e.metaKey || e.altKey || e.ctrlKey) return;
+    const { doc } = view.state, end = doc.length;
+    const last = candidateBlocks(view.state).at(-1);
+    if (!last || last.to !== end || touchesSel(view.state, last.from, last.to)) return;
+    const bottom = view.lineBlockAt(end).bottom + view.documentTop;
+    if (e.clientY <= bottom) return;
+    e.preventDefault();
+    // blank line in between: a line right after a quote would still belong to it (lazy continuation)
+    view.dispatch({ changes: { from: end, insert: '\n\n' }, selection: { anchor: end + 2 }, scrollIntoView: true, userEvent: 'input' });
+    view.focus();
+  };
+  view.scrollDOM.addEventListener('mousedown', onDown, true);
+  return { destroy: () => view.scrollDOM.removeEventListener('mousedown', onDown, true) };
 });
 
 /** ![[Note]] embeds shown inline as the note's rendered content. */

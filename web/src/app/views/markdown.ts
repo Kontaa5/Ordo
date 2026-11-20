@@ -19,7 +19,7 @@ import { hotkeyLabel, executeCommand } from '../commands';
 import { editorHost, EditorHost } from '../editor/host';
 import { livePreview } from '../editor/livePreview';
 import { selectionMark } from '../editor/selectionMark';
-import { renderedBlocksField } from '../editor/blocks';
+import { renderedBlocksField, clickBelowLastBlock } from '../editor/blocks';
 import { arrows } from '../editor/arrows';
 import { tagCase } from '../editor/tagCase';
 import { wrapOnType } from '../editor/wrap';
@@ -201,6 +201,7 @@ export class MarkdownView extends View {
       livePreview,
       selectionMark,
       renderedBlocksField,
+      clickBelowLastBlock,
       imagesBelowField,
       imageDrop,
       blockDrag,
@@ -211,7 +212,7 @@ export class MarkdownView extends View {
       // ⌘C, then 1 or 2 right after: the same text again as plain Markdown / formatted text
       Prec.highest(keymap.of([{ key: '1', run: () => this.copyChordKey('markdown') }, { key: '2', run: () => this.copyChordKey('rich') }])),
       Prec.high(keymap.of([{ key: 'Tab', run: acceptCompletion }])),
-      Prec.highest(keymap.of([{ key: 'Enter', run: continueListText }])),   // before Markdown's own Enter (also Prec.high)   // Tab takes the suggestion; without a list it indents as usual
+      Prec.highest(keymap.of([{ key: 'Enter', run: v => exitEmptyQuote(v) || continueListText(v) }])),   // before Markdown's own Enter (also Prec.high)   // Tab takes the suggestion; without a list it indents as usual
       tagCase,
       wrapOnType,
       headingFold,
@@ -946,6 +947,25 @@ async function measurePages(text: string, path: string) {
 
 registerView('markdown', leaf => new MarkdownView(leaf));
 
+/** Enter on an empty quote/callout line ("> ") leaves the quote, like Obsidian: the line becomes a blank one
+ *  (it ends the quote) and the cursor goes to a new line below – inside a list item with its indentation. */
+function exitEmptyQuote(view: EditorView): boolean {
+  const { state } = view, sel = state.selection;
+  if (sel.ranges.length !== 1 || !sel.main.empty || completionStatus(state) === 'active') return false;
+  const line = state.doc.lineAt(sel.main.head);
+  const m = /^([ \t]*)>[ \t]*$/.exec(line.text);   // one level only; "> >" is left to Markdown
+  if (!m || sel.main.head !== line.to) return false;
+  let inQuote = false;
+  for (let n: any = syntaxTree(state).resolveInner(line.from + m[1].length, 1); n; n = n.parent) {
+    if (/^(FencedCode|CodeBlock)$/.test(n.name)) return false;
+    if (n.name === 'Blockquote') { inQuote = true; break; }
+  }
+  if (!inQuote) return false;
+  const insert = '\n' + m[1];   // blank line without trailing spaces
+  view.dispatch(state.update({ changes: { from: line.from, to: line.to, insert }, selection: { anchor: line.from + insert.length }, scrollIntoView: true, userEvent: 'input' }));
+  return true;
+}
+
 /** Enter in an indented text line under a list item ("1. Aufgabe" / "    Datum: Dimension"): the new line
  *  keeps exactly that indentation, like Obsidian. The Markdown default used the marker's width (3 spaces),
  *  so the new line fell out of the item and looked like an extra paragraph. */
@@ -953,11 +973,11 @@ function continueListText(view: EditorView): boolean {
   const { state } = view, sel = state.selection;
   if (sel.ranges.length !== 1 || !sel.main.empty || completionStatus(state) === 'active') return false;   // Enter takes a suggestion first
   const line = state.doc.lineAt(sel.main.head);
-  const m = /^([ \t]+)(?!(?:[-*+]|\d+[.)])(?:[ \t]|$))\S/.exec(line.text);   // indented text, not a list marker
+  const m = /^([ \t]+)(?!(?:[-*+]|\d+[.)])(?:[ \t]|$)|>)\S/.exec(line.text);   // indented text, not a list marker, not a quote/callout (Markdown's Enter continues those with "> ")
   if (!m || sel.main.head - line.from < m[1].length) return false;
   let inItem = false;
   for (let n: any = syntaxTree(state).resolveInner(line.from + m[1].length, 1); n; n = n.parent) {
-    if (/^(FencedCode|CodeBlock)$/.test(n.name)) return false;
+    if (/^(FencedCode|CodeBlock|Blockquote)$/.test(n.name)) return false;   // a line without ">" would still belong to the quote (lazy line)
     if (n.name === 'ListItem') { inItem = true; break; }
   }
   if (!inItem) return false;
