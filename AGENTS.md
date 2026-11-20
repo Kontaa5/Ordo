@@ -36,7 +36,7 @@ Bauen, Release und Aufbau stehen auch in [docs/Entwicklung.md](docs/Entwicklung.
   - Prüfen über öffentliches HTTPS (`curl https://raw.githubusercontent.com/…`).
 - **Nie Schlüsselbund, Passwörter oder Systemeinstellungen anfassen**, auch keine Abfrage, die ein Passwort-Popup auslöst.
 - **Keine Endlosschleifen / kein Polling**, wenn es ein Ereignis gibt (Dateimeldung, App wird aktiv). Performance zählt.
-- Wenn ich „push“ sage: committen + pushen. Wenn ich die neue Version testen will: Release machen (siehe unten). **Danach immer selbst installieren:** `brew update && echo y | brew upgrade --cask ordo`, Version prüfen (`defaults read /Applications/Ordo.app/Contents/Info.plist CFBundleShortVersionString`). Läuft Ordo, sagen: neu starten.
+- Wenn ich „push“ sage: committen + pushen. Wenn ich die neue Version testen will: Release machen (siehe unten). **Ein Release pusht (Touch ID) – vorher immer fragen**, sonst `tools/release.sh <v> --no-push`. **Danach immer selbst installieren:** `brew update && echo y | brew upgrade --cask ordo`, Version prüfen (`defaults read /Applications/Ordo.app/Contents/Info.plist CFBundleShortVersionString`). Läuft Ordo, sagen: neu starten.
 
 ## Wie ich Ordo nutze
 
