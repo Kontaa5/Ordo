@@ -431,6 +431,43 @@ final class ShellController: WebController {
             #else
             return false
             #endif
+        case "versionNotes":
+            #if os(macOS)
+            guard let g = app.git else { return [String]() }
+            return await g.historyNotes().map { ["path": $0, "exists": v.notes[$0] != nil] }
+            #else
+            return [String]()
+            #endif
+        case "versionList":
+            #if os(macOS)
+            guard let g = app.git else { return [String]() }
+            return await g.versions(str("path")).map { ["commit": $0.commit, "date": $0.date, "path": $0.path] }
+            #else
+            return [String]()
+            #endif
+        case "versionText":
+            #if os(macOS)
+            return await app.git?.versionText(commit: str("commit"), path: str("path")) ?? ""
+            #else
+            return ""
+            #endif
+        case "versionRestore":
+            // the old text goes back into the note; what is there now is backed up first, so the restore can be undone too
+            #if os(macOS)
+            guard let g = app.git, let text = await g.versionText(commit: str("commit"), path: str("path")) else { throw HostError(message: "Version nicht gefunden") }
+            let target = str("target")
+            guard GitSync.isNotePath(target), v.url(target) != FolderRules.blocked else { throw HostError(message: "Ungültiger Pfad") }
+            guard !g.isBusy else { throw HostError(message: "Ordo sichert gerade – bitte gleich noch einmal.") }
+            await g.commit()
+            if g.state == .error { throw HostError(message: "Sichern fehlgeschlagen: " + g.message) }
+            let dest = v.notes[target] != nil ? target : v.uniquePath(target)
+            v.write(dest, text: text)
+            v.onExternalChange?(dest, text)
+            app.pushIndexIfNeeded()
+            return dest
+            #else
+            throw HostError(message: "Nur am Mac")
+            #endif
         case "compressPlan":
             let plan = await v.compressPlan(maxDim: body["maxDim"] as? Int ?? v.settings.maxImageDimension, targetWidth: body["targetWidth"] as? Int ?? 0, paths: body["paths"] as? [String])
             compressCache = Dictionary(plan.map { ($0.path, $0.shrunk.data) }, uniquingKeysWith: { a, _ in a })

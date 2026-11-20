@@ -5,8 +5,8 @@ import { EditorState, Extension, EditorSelection, Prec } from '@codemirror/state
 import { EditorView, keymap, drawSelection, dropCursor, rectangularSelection, crosshairCursor } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab, undo, redo, selectAll } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
-import { syntaxHighlighting, indentOnInput, bracketMatching, indentUnit } from '@codemirror/language';
-import { autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap, CompletionContext, acceptCompletion } from '@codemirror/autocomplete';
+import { syntaxHighlighting, indentOnInput, bracketMatching, indentUnit, syntaxTree } from '@codemirror/language';
+import { completionStatus, autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap, CompletionContext, acceptCompletion } from '@codemirror/autocomplete';
 import { search, searchKeymap, highlightSelectionMatches, openSearchPanel } from '@codemirror/search';
 
 import { View, Leaf, ViewState, registerView, workspace } from '../workspace';
@@ -210,7 +210,8 @@ export class MarkdownView extends View {
       search({ top: true, createPanel: createSearchPanel }),
       // ⌘C, then 1 or 2 right after: the same text again as plain Markdown / formatted text
       Prec.highest(keymap.of([{ key: '1', run: () => this.copyChordKey('markdown') }, { key: '2', run: () => this.copyChordKey('rich') }])),
-      Prec.high(keymap.of([{ key: 'Tab', run: acceptCompletion }])),   // Tab takes the suggestion; without a list it indents as usual
+      Prec.high(keymap.of([{ key: 'Tab', run: acceptCompletion }])),
+      Prec.highest(keymap.of([{ key: 'Enter', run: continueListText }])),   // before Markdown's own Enter (also Prec.high)   // Tab takes the suggestion; without a list it indents as usual
       tagCase,
       wrapOnType,
       headingFold,
@@ -944,3 +945,23 @@ async function measurePages(text: string, path: string) {
 }
 
 registerView('markdown', leaf => new MarkdownView(leaf));
+
+/** Enter in an indented text line under a list item ("1. Aufgabe" / "    Datum: Dimension"): the new line
+ *  keeps exactly that indentation, like Obsidian. The Markdown default used the marker's width (3 spaces),
+ *  so the new line fell out of the item and looked like an extra paragraph. */
+function continueListText(view: EditorView): boolean {
+  const { state } = view, sel = state.selection;
+  if (sel.ranges.length !== 1 || !sel.main.empty || completionStatus(state) === 'active') return false;   // Enter takes a suggestion first
+  const line = state.doc.lineAt(sel.main.head);
+  const m = /^([ \t]+)(?!(?:[-*+]|\d+[.)])(?:[ \t]|$))\S/.exec(line.text);   // indented text, not a list marker
+  if (!m || sel.main.head - line.from < m[1].length) return false;
+  let inItem = false;
+  for (let n: any = syntaxTree(state).resolveInner(line.from + m[1].length, 1); n; n = n.parent) {
+    if (/^(FencedCode|CodeBlock)$/.test(n.name)) return false;
+    if (n.name === 'ListItem') { inItem = true; break; }
+  }
+  if (!inItem) return false;
+  const insert = '\n' + m[1];
+  view.dispatch(state.update({ changes: { from: sel.main.head, insert }, selection: { anchor: sel.main.head + insert.length }, scrollIntoView: true, userEvent: 'input' }));
+  return true;
+}

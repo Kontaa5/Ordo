@@ -131,6 +131,7 @@ const underline = ViewPlugin.fromClass(class {
     for (const [at, len] of res) {
       const a = from + at, z = a + len, word = text.slice(at, at + len);
       if (z === head && view.hasFocus) continue;   // the word being typed right now
+      if (!/^[\p{L}\p{M}'’-]+$/u.test(word)) continue;   // macOS sometimes marks a whole indented line (spaces, "Datum: …"): only single words
       if (isIgnored(word) || skip(view, a)) continue;
       b.add(a, z, misspelled);
     }

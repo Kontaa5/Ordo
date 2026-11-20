@@ -1147,3 +1147,19 @@ body.is-mobile .modal .setting-item-description { overflow-wrap: anywhere; }
 
 .ordo-link-status { position: fixed; left: 8px; bottom: 30px; z-index: 50; max-width: min(60vw, 600px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none;
   font-size: var(--font-ui-smaller); color: var(--text-muted); background: var(--background-secondary); border: 1px solid var(--background-modifier-border); border-radius: var(--radius-s); padding: 2px 8px; box-shadow: var(--shadow-s); }
+
+/* Einstellungen → Versionen */
+.ordo-versions-search { width: 100%; margin-bottom: 8px; }
+.ordo-versions-list { max-height: 60vh; }
+.ordo-versions-row { cursor: pointer; }
+.ordo-versions-row:hover { background: var(--background-modifier-hover); }
+.ordo-versions-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ordo-versions-title { flex: 1; min-width: 0; font-weight: var(--font-semibold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ordo-versions-body { display: grid; grid-template-columns: minmax(150px, 220px) 1fr; gap: 10px; height: 62vh; }
+.ordo-versions-versions, .ordo-versions-preview { overflow: auto; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-s); }
+.ordo-versions-version { padding: 6px 10px; cursor: pointer; font-size: var(--font-ui-small); border-bottom: 1px solid var(--background-modifier-border); }
+.ordo-versions-version:hover { background: var(--background-modifier-hover); }
+.ordo-versions-version.is-active { background: var(--background-modifier-active-hover, var(--interactive-accent)); color: var(--text-normal); }
+.ordo-versions-preview { padding: 8px 16px; font-size: var(--font-ui-medium); user-select: text; }
+.ordo-versions-preview img { max-width: 100%; }
+@media (max-width: 700px) { .ordo-versions-body { grid-template-columns: 1fr; height: auto; } .ordo-versions-preview { max-height: 50vh; } }

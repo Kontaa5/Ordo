@@ -83,6 +83,7 @@ function registerCommands() {
   addCommand({ id: 'editor:open-search', name: t('In aktueller Datei suchen'), icon: 'search', hotkeys: M('F'), check: () => !!getActiveMarkdownView(), callback: () => getActiveMarkdownView()?.openSearch() });
   addCommand({ id: 'markdown:toggle-preview', name: t('Lese-/Bearbeitungsmodus umschalten'), icon: 'book-open', hotkeys: M('E'), ctrlAlias: true, check: () => !!getActiveMarkdownView(), callback: () => getActiveMarkdownView()?.toggleMode() });
   addCommand({ id: 'app:open-settings', name: t('Einstellungen öffnen'), icon: 'settings', hotkeys: M(','), ctrlAlias: true, callback: () => new SettingsModal().open() });
+  addCommand({ id: 'file:versions', name: t('Ältere Version wiederherstellen …'), icon: 'undo', check: () => isMac && !!getActiveMarkdownView()?.path, callback: () => emit('open-versions', getActiveMarkdownView()?.path) });
   addCommand({ id: 'app:open-vault', name: t('Anderen Vault öffnen'), icon: 'vault', callback: () => showVaultPicker() });
   addCommand({ id: 'app:toggle-left-sidebar', name: t('Linke Seitenleiste ein/aus'), icon: 'panel-left', hotkeys: M('\\'), callback: () => workspace.toggleSide('left') });
   addCommand({ id: 'app:toggle-right-sidebar', name: t('Rechte Seitenleiste ein/aus'), icon: 'panel-right', hotkeys: M('\\', 'Shift'), callback: () => workspace.toggleSide('right') });
@@ -428,6 +429,7 @@ on('vault-closed', async (b: Boot) => { boot = b; if (started) location.reload()
 on('show-vault-picker', () => showVaultPicker());
 on('export', (opts: any) => new ExportModal(opts).open());
 on('open-settings', (tab: string) => new SettingsModal(tab).open());
+on('open-versions', (path: string) => new SettingsModal('versions', path).open());
 on('compress-image', (a: { path: string; share?: number; pixels?: number }) => new CompressImagesModal([a.path], a.share, a.pixels).open());
 on('file-open', (path: string) => rememberRecent(path));
 on('settings-changed', () => { if (started) for (const p of vault.settings?.exportPresets ?? []) addCommand({ id: 'ordo:preset-' + p.id, name: t('Export-Vorlage: {name}', { name: p.name }), icon: 'file-down', callback: () => emit('export', { preset: p }) }); });
@@ -462,6 +464,7 @@ window.addEventListener('unhandledrejection', e => post({ type: 'log', message: 
     }
     m.addItem({ title: t('Als PDF exportieren'), icon: 'file-down', onClick: () => quickExport(path) });
     m.addItem({ title: t('PDF-Export …'), icon: 'sliders', onClick: () => emit('export', { paths: [path] }) });
+    if (isMac) m.addItem({ title: t('Ältere Versionen …'), icon: 'undo', onClick: () => emit('open-versions', path) });
     m.addSeparator();
     m.addItem({ title: t('Umbenennen …'), icon: 'pencil', onClick: () => {
       const v = workspace.leaves.find(l => (l.view as any)?.path === path)?.view as MarkdownView | undefined;

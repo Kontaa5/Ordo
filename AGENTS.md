@@ -121,6 +121,7 @@ git add Casks/ordo.rb project.yml Ordo.xcodeproj Ordo/Resources/Web && git commi
 ```
 
 - Vorher die eigentliche Änderung als eigenen Commit.
+- Branch `releases` = nur Zips, eigene Geschichte. **Nie mergen**, kein Pull Request (GitHubs „Compare & pull request“-Hinweis ignorieren).
 - Prüfen über HTTPS: `curl -sI https://raw.githubusercontent.com/Kontaa5/Ordo/releases/Ordo-<v>.zip`.
 - Der Tap wird über HTTPS geholt. Falls brew noch die alte Version anbietet: `n`, kurz warten, `brew update` nochmal.
 

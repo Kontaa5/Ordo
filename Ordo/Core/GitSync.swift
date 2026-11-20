@@ -259,6 +259,52 @@ final class GitSync {
         return r.ok ? r.out : nil
     }
 
+    // MARK: versions (Einstellungen → Versionen)
+
+    /// Every note in the backups – deleted ones too – most recently changed first.
+    func historyNotes() async -> [String] {
+        let r = await git(["log", "--format=", "--name-only", "-z", "--", "*.md"])
+        var seen = Set<String>(), out: [String] = []
+        for p in r.out.split(whereSeparator: { $0 == "\0" || $0 == "\n" }).map(String.init) where !p.isEmpty && seen.insert(p).inserted { out.append(p) }
+        return out
+    }
+
+    /// The backed-up versions of one note, newest first – across renames and moves (`--follow`).
+    /// `path` is the note's name in that backup.
+    func versions(_ path: String) async -> [(commit: String, date: Int, path: String)] {
+        guard Self.isNotePath(path) else { return [] }
+        let r = await git(["log", "--follow", "--format=%x1e%H %ct", "--name-status", "-z", "--", path])
+        var out: [(commit: String, date: Int, path: String)] = []
+        for rec in r.out.split(separator: "\u{1e}") {
+            let parts = rec.split(separator: "\0", omittingEmptySubsequences: false).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            let head = parts.first?.split(separator: " ") ?? []
+            guard head.count == 2, let date = Int(head[1]), parts.count >= 3 else { continue }
+            let status = parts[1]
+            if status.hasPrefix("D") { continue }                                  // deleted here: nothing to show
+            let p = status.hasPrefix("R") || status.hasPrefix("C") ? (parts.count > 3 ? parts[3] : "") : parts[2]
+            if Self.isNotePath(p) { out.append((String(head[0]), date, p)) }
+        }
+        return out
+    }
+
+    /// A note's text in one backup (nil: not there).
+    func versionText(commit: String, path: String) async -> String? {
+        guard Self.isCommit(commit), Self.isNotePath(path) else { return nil }
+        let r = await git(["show", commit + ":" + path])
+        return r.ok ? r.out : nil
+    }
+
+    nonisolated static func isCommit(_ s: String) -> Bool {
+        s.count == 40 && s.allSatisfy { $0.isHexDigit && !$0.isUppercase }
+    }
+
+    /// A relative `.md` path, nothing that git could read as an option or a hidden folder.
+    nonisolated static func isNotePath(_ p: String) -> Bool {
+        !p.isEmpty && p.lowercased().hasSuffix(".md") && !p.hasPrefix("/") && !p.hasPrefix(":")
+            && !p.split(separator: "/").contains(where: { $0.hasPrefix(".") || $0.hasPrefix("-") })
+            && p.rangeOfCharacter(from: .controlCharacters) == nil
+    }
+
     func push() async -> Bool {
         guard !busy else { return false }
         guard (await git(["remote", "get-url", "origin"])).ok else { set(.error, "Kein Remote eingetragen"); return false }

@@ -22,7 +22,7 @@ const result = await esbuild.build({
 });
 
 // licence texts of every package that ends up in the bundle (MIT/ISC/Apache ask for it)
-const pkgs = new Set(Object.keys(result.metafile.inputs).map(f => /node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(f)?.[1]).filter(Boolean));
+const pkgs = new Set(Object.keys(result.metafile.inputs).map(f => /.*node_modules\/((?:@[^/]+\/)?[^/]+)/.exec(f)?.[1]).filter(Boolean));
 pkgs.add('katex');   // its CSS and fonts are copied as files
 const notice = [...pkgs].sort().map(name => {
   const dir = `node_modules/${name}/`;

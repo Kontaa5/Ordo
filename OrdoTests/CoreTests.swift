@@ -232,6 +232,17 @@ final class SecurityTests: XCTestCase {
         }
     }
 
+    func testVersionInputsAreChecked() {
+        XCTAssertTrue(GitSync.isCommit("cb90b22ef3eeb458584b35256930c1286fcebfba"))
+        for bad in ["HEAD", "--output=/tmp/x", "cb90b22", "CB90B22EF3EEB458584B35256930C1286FCEBFBA", "cb90b22ef3eeb458584b35256930c1286fcebfbx"] {
+            XCTAssertFalse(GitSync.isCommit(bad), bad)
+        }
+        for ok in ["Notiz.md", "INSY/Aufgabe 05 - Sternschema (Kinokette).md", "Anhänge/Ä.md"] { XCTAssertTrue(GitSync.isNotePath(ok), ok) }
+        for bad in ["", "Bild.png", "/etc/x.md", ".obsidian/x.md", "a/.git/x.md", "../x.md", "a/../../x.md", "-x.md", ":x.md", "a\nb.md"] {
+            XCTAssertFalse(GitSync.isNotePath(bad), bad)
+        }
+    }
+
     func testInsertedPhotosLoseTheirLocation() {
         func photo(_ w: Int) -> Data {
             let ctx = CGContext(data: nil, width: w, height: w, bitsPerComponent: 8, bytesPerRow: 0, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!

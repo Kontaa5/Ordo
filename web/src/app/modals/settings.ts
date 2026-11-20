@@ -13,6 +13,7 @@ import { TagRuleModal } from './tagRule';
 import { SortAllModal } from './sortAll';
 import { DictionaryModal } from './dictionary';
 import { setting } from './tagRule';
+import { renderVersions } from './versions';
 
 import { t, lang, setLang, Lang } from '../i18n';
 type Tab = { id: string; name: string; group: string; render: (el: HTMLElement) => void | Promise<void> };
@@ -28,7 +29,7 @@ export class SettingsModal extends Modal {
   private onCloseHooks: (() => void)[] = [];
   onClose() { this.onCloseHooks.forEach(f => f()); }
 
-  constructor(start = 'general') {
+  constructor(start = 'general', private notePath?: string) {
     super('mod-settings mod-sidebar-layout');
     this.modalEl.replaceChildren(
       h('div', { cls: 'modal-close-button', onclick: () => this.close() }, icon('x')),
@@ -42,7 +43,8 @@ export class SettingsModal extends Modal {
       { id: 'appearance', name: t('Darstellung'), group: t('Optionen'), render: el => this.appearance(el) },
       { id: 'hotkeys', name: t('Tastenkürzel'), group: t('Optionen'), render: el => this.hotkeys(el) },
       { id: 'pdf', name: t('Seite & PDF'), group: t('Optionen'), render: el => this.pdf(el) },
-      ...(isMac ? [{ id: 'git', name: t('Git-Sync'), group: t('Optionen'), render: (el: HTMLElement) => this.git(el) }] : []),
+      ...(isMac ? [{ id: 'git', name: t('Git-Sync'), group: t('Optionen'), render: (el: HTMLElement) => this.git(el) },
+        { id: 'versions', name: t('Versionen'), group: t('Optionen'), render: (el: HTMLElement) => renderVersions(el, this.notePath) }] : []),
     ];
     this.active = start;
     const group = h('div', { cls: 'vertical-tab-header-group' }, h('div', { cls: 'vertical-tab-header-group-title', text: t('Optionen') }));
