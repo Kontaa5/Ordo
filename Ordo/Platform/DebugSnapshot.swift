@@ -33,6 +33,12 @@ enum DebugScript {
                     window.setContentSize(NSSize(width: size[0], height: size[1]))
                     try? await Task.sleep(for: .seconds(0.5))
                 }
+                if step["frame"] as? Bool == true, let window = model.shell.webView.window {   // {"frame": true}: log window and web view sizes
+                    let web = model.shell.webView
+                    NSLog("DBG frame window=%@ minSize=%@ web=%@ intrinsic=%@ fitting=%@", NSStringFromRect(window.frame), NSStringFromSize(window.contentMinSize),
+                          NSStringFromRect(web.frame), NSStringFromSize(web.intrinsicContentSize), NSStringFromSize(web.superview?.fittingSize ?? .zero))
+                    NSLog("DBG drag %@", ((web as? OrdoWebView)?.dragRects ?? []).map { "\(Int($0.minX))+\(Int($0.width))" }.joined(separator: " "))
+                }
                 #endif
                 if let js = step["js"] as? String {
                     do {

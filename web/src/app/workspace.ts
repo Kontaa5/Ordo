@@ -231,6 +231,15 @@ export class Workspace {
     window.addEventListener('resize', debounce(() => this.reportDragRegions(), 100));
     new ResizeObserver(debounce(() => this.reportDragRegions(), 100)).observe(document.body);
     new MutationObserver(() => this.reportDragRegions()).observe(document.body, { childList: true });
+    // #24: tabs that open, close, get a longer/shorter title or scroll move the empty title-bar gaps without the
+    // body changing size. Stale gaps sat on top of tabs: a click there dragged the window, a double-click zoomed it.
+    let queued = false;
+    const later = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; this.reportDragRegions(); }); };
+    const ro = new ResizeObserver(later), mo = new MutationObserver(later);
+    document.querySelectorAll<HTMLElement>('.titlebar-drag').forEach(el => ro.observe(el));
+    document.querySelectorAll<HTMLElement>('.workspace-tab-header-container').forEach(el =>
+      mo.observe(el, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class', 'style'] }));
+    document.addEventListener('scroll', e => { if ((e.target as Element | null)?.closest?.('.workspace-tab-header-container')) later(); }, true);
   }
 
   // ---------- side docks ----------
@@ -418,11 +427,14 @@ export class Workspace {
     return leaf;
   }
 
-  /** Open a file like Obsidian: in the active tab unless it's pinned or a new tab is asked for. */
-  async openFile(path: string, opts: { newLeaf?: boolean; mode?: 'source' | 'preview'; line?: number; active?: boolean } = {}) {
+  /** Open a file like Obsidian: in the active tab unless it's pinned or a new tab is asked for.
+   *  Already open in another tab: switch there – except `stay` (a click in the file list, #25): then it opens
+   *  right here, so clicking through a folder never jumps to another tab. */
+  async openFile(path: string, opts: { newLeaf?: boolean; mode?: 'source' | 'preview'; line?: number; active?: boolean; stay?: boolean } = {}) {
     const isNote = /\.md$/i.test(path);
     const state: ViewState = isNote ? { type: 'markdown', path, mode: opts.mode, line: opts.line } : { type: 'image', path };
-    const existing = this.leaves.find(l => { const s = l.view?.getState(); return s && 'path' in s && s.path === path; });
+    const shows = (l: Leaf | null) => { const s = l?.view?.getState(); return !!s && 'path' in s && s.path === path; };
+    const existing = opts.stay && this.activeLeaf && !this.activeLeaf.pinned ? (shows(this.activeLeaf) ? this.activeLeaf : null) : this.leaves.find(shows);
     if (existing && !opts.newLeaf) {
       this.setActiveLeaf(existing);
       if (opts.line != null || opts.mode) await existing.setViewState(state, false);

@@ -19,11 +19,23 @@ final class OrdoWebView: WKWebView {
         let webPoint = CGPoint(x: p.x, y: isFlipped ? p.y : bounds.height - p.y)
         let cssPoint = CGPoint(x: webPoint.x / zoom, y: webPoint.y / zoom)
         if dragRects.contains(where: { $0.contains(cssPoint) }), let window {
-            if event.clickCount == 2 { window.performZoom(nil) } else { window.performDrag(with: event) }
+            // #24: a double-click only counts when its first click was on the bar too (not on a button or tab that moved away)
+            let isDouble = event.clickCount == 2 && lastDragClick.map { event.timestamp - $0.time <= NSEvent.doubleClickInterval && abs($0.point.x - p.x) < 6 && abs($0.point.y - p.y) < 6 } == true
+            lastDragClick = (event.timestamp, p)
+            if isDouble {
+                lastDragClick = nil
+                switch UserDefaults.standard.string(forKey: "AppleActionOnDoubleClick") {   // System Settings › Desktop & Dock: what a title-bar double-click does
+                case "None": break
+                case "Minimize": window.miniaturize(nil)
+                default: window.performZoom(nil)
+                }
+            } else { window.performDrag(with: event) }
             return
         }
+        lastDragClick = nil
         super.mouseDown(with: event)
     }
+    private var lastDragClick: (time: TimeInterval, point: NSPoint)?
 
     #if DEBUG
     /// automated UI checks run in a window behind the user's apps: its clicks must count without activating Ordo

@@ -1,7 +1,7 @@
 // Markdown view: inline title + live-preview editor (CodeMirror 6) and the
 // reading view, with Obsidian's DOM classes.
 
-import { EditorState, Extension, EditorSelection, Prec } from '@codemirror/state';
+import { EditorState, Extension, EditorSelection, Prec, ChangeSet, Text, Transaction } from '@codemirror/state';
 import { EditorView, keymap, drawSelection, dropCursor, rectangularSelection, crosshairCursor } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap, indentWithTab, undo, redo, selectAll } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
@@ -103,6 +103,7 @@ export class MarkdownView extends View {
     this.offs.push(
       on('renamed', ({ from, to }: { from: string; to: string }) => { if (from === this.path) this.setPath(to); }),
       on('external-change', ({ path, text }: { path: string; text: string }) => { if (path === this.path) this.externalChange(text); }),
+      on('same-note-edit', (d: { from: MarkdownView; path: string; before: Text; changes: ChangeSet }) => { if (d.from !== this && d.path === this.path) this.mirrorEdit(d.before, d.changes); }),
       on('deleted', (path: string) => { if (path === this.path) this.leaf.ws.closeLeaf(this.leaf); }),
       on('settings-changed', () => { this.applyReadable(); this.schedulePages(); }),
       on('page-breaks-changed', () => this.schedulePages(true)),
@@ -219,7 +220,11 @@ export class MarkdownView extends View {
       spelling,
       keymap.of([...closeBracketsKeymap, ...completionKeymap, ...searchKeymap, ...historyKeymap, ...defaultKeymap, indentWithTab]),
       EditorView.updateListener.of(u => {
-        if (u.docChanged && this.loaded) { this.dirty = true; this.scheduleSave(); this.scheduleSort(); this.schedulePages(); }
+        if (u.docChanged && this.loaded) {
+          this.dirty = true; this.scheduleSave(); this.scheduleSort(); this.schedulePages();
+          // the same note open in another tab follows along – otherwise that tab would later save its old text over this one
+          emit('same-note-edit', { from: this, path: this.path, before: u.startState.doc, changes: u.changes });
+        }
         if (u.docChanged || u.selectionSet) this.emitStatsSoon();   // counting words of a long note on every key would slow typing
       }),
       EditorView.domEventHandlers({
@@ -283,6 +288,19 @@ export class MarkdownView extends View {
       const res = await request<{ path: string; moved: boolean; from: string }>('leave', { path: this.path });
       if (res?.moved) announceMove(res.from, res.path);
     } catch { /* closed vault */ }
+  }
+
+  /** Another tab edited this same note: take over exactly that edit (cursor and undo here stay as they are). */
+  private mirrorEdit(before: Text, changes: ChangeSet) {
+    if (!this.loaded) return;
+    const doc = this.editor.state.doc;
+    const same = doc.eq(before);
+    const spec = same ? { changes } : { changes: { from: 0, to: doc.length, insert: changes.apply(before) } };
+    this.loaded = false;   // not an edit of this tab: no saving, sorting or echo back
+    this.editor.dispatch({ ...spec, annotations: Transaction.addToHistory.of(false) });
+    this.loaded = true;
+    this.schedulePages();
+    if (this.mode === 'preview') this.renderPreview();
   }
 
   private externalChange(text: string) {

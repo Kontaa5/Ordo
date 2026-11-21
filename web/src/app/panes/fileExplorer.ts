@@ -138,7 +138,7 @@ export class FileExplorer implements SidePane {
 
   private openFile(path: string, e: MouseEvent, forceNew = false) {
     if (this.renaming === path) return;
-    workspace.openFile(path, { newLeaf: forceNew || e.metaKey || e.ctrlKey });
+    workspace.openFile(path, { newLeaf: forceNew || e.metaKey || e.ctrlKey, stay: true });
   }
 
   private markActive() {
